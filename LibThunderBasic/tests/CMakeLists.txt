@@ -1,0 +1,12 @@
+INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+
+MACRO(ADD_TEST output source)
+ADD_EXECUTABLE(${output} ${source})
+TARGET_LINK_LIBRARIES(${output}
+  ${UD_LIBRARIES} ${OPENCL_LIBRARIES} ${GTEST_LIBRARY}
+  ${GTEST_MAIN_LIBRARY} tdvOclu tdvBasic)
+
+ENDMACRO(ADD_TEST)
+
+ADD_TEST(testlog testlog.cpp)
+ADD_TEST(testutil testutil.cpp)
