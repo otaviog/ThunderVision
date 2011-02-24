@@ -12,7 +12,7 @@ TDV_NAMESPACE_BEGIN
 
 typedef int CudaDevId;
 
-class FloatImageMemImpl
+class FloatImageImpl
 {
     typedef std::map<CudaDevId, float*> DevMemMap;
 
@@ -22,9 +22,9 @@ public:
         CPU, DEV
     };
 
-    FloatImageMemImpl();
+    FloatImageImpl();
 
-    FloatImageMemImpl(CvArr *mem);
+    FloatImageImpl(CvArr *mem);
 
     void initDev(const Dim &dim);
 
@@ -55,33 +55,33 @@ private:
     Dim m_dim;
 };
 
-class FloatImageMem
+class FloatImage
 {
 public:
-    FloatImageMem()
-        : m_impl((FloatImageMemImpl*) NULL)
+    FloatImage()
+        : m_impl((FloatImageImpl*) NULL)
     {
     }
 
-    FloatImageMem(CvArr *mem)
-        : m_impl(new FloatImageMemImpl(mem))
+    FloatImage(CvArr *mem)
+        : m_impl(new FloatImageImpl(mem))
     {
     }
     
-    static FloatImageMem CreateCPU(const Dim &dim)
+    static FloatImage CreateCPU(const Dim &dim)
     {
-        FloatImageMemImpl *impl = new FloatImageMemImpl;
+        FloatImageImpl *impl = new FloatImageImpl;
         impl->initCPU(dim);
 
-        return FloatImageMem(impl);
+        return FloatImage(impl);
     }
 
-    static FloatImageMem CreateDev(const Dim &dim)
+    static FloatImage CreateDev(const Dim &dim)
     {
-        FloatImageMemImpl *impl = new FloatImageMemImpl;
+        FloatImageImpl *impl = new FloatImageImpl;
         impl->initDev(dim);
 
-        return FloatImageMem(impl);
+        return FloatImage(impl);
     }
 
     float* waitDevMem()
@@ -115,12 +115,12 @@ public:
     }
 
 private:
-    FloatImageMem(FloatImageMemImpl *p)
+    FloatImage(FloatImageImpl *p)
         : m_impl(p)
     {
     }
 
-    boost::shared_ptr<FloatImageMemImpl> m_impl;
+    boost::shared_ptr<FloatImageImpl> m_impl;
 };
 
 TDV_NAMESPACE_END

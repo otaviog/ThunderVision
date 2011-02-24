@@ -21,7 +21,7 @@ void CaptureWU::process()
     while ( !m_endCapture )
     {
         capture >> frame;               
-        m_wpipe->write(FloatImageMem(&frame));
+        m_wpipe->write(FloatImage(&frame));
     }
 }
 

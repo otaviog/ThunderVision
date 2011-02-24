@@ -4,15 +4,15 @@
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
 #include "pipe.hpp"
-#include "mem.hpp"
+#include "floatimage.hpp"
 
 TDV_NAMESPACE_BEGIN
 
 class MedianFilterWUCPU: public WorkUnit
 {
 public:
-    typedef ReadPipe<FloatImageMem> ReadPipeType;
-    typedef WritePipe<FloatImageMem> WritePipeType;
+    typedef ReadPipe<FloatImage> ReadPipeType;
+    typedef WritePipe<FloatImage> WritePipeType;
     
     MedianFilterWUCPU()
         : WorkUnit("Median filter CPU")

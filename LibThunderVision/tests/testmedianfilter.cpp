@@ -6,10 +6,10 @@
 
 TEST(MedianFilterTest, CPU)
 {
-    tdv::FloatImageMem image(cvLoadImage("west.png"));
+    tdv::FloatImage image(cvLoadImage("west.png"));
     
     tdv::MedianFilterWUCPU mfilter;    
-    tdv::ReadWritePipe<tdv::FloatImageMem, tdv::FloatImageMem> inpipe, outpipe;
+    tdv::ReadWritePipe<tdv::FloatImage, tdv::FloatImage> inpipe, outpipe;
        
     mfilter.input(&inpipe);
     mfilter.output(&outpipe);
@@ -20,7 +20,7 @@ TEST(MedianFilterTest, CPU)
     image.dispose();
 
 //    outpipe.waitPacket();    
-    tdv::FloatImageMem output = outpipe.read();
+    tdv::FloatImage output = outpipe.read();
 
     cvSaveImage("west_out.jpg", output.waitCPUMem());
     cvShowImage("image", output.waitCPUMem());
@@ -33,9 +33,9 @@ TEST(MedianFilterTest, Dev)
 {
     try 
     {
-        tdv::FloatImageMem image(cvLoadImage("west.png"));
+        tdv::FloatImage image(cvLoadImage("west.png"));
         tdv::MedianFilterWUDev mfilter;        
-        tdv::ReadWritePipe<tdv::FloatImageMem, tdv::FloatImageMem> inpipe, outpipe;
+        tdv::ReadWritePipe<tdv::FloatImage, tdv::FloatImage> inpipe, outpipe;
        
         mfilter.input(&inpipe);
         mfilter.output(&outpipe);
@@ -46,7 +46,7 @@ TEST(MedianFilterTest, Dev)
         mfilter.process();
         
         outpipe.waitPacket();
-        tdv::FloatImageMem output = outpipe.read();
+        tdv::FloatImage output = outpipe.read();
 
         image.dispose();
     

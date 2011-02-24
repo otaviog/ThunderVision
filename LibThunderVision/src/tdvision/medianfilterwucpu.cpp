@@ -7,13 +7,13 @@ void MedianFilterWUCPU::process()
 {
     while ( m_rpipe->waitPacket() )
     {
-        FloatImageMem input = m_rpipe->read();
+        FloatImage input = m_rpipe->read();
         
         const Dim dim = input.dim();
 
         IplImage *image = input.waitCPUMem();
         
-        FloatImageMem output = FloatImageMem::CreateCPU(dim);
+        FloatImage output = FloatImage::CreateCPU(dim);
         IplImage *img_output = output.waitCPUMem();
         
         cvSmooth(image, img_output, CV_MEDIAN);

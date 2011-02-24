@@ -4,7 +4,7 @@ MACRO(ADD_TEST output source)
 ADD_EXECUTABLE(${output} ${source})
 TARGET_LINK_LIBRARIES(${output}
   ${UD_LIBRARIES} ${OPENCL_LIBRARIES} ${GTEST_LIBRARY}
-  ${GTEST_MAIN_LIBRARY} tdvOclu tdvBasic)
+  ${GTEST_MAIN_LIBRARY} tdvbasic)
 
 ENDMACRO(ADD_TEST)
 

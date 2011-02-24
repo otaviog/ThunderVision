@@ -14,11 +14,11 @@ void MedianFilterWUDev::process()
   
   while ( m_rpipe->waitPacket() )
   {
-      FloatImageMem inimg = m_rpipe->read();
+      FloatImage inimg = m_rpipe->read();
       const Dim dim = inimg.dim();
       float *input_d = inimg.waitDevMem();
 
-      FloatImageMem outimg = FloatImageMem::CreateDev(dim);
+      FloatImage outimg = FloatImage::CreateDev(dim);
       float *output_d = outimg.waitDevMem();
 
       DevMedianFilterRun(dim, input_d, output_d);

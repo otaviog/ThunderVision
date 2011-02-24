@@ -1,17 +1,17 @@
 #include "cuerr.hpp"
-#include "mem.hpp"
+#include "floatimage.hpp"
 #include <cv.h>
 
 TDV_NAMESPACE_BEGIN
 
-FloatImageMemImpl::FloatImageMemImpl()
+FloatImageImpl::FloatImageImpl()
     : m_dim(-1)
 {
     m_syncDev = -2;
     m_cpuMem = NULL;
 }
 
-FloatImageMemImpl::FloatImageMemImpl(CvArr *img)
+FloatImageImpl::FloatImageImpl(CvArr *img)
     : m_dim(-1)
 {
     CvSize size(cvGetSize(img));
@@ -29,7 +29,7 @@ FloatImageMemImpl::FloatImageMemImpl(CvArr *img)
     m_syncDev = -1;
 }
 
-void FloatImageMemImpl::initDev(const Dim &dim)
+void FloatImageImpl::initDev(const Dim &dim)
 {
     m_dim = dim;
 
@@ -43,7 +43,7 @@ void FloatImageMemImpl::initDev(const Dim &dim)
     m_syncDev = device;
 }
 
-void FloatImageMemImpl::initCPU(const Dim &dim)
+void FloatImageImpl::initCPU(const Dim &dim)
 {
     m_dim = dim;
     m_cpuMem = cvCreateImage(cvSize(dim.width(), dim.height()),
@@ -51,7 +51,7 @@ void FloatImageMemImpl::initCPU(const Dim &dim)
 
 }
 
-float* FloatImageMemImpl::waitDevMem()
+float* FloatImageImpl::waitDevMem()
 {
     float *devMem = NULL;
     CudaDevId device;
@@ -100,7 +100,7 @@ float* FloatImageMemImpl::waitDevMem()
     return devMem;
 }
 
-IplImage* FloatImageMemImpl::waitCPUMem()
+IplImage* FloatImageImpl::waitCPUMem()
 {
     CUerrExp cuerr;
         
@@ -129,12 +129,12 @@ IplImage* FloatImageMemImpl::waitCPUMem()
     return m_cpuMem;
 }
 
-void FloatImageMemImpl::memRelease()
+void FloatImageImpl::memRelease()
 {
 
 }
 
-void FloatImageMemImpl::dispose()
+void FloatImageImpl::dispose()
 {
     if ( m_cpuMem != NULL )
     {

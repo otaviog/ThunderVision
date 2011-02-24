@@ -1,5 +1,5 @@
 CUDA_ADD_LIBRARY(tdvision
-  mem.hpp mem.cpp
+  floatimage.hpp floatimage.cpp
   imagefilterwu.hpp
   medianfilterwucpu.hpp medianfilterwucpu.cpp
   medianfilterwudev.hpp medianfilterwudev.cpp medianfilter.cu

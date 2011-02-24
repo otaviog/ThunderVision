@@ -2,7 +2,7 @@
 #define TDV_CAPTUREWU_HPP
 
 #include <tdvbasic/common.hpp>
-#include "mem.hpp"
+#include "floatimage.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
 
@@ -13,7 +13,7 @@ class CaptureWU: public WorkUnit
 public:
     CaptureWU(int device);
     
-    void output(WritePipe<FloatImageMem> *wpipe)
+    void output(WritePipe<FloatImage> *wpipe)
     {
         m_wpipe = wpipe;
     }
@@ -23,7 +23,7 @@ public:
     void endCapture();
     
 private:
-    WritePipe<FloatImageMem> *m_wpipe;
+    WritePipe<FloatImage> *m_wpipe;
     bool m_endCapture;
     int m_capDevice;
 };
