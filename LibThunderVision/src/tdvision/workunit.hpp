@@ -9,8 +9,8 @@ TDV_NAMESPACE_BEGIN
 class WorkUnit
 {
 public:
-    WorkUnit(const std::string &nm)        
-        : m_name(nm)
+    WorkUnit()
+        : m_workName("Unknow")
     {
     }
     
@@ -19,13 +19,18 @@ public:
         
     virtual void process() = 0;
         
-    const std::string& name() const
+    const std::string& workName() const
     {
-        return m_name;
+        return m_workName;
     }
     
+    void workName(const std::string &name)
+    {
+        m_workName = name;
+    }
+        
 private:    
-    std::string m_name;
+    std::string m_workName;
 };
 
 TDV_NAMESPACE_END

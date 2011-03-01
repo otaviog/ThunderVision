@@ -1,14 +1,16 @@
 #ifndef TDV_LOG_HPP
 #define TDV_LOG_HPP
 
-#include <iostream>
-#include <cstdarg>
 #include <cstdio>
+#include <iostream>
 #include <string>
 #include <map>
+#include <list>
 
-#include <boost/thread.hpp>
 #include <boost/format.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
 #include "common.hpp"
 
 TDV_NAMESPACE_BEGIN

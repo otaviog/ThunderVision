@@ -18,3 +18,4 @@ SET(ThunderVision_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} tdvision tdvbasic)
 
 ADD_SUBDIRECTORY(LibThunderBasic)
 ADD_SUBDIRECTORY(LibThunderVision)
+ADD_SUBDIRECTORY(GUIApp)

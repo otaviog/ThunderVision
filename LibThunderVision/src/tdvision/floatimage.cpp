@@ -1,6 +1,7 @@
 #include "cuerr.hpp"
 #include "floatimage.hpp"
 #include <cv.h>
+#include <tdvbasic/log.hpp>
 
 TDV_NAMESPACE_BEGIN
 
@@ -29,13 +30,22 @@ FloatImageImpl::FloatImageImpl(CvArr *img)
     m_syncDev = -1;
 }
 
+float* FloatImageImpl::createDevMem()
+{
+    CUerrExp err;
+    
+    float *mem;
+    err << cudaMalloc((void**) &mem, sizeb());
+    
+    return mem;
+}
+
 void FloatImageImpl::initDev(const Dim &dim)
 {
     m_dim = dim;
 
-    float *mem;
-    CUerrDB(cudaMalloc((void**) &mem, sizeb()));
-
+    float *mem = createDevMem();
+    
     CudaDevId device;
     CUerrDB(cudaGetDevice(&device));
     m_devmap[device] = mem;
@@ -48,10 +58,9 @@ void FloatImageImpl::initCPU(const Dim &dim)
     m_dim = dim;
     m_cpuMem = cvCreateImage(cvSize(dim.width(), dim.height()),
                              IPL_DEPTH_32F, 1);
-
 }
 
-float* FloatImageImpl::waitDevMem()
+float* FloatImageImpl::devMem()
 {
     float *devMem = NULL;
     CudaDevId device;
@@ -64,7 +73,7 @@ float* FloatImageImpl::waitDevMem()
         DevMemMap::iterator mIt = m_devmap.find(device);
         if ( mIt == m_devmap.end() )
         {
-            cuerr << cudaMalloc((void**) &devMem, sizeb());
+            devMem = createDevMem();
             m_devmap[device] = devMem;
         }
         else
@@ -100,7 +109,7 @@ float* FloatImageImpl::waitDevMem()
     return devMem;
 }
 
-IplImage* FloatImageImpl::waitCPUMem()
+IplImage* FloatImageImpl::cpuMem()
 {
     CUerrExp cuerr;
         
@@ -129,16 +138,14 @@ IplImage* FloatImageImpl::waitCPUMem()
     return m_cpuMem;
 }
 
-void FloatImageImpl::memRelease()
-{
-
-}
-
 void FloatImageImpl::dispose()
 {
+    TDV_LOG(deb).printf("Dispose float image\n");
+    
     if ( m_cpuMem != NULL )
     {
         cvReleaseImage(&m_cpuMem);
+        m_cpuMem = NULL;
     }
 
     for (DevMemMap::iterator dIt = m_devmap.begin(); dIt != m_devmap.end();
@@ -146,7 +153,8 @@ void FloatImageImpl::dispose()
     {
         cudaFree(dIt->second);
     }
-
+    
+    m_devmap.clear();
 }
 
 TDV_NAMESPACE_END

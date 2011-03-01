@@ -12,9 +12,9 @@ void MedianFilterWUDev::process()
 {
   CUerrExp cuerr;  
   
-  while ( m_rpipe->waitPacket() )
+  FloatImage inimg;
+  while ( m_rpipe->read(&inimg) )
   {
-      FloatImage inimg = m_rpipe->read();
       const Dim dim = inimg.dim();
       float *input_d = inimg.waitDevMem();
 

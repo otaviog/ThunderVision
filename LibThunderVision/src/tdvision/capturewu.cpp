@@ -7,21 +7,50 @@
 TDV_NAMESPACE_BEGIN
 
 CaptureWU::CaptureWU(int device)
-    : WorkUnit((boost::format("Capture unit on device %1%") % device).str())
+    : TypedWorkUnit<FloatImage, FloatImage>(
+        (boost::format("Capture unit on device %1%") % device).str())
 {
     m_endCapture = false;
     m_capDevice = device;
+    m_colorImagePipe = NULL;
+}
+
+void CaptureWU::endCapture()
+{
+    m_endCapture = true;
 }
 
 void CaptureWU::process()
 {
-    cv::VideoCapture capture(m_capDevice);    
-    cv::Mat frame;
+    CvCapture *capture = cvCaptureFromCAM(m_capDevice);
     
-    while ( !m_endCapture )
+    try 
+    {        
+        while ( !m_endCapture )
+        {
+            cvGrabFrame(capture);
+            IplImage *frame = cvRetrieveFrame(capture);
+            
+            if ( frame != NULL )
+            {
+                m_wpipe->write(FloatImage(frame));
+
+                if ( m_colorImagePipe != NULL )
+                {
+                    m_colorImagePipe->write(frame);
+                }
+            }
+        }
+        
+        cvReleaseCapture(&capture);
+        capture = NULL;
+    }
+    catch (const std::exception &ex)
     {
-        capture >> frame;               
-        m_wpipe->write(FloatImage(&frame));
+        if ( capture != NULL )
+            cvReleaseCapture(&capture);
+
+        throw ex;
     }
 }
 

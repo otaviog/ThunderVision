@@ -4,8 +4,8 @@
 #include "cudaconstraits.hpp"
 
 texture<float, 2> imageTex;
-const int KernelSize = 49;
-const int KernelDim = 7;
+const int KernelSize = 9;
+const int KernelDim = 3;
 const int KernelDimH = KernelDim/2;
 
 __device__ void mysort(float values[])

@@ -5,10 +5,9 @@ TDV_NAMESPACE_BEGIN
 
 void MedianFilterWUCPU::process()
 {
-    while ( m_rpipe->waitPacket() )
-    {
-        FloatImage input = m_rpipe->read();
-        
+    FloatImage input;
+    while ( m_rpipe->read(&input) )
+    {        
         const Dim dim = input.dim();
 
         IplImage *image = input.waitCPUMem();

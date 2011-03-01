@@ -42,6 +42,15 @@ namespace util
      */
     char *strReplace(const char *orign, const char *search,
                      const char *replace, size_t rLen);
+
+    /**
+     * Computes the next power of 2 a number, 
+     * according to bithacks 
+     * (http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2).
+     * @param v the number to be round up.
+     */
+    size_t nextPowerOf2(size_t v);
+
 }
 
 TDV_NAMESPACE_END

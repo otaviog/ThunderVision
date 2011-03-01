@@ -1,3 +1,5 @@
+#include <cstdarg>
+#include <cstdio>
 #include "log.hpp"
 
 TDV_NAMESPACE_BEGIN

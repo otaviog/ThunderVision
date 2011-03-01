@@ -25,18 +25,19 @@ public:
     FloatImageImpl();
 
     FloatImageImpl(CvArr *mem);
-
+        
+    ~FloatImageImpl()
+    {
+        dispose();
+    }
+        
     void initDev(const Dim &dim);
 
     void initCPU(const Dim &dim);
 
-    float* waitDevMem();
+    float* devMem();
 
-    _IplImage* waitCPUMem();
-
-    void memRelease();
-
-    void dispose();
+    IplImage* cpuMem();
 
     const Dim &dim() const
     {
@@ -47,10 +48,24 @@ public:
     {
         return m_dim.size()*sizeof(float);
     }
-
+        
 private:
+    FloatImageImpl(const FloatImageImpl &cpy)
+        : m_dim(-1)
+    {
+    }
+
+    FloatImageImpl& operator=(const FloatImageImpl &cpy)
+    {
+        return *this;
+    }
+
+    float *createDevMem();
+    
+    void dispose();
+    
     DevMemMap m_devmap;
-    _IplImage *m_cpuMem;
+    IplImage *m_cpuMem;
     CudaDevId m_syncDev;
     Dim m_dim;
 };
@@ -84,24 +99,14 @@ public:
         return FloatImage(impl);
     }
 
-    float* waitDevMem()
+    float* devMem()
     {
-        return m_impl->waitDevMem();
+        return m_impl->devMem();
     }
 
-    _IplImage* waitCPUMem()
+    IplImage* cpuMem()
     {
-        return m_impl->waitCPUMem();
-    }
-
-    void memRelease()
-    {
-        m_impl->memRelease();
-    }
-
-    void dispose()
-    {
-        m_impl->dispose();
+        return m_impl->cpuMem();
     }
 
     const Dim &dim() const

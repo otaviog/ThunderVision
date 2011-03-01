@@ -7,20 +7,38 @@
 
 TDV_NAMESPACE_BEGIN
 
+class BaseReadPipe
+{
+public:
+    virtual ~BaseReadPipe()
+    {
+    }
+    
+    virtual void waitRead() = 0;
+    
+    virtual void finish() = 0;
+};
+
 template<typename ReadType>
-class ReadPipe
+class ReadPipe: public BaseReadPipe
 {
 public:        
     virtual ~ReadPipe()
     { }
-
-    virtual bool waitPacket() = 0;
     
-    virtual ReadType read() = 0;
+    virtual bool read(ReadType *outvalue) = 0;
+};
+
+class BaseWritePipe
+{
+public:
+    virtual ~BaseWritePipe()
+    {
+    }
 };
 
 template<typename WriteType>
-class WritePipe
+class WritePipe: public BaseWritePipe
 {
 public:    
     virtual ~WritePipe()
@@ -62,17 +80,21 @@ public:
         m_end = false;
     }
     
-    virtual void write(WriteType value);
-    
-    virtual bool waitPacket();
+    void write(WriteType value);    
 
-    virtual ReadType read();
+    bool read(ReadType *outvalue);
         
-    void end()
+    void finish()
     {
         boost::mutex::scoped_lock lock(m_queueMutex);
         m_end = true;
         m_queueCond.notify_one();
+    }
+    
+    void waitRead()
+    {
+        ReadType tp;
+        (void) read(&tp);
     }
     
 private:
@@ -92,26 +114,22 @@ void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
 }
 
 template<typename ReadType, typename WriteType, typename Adapter>
-bool ReadWritePipe<ReadType, WriteType, Adapter>::waitPacket()
+bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
 {
     boost::mutex::scoped_lock lock(m_queueMutex);
-    // Condition overrun, we must quit and return true or quit and return false?
     while ( m_queue.empty() && !m_end )
     {
         m_queueCond.wait(lock);
     }
-    
-    return !m_queue.empty();
-}
 
-template<typename ReadType, typename WriteType, typename Adapter>
-ReadType ReadWritePipe<ReadType, WriteType, Adapter>::read()
-{
-    boost::mutex::scoped_lock(m_queueMutex);
-    ReadType value = m_queue.front();
-    m_queue.pop();
+    bool hasEmpty = m_queue.empty();
+    if ( !hasEmpty )
+    {
+        *outread = m_queue.front();
+        m_queue.pop();
+    }
     
-    return value;
+    return !hasEmpty;
 }
 
 TDV_NAMESPACE_END

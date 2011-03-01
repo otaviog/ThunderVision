@@ -8,4 +8,11 @@ CUDA_ADD_LIBRARY(tdvision
   workunit.hpp  
   workunitrunner.hpp workunitrunner.cpp
   pipe.hpp
-  capturewu.hpp capturewu.cpp)
+  capturewu.hpp capturewu.cpp
+  ssdwudev.hpp ssdwudev.cpp ssd.cu
+  dsimem.hpp dsimem.cpp
+  resizeimagewu.hpp resizeimagewu.cpp
+  imagereaderwu.hpp imagereaderwu.cpp
+  imagewritterwu.hpp imagewritterwu.cpp
+  imagesink.hpp imagesink.cpp
+  pipebuilder.hpp pipebuilder.cpp)

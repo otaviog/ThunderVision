@@ -2,18 +2,24 @@
 #include <tdvision/pipe.hpp>
 #include <tdvision/workunit.hpp>
 #include <tdvision/workunitrunner.hpp>
+#include <tdvision/pipebuilder.hpp>
+#include <tdvision/imagereaderwu.hpp>
+#include <tdvision/resizeimagewu.hpp>
+#include <tdvision/imagewritterwu.hpp>
 
 static void procSimple(tdv::ReadPipe<int> *inp, tdv::WritePipe<int> *outp)
 {
-    int a = inp->read();
+    int a;
+    inp->read(&a);
     EXPECT_EQ(2, a);
     outp->write(a + 2);
 }
 
-static void procConv(tdv::ReadPipe<int> *inp, tdv::WritePipe<float> *outp)
+static void procConv(tdv::ReadPipe<int> *inp, tdv::WritePipe<int> *outp)
 {
-    int a = inp->read();
-    outp->write(float(a) + 2.0);
+    int a;
+    inp->read(&a);
+    outp->write(a + 2);
 }
 
 TEST(PipeTest, Connections)
@@ -21,13 +27,18 @@ TEST(PipeTest, Connections)
     tdv::ReadWritePipe<int, int, tdv::PasstruPipeAdapter<int> > pipe;
     pipe.write(2);
     procSimple(&pipe, &pipe);
-    EXPECT_EQ(4, pipe.read());
+    int v;
+    EXPECT_TRUE(pipe.read(&v));
+    EXPECT_EQ(4, v);
     
     pipe.write(4);
     
-    tdv::ReadWritePipe<int, float, tdv::CastPipeAdapter<int, float> > pipeConv;
+    tdv::ReadWritePipe<float, int, 
+        tdv::CastPipeAdapter<float, int> > pipeConv;
     procConv(&pipe, &pipeConv);
-    EXPECT_FLOAT_EQ(6.0, pipeConv.read());    
+    float vf;
+    EXPECT_TRUE(pipeConv.read(&vf));
+    EXPECT_FLOAT_EQ(6.0, vf);    
 }
 
 class Filter1: public tdv::WorkUnit
@@ -43,9 +54,9 @@ public:
 
     void process()
     {
-        while ( inpipe->waitPacket() )
+        int value;
+        while ( inpipe->read(&value) )
         {
-            int value = inpipe->read();
             outpipe->write(value*2);
         }
     }
@@ -68,9 +79,9 @@ public:
     
     void process()
     {
-        while ( inpipe->waitPacket() )
+        int value;
+        while ( inpipe->read(&value) )
         {
-            int value = inpipe->read();
             outpipe->write(value*2);
         }
     }    
@@ -93,23 +104,53 @@ TEST(PipeTest, PipeAndFilter)
     
     Filter1 f1(&p1, &p2);
     Filter2 f2(&p2, &p3);
-    
-    tdv::WorkUnitRunner runner;
-    tdv::WorkUnit *procs[] = { &f1, &f2 };
-    runner.run(procs, 2);
+
+    tdv::WorkUnit *procs[] = { &f1, &f2 };    
+    tdv::WorkUnitRunner runner(procs, 2);
+    runner.run();
         
     p1.write(2);
     p1.write(3);
-    p1.write(4);
+    p1.write(4);    
+
+    float vf;
+    p3.read(&vf);
+    EXPECT_FLOAT_EQ(8.0f, vf);
+    p3.read(&vf);
+    EXPECT_FLOAT_EQ(12.0f, vf);
+    p3.read(&vf);
+    EXPECT_FLOAT_EQ(16.0f, vf);
     
-    p3.waitPacket();
-    EXPECT_FLOAT_EQ(8.0f, p3.read());
-    p3.waitPacket();
-    EXPECT_FLOAT_EQ(12.0f, p3.read());
-    p3.waitPacket();
-    EXPECT_FLOAT_EQ(16.0f, p3.read());
-    
-    p1.end();
-    p2.end();
-    p3.end();
+    p1.finish();
+    p2.finish();
+    p3.finish();
+
+    runner.join();     
 }
+
+TEST(PipeTest, EasyUseTest)
+{
+    using namespace tdv;
+
+    PipeBuilder pb;    
+    pb >> new ImageReaderWU("../../res/west.png")
+       >> new ResizeImageWU
+       >> new ImageWritterWU("west_pl.png");
+    
+    pb.run();
+    pb.lastPipe()->waitRead();
+    pb.join();    
+    
+    for (size_t err = 0; err < pb.m_runner->errorCount();
+         err++)
+    {
+        std::cout<<pb.m_runner->error(err).what()<<std::endl;
+    }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+   
+  return RUN_ALL_TESTS();
+}
+
