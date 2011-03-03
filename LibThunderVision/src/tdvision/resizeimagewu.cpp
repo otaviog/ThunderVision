@@ -33,10 +33,12 @@ void ResizeImageWU::process()
         }
         
         FloatImage outimg = FloatImage::CreateCPU(ndim);        
-        cvResize(inimg.waitCPUMem(), outimg.waitCPUMem(), CV_INTER_CUBIC);
+        cvResize(inimg.cpuMem(), outimg.cpuMem(), CV_INTER_CUBIC);
         
-        m_wpipe->write(outimg);
+        m_wpipe.write(outimg);
     }
+
+    m_wpipe.finish();
 }
 
 TDV_NAMESPACE_END

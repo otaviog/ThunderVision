@@ -2,10 +2,6 @@
 #include <tdvision/pipe.hpp>
 #include <tdvision/workunit.hpp>
 #include <tdvision/workunitrunner.hpp>
-#include <tdvision/pipebuilder.hpp>
-#include <tdvision/imagereaderwu.hpp>
-#include <tdvision/resizeimagewu.hpp>
-#include <tdvision/imagewritterwu.hpp>
 
 static void procSimple(tdv::ReadPipe<int> *inp, tdv::WritePipe<int> *outp)
 {
@@ -46,14 +42,16 @@ class Filter1: public tdv::WorkUnit
 public:
     Filter1(tdv::ReadPipe<int> *i,
             tdv::WritePipe<int> *o)
-        : WorkUnit("Filter 1")
     {
+        workName("Filter 1");
         inpipe = i;
         outpipe = o;
     }
 
     void process()
     {
+        workName("Filter 2");
+        
         int value;
         while ( inpipe->read(&value) )
         {
@@ -71,8 +69,8 @@ class Filter2: public tdv::WorkUnit
 public:    
     Filter2(tdv::ReadPipe<int> *i,
             tdv::WritePipe<float> *o)
-        : WorkUnit("Filter 2")
     {
+        workName("Filter 2");
         inpipe = i;
         outpipe = o;
     }
@@ -85,11 +83,6 @@ public:
             outpipe->write(value*2);
         }
     }    
-
-    const char* name() const
-    {
-        return "Filter2";
-    }
     
 private:
     tdv::ReadPipe<int> *inpipe;
@@ -126,26 +119,6 @@ TEST(PipeTest, PipeAndFilter)
     p3.finish();
 
     runner.join();     
-}
-
-TEST(PipeTest, EasyUseTest)
-{
-    using namespace tdv;
-
-    PipeBuilder pb;    
-    pb >> new ImageReaderWU("../../res/west.png")
-       >> new ResizeImageWU
-       >> new ImageWritterWU("west_pl.png");
-    
-    pb.run();
-    pb.lastPipe()->waitRead();
-    pb.join();    
-    
-    for (size_t err = 0; err < pb.m_runner->errorCount();
-         err++)
-    {
-        std::cout<<pb.m_runner->error(err).what()<<std::endl;
-    }
 }
 
 int main(int argc, char **argv) {

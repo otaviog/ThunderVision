@@ -1,15 +1,15 @@
 #include <cv.h>
 #include <highgui.h>
-#include "imagewritterwu.hpp"
+#include "imagewriterwu.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-void ImageWritterWU::process()
+void ImageWriterWU::process()
 {
     FloatImage fimg;
     while ( m_rpipe->read(&fimg) )
     {
-        IplImage *img = fimg.waitCPUMem();        
+        IplImage *img = fimg.cpuMem();        
         IplImage *finalImg = cvCreateImage(cvGetSize(img), 
                                            IPL_DEPTH_8U, 1);        
         cvConvertScale(img, finalImg, 255.0);
@@ -18,8 +18,10 @@ void ImageWritterWU::process()
         
         cvReleaseImage(&finalImg);                
         
-        m_wpipe->write(fimg);
-    }
+        m_wpipe.write(fimg);
+    }    
+    
+    m_wpipe.finish();
 }
 
 TDV_NAMESPACE_END

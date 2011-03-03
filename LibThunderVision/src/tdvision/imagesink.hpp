@@ -2,31 +2,29 @@
 #define TDV_IMAGESINK_HPP
 
 #include <tdvbasic/common.hpp>
-#include "typedworkunit.hpp"
+#include "workunit.hpp"
 #include "floatimage.hpp"
+#include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class ImageSink: public TypedWorkUnit<FloatImage, FloatImage>
+class ImageSink: public WorkUnit
 {
 public:
-    ImageSink()
-        : TypedWorkUnit<FloatImage, FloatImage>("Image sink")
+    ImageSink()    
     {
+        workName("FloatImage Sink");
     }
     
-    void input(ReadPipeType *rpipe)
+    void input(ReadPipe<FloatImage> *rpipe)
     {
         m_rpipe = rpipe;
     }
-    
-    void output(WritePipeType *wpipe)
-    { }
-    
+        
     void process();
     
 private:
-    ReadPipeType *m_rpipe;
+    ReadPipe<FloatImage> *m_rpipe;
 };
 
 TDV_NAMESPACE_END

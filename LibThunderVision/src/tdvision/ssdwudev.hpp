@@ -24,16 +24,16 @@ public:
         m_rrpipe = rpipe;
     }
     
-    void output(WritePipe<DSIMem> *wpipe)
+    ReadPipe<DSIMem>* output()
     {
-        m_wpipe = wpipe;
+        return &m_wpipe;
     }
         
     void process();    
     
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
-    WritePipe<DSIMem> *m_wpipe;
+    ReadWritePipe<DSIMem, DSIMem> m_wpipe;
     size_t m_maxDisparaty, m_memoryByPacket;
 };
 

@@ -49,6 +49,8 @@ public:
         return m_dim.size()*sizeof(float);
     }
         
+    void dispose();
+    
 private:
     FloatImageImpl(const FloatImageImpl &cpy)
         : m_dim(-1)
@@ -60,9 +62,7 @@ private:
         return *this;
     }
 
-    float *createDevMem();
-    
-    void dispose();
+    float *createDevMem();    
     
     DevMemMap m_devmap;
     IplImage *m_cpuMem;
@@ -108,7 +108,7 @@ public:
     {
         return m_impl->cpuMem();
     }
-
+    
     const Dim &dim() const
     {
         return m_impl->dim();
@@ -119,6 +119,10 @@ public:
         return m_impl->sizeb();
     }
 
+    void dispose()
+    {
+        m_impl->dispose();
+    }
 private:
     FloatImage(FloatImageImpl *p)
         : m_impl(p)

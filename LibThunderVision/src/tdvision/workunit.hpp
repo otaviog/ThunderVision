@@ -27,8 +27,11 @@ public:
     void workName(const std::string &name)
     {
         m_workName = name;
-    }
-        
+    }        
+    
+    virtual void finish()
+    { }
+    
 private:    
     std::string m_workName;
 };

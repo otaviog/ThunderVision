@@ -1,10 +1,16 @@
 #include "ssdwudev.hpp"
 
+
 TDV_NAMESPACE_BEGIN
 
 void DevSSDRun(int maxDisparity, 
                Dim imgDim, float *leftImg, float *rightImg,
                Dim dsiDim, float *dsiMem);
+
+SSDWUDev::SSDWUDev(int disparityMax, size_t memoryByPacket)
+{
+    workName("SSD on device");
+}
 
 void SSDWUDev::process()
 {    
@@ -31,15 +37,17 @@ void SSDWUDev::process()
             const Dim pktDim(width, packetHeight, depth);
             DSIMem dsi = DSIMem::Create(pktDim);            
             
-            float *leftImg_d = leftImg.waitDevMem();
-            float *rightImg_d = leftImg.waitDevMem();
+            float *leftImg_d = leftImg.devMem();
+            float *rightImg_d = leftImg.devMem();
             
             DevSSDRun(m_maxDisparaty, Dim(width, height), 
                       leftImg_d, rightImg_d, pktDim, dsi.mem());
             
-            m_wpipe->write(dsi);
+            m_wpipe.write(dsi);
         }
     }
+    
+    m_wpipe.finish();
 }
 
 TDV_NAMESPACE_END

@@ -2,13 +2,13 @@
 #define TDV_RESIZEIMAGE_HPP
 
 #include <tdvbasic/common.hpp>
-#include "typedworkunit.hpp"
+#include "workunit.hpp"
 #include "pipe.hpp"
 #include "floatimage.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class ResizeImageWU: public TypedWorkUnit<FloatImage, FloatImage>
+class ResizeImageWU: public WorkUnit
 {
     enum Mode
     {
@@ -18,34 +18,32 @@ class ResizeImageWU: public TypedWorkUnit<FloatImage, FloatImage>
 public:    
 
     ResizeImageWU()
-        : TypedWorkUnit<FloatImage, FloatImage>("Resize Image"),
-          m_newDim(-1)
-    {        
+        : m_newDim(-1)
+    {     
+        workName("Image resize");
         m_mode = NextPowerOf2;
-        m_rpipe = NULL; 
-        m_wpipe = NULL;
+        m_rpipe = NULL;         
     }
         
     ResizeImageWU(const Dim &newDim)
-        : TypedWorkUnit<FloatImage, FloatImage>("Resize Image"),
-          m_newDim(newDim)
+        : m_newDim(newDim)
     {
+        workName("Image resize");
         m_mode = Absolute;
         m_rpipe = NULL; 
-        m_wpipe = NULL;
     }
     
     ResizeImageWU(float xpercent, float ypercent)
-        : TypedWorkUnit<FloatImage, FloatImage>("Resize Image"),
-          m_newDim(-1)
+        : m_newDim(-1)
     {
+        workName("Image resize");
+        
         m_xpercent = xpercent;
         m_ypercent = ypercent;
         
         m_mode = Percent;
         
         m_rpipe = NULL; 
-        m_wpipe = NULL;
     }
     
     void input(ReadPipe<FloatImage> *rpipe)
@@ -53,16 +51,16 @@ public:
         m_rpipe = rpipe;
     }
 
-    void output(WritePipe<FloatImage> *wpipe)
+    ReadPipe<FloatImage>* output()
     {
-        m_wpipe = wpipe;
+        return &m_wpipe;
     }
     
     void process();
     
 private:
     ReadPipe<FloatImage> *m_rpipe;
-    WritePipe<FloatImage> *m_wpipe;
+    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
     
     Mode m_mode;
     const Dim &m_newDim;

@@ -10,32 +10,28 @@ TDV_NAMESPACE_BEGIN
 
 class MedianFilterWUCPU: public WorkUnit
 {
-public:
-    typedef ReadPipe<FloatImage> ReadPipeType;
-    typedef WritePipe<FloatImage> WritePipeType;
-    
+public:    
     MedianFilterWUCPU()
-        : WorkUnit("Median filter CPU")
+        : WorkUnit()
     {
-        m_rpipe = NULL;
-        m_wpipe = NULL;
+        workName("Median filter on CPU");
     }
         
-    void input(ReadPipeType *rpipe)
+    void input(ReadPipe<FloatImage> *rpipe)
     {
         m_rpipe = rpipe;
     }
 
-    void output(WritePipeType *wpipe)
+    ReadPipe<FloatImage>* output()
     {
-        m_wpipe = wpipe;
+        return &m_wpipe;
     }
 
     void process();
     
 private:
-    ReadPipeType *m_rpipe;
-    WritePipeType *m_wpipe;
+    ReadPipe<FloatImage> *m_rpipe;
+    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
 };
 
 TDV_NAMESPACE_END

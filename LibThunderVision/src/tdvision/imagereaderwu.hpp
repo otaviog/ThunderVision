@@ -3,39 +3,29 @@
 
 #include <tdvbasic/common.hpp>
 #include "floatimage.hpp"
-#include "typedworkunit.hpp"
+#include "pipe.hpp"
+#include "workunit.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class ImageReaderWU: public TypedWorkUnit<FloatImage, FloatImage>
+class ImageReaderWU: public WorkUnit
 {
 public:    
     ImageReaderWU(const std::string &filename)
-          m_filename(filename)
+        : m_filename(filename)
     {
         workName("Image Reader");
-        m_wpipe = NULL;
     }
-    
-    void input(ReadPipeType *rpipe)
-    { }
-    
-    void output(WritePipeType *wpipe)
+        
+    ReadPipe<FloatImage>* output()
     {
-        m_wpipe = wpipe;
+        return &m_wpipe;
     }
 
     void process();
-        
-    template<typename WorkUnitType>
-    void connect(WorkUnitType *nextWU)
-    {
-        m_wpipe = new ReadWritePipe<WorkUnitType;
-        
-    }
-    
+
 private:
-    WritePipeType *m_wpipe;
+    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
     std::string m_filename;
 };
 

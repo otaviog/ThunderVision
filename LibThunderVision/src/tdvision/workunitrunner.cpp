@@ -30,11 +30,14 @@ private:
     WorkUnitRunner *m_runner;
 };
 
-WorkUnitRunner::WorkUnitRunner(WorkUnit **wus, size_t wuCount)
+WorkUnitRunner::WorkUnitRunner(WorkUnit **wus, size_t wuCount, 
+                               WorkExceptionReport *report)
 {
     m_errReport = NULL;
     m_workUnits.resize(wuCount);
     std::copy(wus, wus + wuCount, m_workUnits.begin());
+    m_errReport = report;
+    m_errorOc = false;
 }
 
 void WorkUnitRunner::run()
@@ -46,9 +49,13 @@ void WorkUnitRunner::run()
 }
 
 void WorkUnitRunner::reportError(const std::exception &ex)
-{
-    std::cout<<ex.what()<<std::endl;
-    m_errors.push_back(ex);
+{    
+    m_errorOc = true;
+    m_errReport->errorOcurred(ex);    
+    for (size_t i=0; i<m_workUnits.size(); i++)
+    {
+        m_workUnits[i]->finish();
+    }
 }
 
 TDV_NAMESPACE_END

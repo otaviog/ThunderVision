@@ -38,20 +38,15 @@ static QImage::Format queryQFormat(IplImage *img)
 }
 
 CameraWidget::CameraWidget(tdv::ReadPipe<IplImage*> *framePipe)
-    : m_watcher(this)
 {
     m_framePipe = framePipe;
     m_lastFrame = NULL;
+    m_end = false;
 }
 
 CameraWidget::~CameraWidget()
 {
-    m_watcher.wait();
-}
-
-void CameraWidget::init()
-{
-    m_watcher.start();
+    m_end = true;
 }
 
 void CameraWidget::paintEvent(QPaintEvent *event)
@@ -76,12 +71,12 @@ void CameraWidget::paintEvent(QPaintEvent *event)
     }
 }
 
-void CameraWidget::PipeWatch::run()
+void CameraWidget::process()
 {
     IplImage *image;
-    while ( m_self->m_framePipe->read(&image) )
+    while ( m_framePipe->read(&image) && !m_end )
     {
-        m_self->m_lastFrame = image;
-        m_self->update();
+        m_lastFrame = image;
+        update();
     }
 }

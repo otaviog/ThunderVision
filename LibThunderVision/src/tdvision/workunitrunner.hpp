@@ -9,7 +9,7 @@ TDV_NAMESPACE_BEGIN
 
 class WorkUnit;
 
-class WorkUnitExceptionReport
+class WorkExceptionReport
 {
 public:
     virtual void errorOcurred(const std::exception &err) = 0;
@@ -20,7 +20,8 @@ private:
 class WorkUnitRunner
 {
 public:
-    WorkUnitRunner(WorkUnit **wus, size_t wuCount);
+    WorkUnitRunner(WorkUnit **wus, size_t wuCount, 
+                   WorkExceptionReport *report);
     
     void run();
 
@@ -29,21 +30,10 @@ public:
         m_threads.join_all();
     }
     
-    bool hasErrors() const
+    bool errorOcurred() const
     {
-        return !m_errors.empty();
+        m_errorOc;
     }
-    
-    size_t errorCount() const
-    {
-        return m_errors.size();
-    } 
-    
-    const std::exception& error(size_t err) const
-    {
-        return m_errors[err];
-    }
-    
 private:
     friend struct WorkUnitCaller;
     
@@ -54,9 +44,10 @@ private:
     WorkUnitRunner& operator=(const WorkUnitRunner &cpy);
     
     boost::thread_group m_threads;
-    WorkUnitExceptionReport *m_errReport;
+    WorkExceptionReport *m_errReport;
     std::vector<WorkUnit*> m_workUnits;
-    std::vector<std::exception> m_errors;
+    
+    bool m_errorOc;
 };
 
 TDV_NAMESPACE_END

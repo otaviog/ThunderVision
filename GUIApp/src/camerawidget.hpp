@@ -2,40 +2,27 @@
 #define TDV_CAMERAWIDGET_HPP
 
 #include <tdvision/pipe.hpp>
+#include <tdvision/workunit.hpp>
 #include <cv.h>
 #include <QWidget>
 #include <QThread>
 
-class CameraWidget: public QWidget
+class CameraWidget: public QWidget, public tdv::WorkUnit
 {
 public:    
     CameraWidget(tdv::ReadPipe<IplImage*> *framePipe);
     
     ~CameraWidget();
     
-    void init();
+    void process();
     
 protected:
     virtual void paintEvent(QPaintEvent *event);
     
-private:        
-    struct PipeWatch: public QThread
-    {
-    public:
-        PipeWatch(CameraWidget *self)
-            : QThread(self), m_self(self)
-        {
-        }
-        
-        void run();
-        
-    private:
-        CameraWidget *m_self;
-    };
-    
+private:            
     tdv::ReadPipe<IplImage*> *m_framePipe;
-    IplImage *m_lastFrame;
-    PipeWatch m_watcher;
+    IplImage *m_lastFrame;    
+    bool m_end;
 };
 
 #endif /* TDV_CAMERAWIDGET_HPP */

@@ -7,15 +7,13 @@
 TDV_NAMESPACE_BEGIN
 
 CaptureWU::CaptureWU(int device)
-    : TypedWorkUnit<FloatImage, FloatImage>(
-        (boost::format("Capture unit on device %1%") % device).str())
 {
+    workName((boost::format("Capture unit on device %1%") % device).str());
     m_endCapture = false;
-    m_capDevice = device;
-    m_colorImagePipe = NULL;
+    m_capDevice = device;    
 }
 
-void CaptureWU::endCapture()
+void CaptureWU::finish()
 {
     m_endCapture = true;
 }
@@ -33,17 +31,16 @@ void CaptureWU::process()
             
             if ( frame != NULL )
             {
-                m_wpipe->write(FloatImage(frame));
-
-                if ( m_colorImagePipe != NULL )
-                {
-                    m_colorImagePipe->write(frame);
-                }
+                m_wpipe.write(FloatImage(frame));
+                m_colorImagePipe.write(frame);
             }
         }
-        
+                
         cvReleaseCapture(&capture);
         capture = NULL;
+        
+        m_colorImagePipe.finish();
+        m_wpipe.finish();
     }
     catch (const std::exception &ex)
     {

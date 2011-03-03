@@ -14,9 +14,7 @@ public:
     {
     }
     
-    virtual void waitRead() = 0;
-    
-    virtual void finish() = 0;
+    virtual void waitRead() = 0;    
 };
 
 template<typename ReadType>
@@ -35,6 +33,8 @@ public:
     virtual ~BaseWritePipe()
     {
     }
+
+    virtual void finish() = 0;
 };
 
 template<typename WriteType>
@@ -131,6 +131,24 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
     
     return !hasEmpty;
 }
+
+class WriteFinishGuard
+{
+public:
+    WriteFinishGuard(BaseWritePipe *pipe)
+    {
+        assert(pipe != NULL);
+        m_pipe = pipe;
+    }
+    
+    ~WriteFinishGuard()
+    {
+        m_pipe->finish();
+    }
+    
+private:
+    BaseWritePipe *m_pipe;
+};
 
 TDV_NAMESPACE_END
 

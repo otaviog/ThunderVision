@@ -4,36 +4,33 @@
 #include <tdvbasic/common.hpp>
 #include <cv.h>
 #include "floatimage.hpp"
-#include "typedworkunit.hpp"
+#include "workunit.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class CaptureWU: public TypedWorkUnit<FloatImage, FloatImage>
+class CaptureWU: public WorkUnit
 {
 public:
     CaptureWU(int device);
     
-    void input(ReadPipeType *rpipe)
-    { }
-
-    void output(WritePipeType *wpipe)
+    ReadPipe<FloatImage>* output()
     {
-        m_wpipe = wpipe;
+        return &m_wpipe;
     }
     
-    void colorImage(WritePipe<IplImage*> *pipe)
+    ReadPipe<IplImage*>* colorImage()
     {
-        m_colorImagePipe = pipe;
+        return &m_colorImagePipe;
     }
     
     void process();
      
-    void endCapture();
+    void finish();
     
 private:
-    WritePipe<FloatImage> *m_wpipe;
-    WritePipe<IplImage*> *m_colorImagePipe;
+    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+    ReadWritePipe<IplImage*, IplImage*> m_colorImagePipe;
     bool m_endCapture;
     int m_capDevice;
 };
