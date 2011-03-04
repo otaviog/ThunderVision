@@ -55,7 +55,7 @@ TEST(MedianFilterTest, CPU)
 TEST(MedianFilterTest, Dev)
 {
     tdv::ImageReaderWU reader("../../res/west.png");
-    tdv::MedianFilterWUCPU mfilter;        
+    tdv::MedianFilterWUDev mfilter;        
     tdv::ImageWriterWU writer("../../res/medianfilter_west.png");
     
     mfilter.input(reader.output());    
@@ -74,7 +74,7 @@ TEST(MedianFilterTest, Dev)
     {
         tdv::FloatImage output;
         bool read;
-        read = mfilter.output()->read(&output);
+        read = writer.output()->read(&output);
         
         EXPECT_TRUE(read);
         

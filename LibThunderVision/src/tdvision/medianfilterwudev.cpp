@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
-
+#include "benchmark.hpp"
 #include "cuerr.hpp"
 #include "medianfilterwudev.hpp"
 
@@ -21,7 +21,11 @@ void MedianFilterWUDev::process()
       FloatImage outimg = FloatImage::CreateDev(dim);
       float *output_d = outimg.devMem();
 
+      CudaBenchmarker marker;
+      
+      marker.begin();
       DevMedianFilterRun(dim, input_d, output_d);
+      marker.end();
       
       m_wpipe.write(outimg);
   }

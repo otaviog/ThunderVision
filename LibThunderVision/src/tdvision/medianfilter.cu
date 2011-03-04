@@ -38,7 +38,8 @@ __global__ void medianKernel(float *dest, const int maxOffset)
       
       mysort(values);
       
-      dest[offset] = values[4];
+      //dest[offset] = values[4];
+      dest[offset] = 0.5f;
     }
 }
 

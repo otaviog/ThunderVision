@@ -49,6 +49,11 @@ public:
         return m_dim.size()*sizeof(float);
     }
         
+    bool empty() const
+    {
+        return m_cpuMem == NULL && m_devmap.empty();
+    }
+
     void dispose();
     
 private:

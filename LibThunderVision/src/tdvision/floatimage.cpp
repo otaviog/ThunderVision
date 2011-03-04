@@ -139,9 +139,7 @@ IplImage* FloatImageImpl::cpuMem()
 }
 
 void FloatImageImpl::dispose()
-{
-    TDV_LOG(deb).printf("Dispose float image\n");
-    
+{    
     if ( m_cpuMem != NULL )
     {
         cvReleaseImage(&m_cpuMem);

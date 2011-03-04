@@ -14,4 +14,8 @@ CUDA_ADD_LIBRARY(tdvision
   resizeimagewu.hpp resizeimagewu.cpp
   imagereaderwu.hpp imagereaderwu.cpp
   imagewriterwu.hpp imagewriterwu.cpp
-  imagesink.hpp imagesink.cpp)
+  imagesink.hpp imagesink.cpp
+  rgbconv.hpp rgbconv.cpp
+  iplimagesink.hpp iplimagesink.cpp
+  benchmark.hpp benchmark.cpp
+  )

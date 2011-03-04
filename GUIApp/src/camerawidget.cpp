@@ -1,6 +1,7 @@
 #include <QImage>
 #include <QPainter>
 #include <iostream>
+#include <boost/scoped_array.hpp>
 #include "camerawidget.hpp"
 
 static QImage::Format queryQFormat(IplImage *img)
@@ -37,11 +38,12 @@ static QImage::Format queryQFormat(IplImage *img)
     return fmt;    
 }
 
-CameraWidget::CameraWidget(tdv::ReadPipe<IplImage*> *framePipe)
+CameraWidget::CameraWidget(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
 {
     m_framePipe = framePipe;
     m_lastFrame = NULL;
     m_end = false;
+    m_sink = sink;
 }
 
 CameraWidget::~CameraWidget()
@@ -52,8 +54,9 @@ CameraWidget::~CameraWidget()
 void CameraWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    if ( m_lastFrame )
-    {        
+    if ( m_lastFrame != NULL )
+    {            
+        QMutexLocker locker(&m_imageMutex);    
         QImage::Format fmt = queryQFormat(m_lastFrame);        
         if ( fmt != QImage::Format_Invalid )
         {
@@ -73,10 +76,23 @@ void CameraWidget::paintEvent(QPaintEvent *event)
 
 void CameraWidget::process()
 {
-    IplImage *image;
-    while ( m_framePipe->read(&image) && !m_end )
+    if ( m_framePipe != NULL )
     {
-        m_lastFrame = image;
-        update();
+        IplImage *image;    
+        while ( m_framePipe->read(&image) && !m_end )
+        {
+            QMutexLocker locker(&m_imageMutex);
+            if ( m_lastFrame != NULL )
+            {
+                if ( m_sink )
+                {
+                    cvReleaseImage(&m_lastFrame);
+                }
+            }    
+            
+            m_lastFrame = image;
+            update();
+            
+        }
     }
 }
