@@ -1,5 +1,5 @@
-#ifndef TDV_MEDIANFILTERWUCPU_HPP
-#define TDV_MEDIANFILTERWUCPU_HPP
+#ifndef TDV_MEDIANFILTERCPU_HPP
+#define TDV_MEDIANFILTERCPU_HPP
 
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
@@ -8,11 +8,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-class MedianFilterWUCPU: public WorkUnit
+class MedianFilterCPU: public WorkUnit
 {
 public:    
-    MedianFilterWUCPU()
-        : WorkUnit()
+    MedianFilterCPU()
     {
         workName("Median filter on CPU");
     }
@@ -27,7 +26,7 @@ public:
         return &m_wpipe;
     }
 
-    void process();
+    bool update();
     
 private:
     ReadPipe<FloatImage> *m_rpipe;
@@ -36,4 +35,4 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_MEDIANFILTERWUCPU_HPP */
+#endif /* TDV_MEDIANFILTERCPU_HPP */

@@ -12,9 +12,11 @@ __device__ float ssdAtDisp(int x, int y, int disp)
   
   for (int row=-1; row<2; row++)
     for (int col=-1; col<2; col++) {
-      float lI, rI; // I is for intensity      
       
-      sum += (rI - lI)*(rI - lI);
+      float lI = tex2D(texLeftImg, x + col, y + row), 
+        rI = tex2D(texRightImg, x + disp + col, y + row);   
+      
+      sum += (lI - rI)*(lI - rI);
     }
   
   return sum;
@@ -26,32 +28,33 @@ __global__ void ssdKern(const int maxDisparity, const dim3 dim, float *dsiMem)
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 
   if ( x < dim.x && y < dim.y ) {    
-    for (int col=0; (col < maxDisparity) && (x + col) < dim.x; col++) {   
-      float value = ssdAtDisp(x, y, col);
+    for (int disp=0; (disp < maxDisparity) && (x + disp) < dim.x; disp++) {   
+      float ssdValue = ssdAtDisp(x, y, disp);
 
-      const int volOffset = (dim.x*dim.y)*col + y*dim.x + x;
-      dsiMem[volOffset] = value;
+      const int volOffset = (dim.x*dim.y)*disp + y*dim.x + x;
+        dsiMem[volOffset] = ssdValue;
     }    
+    
   }
 }
 
 TDV_NAMESPACE_BEGIN
 
 void DevSSDRun(int maxDisparity,
-               Dim imgDim, float *leftImg_d, float *rightImg_d,
-               Dim dsiDim, float *dsiMem)
+               Dim dsiDim, float *leftImg_d, float *rightImg_d,
+               float *dsiMem)
 {
   CUerrExp err;
     
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
                            cudaCreateChannelDesc<float>(),
-                           imgDim.width(), imgDim.height(),
-                           imgDim.width()*sizeof(float));
+                           dsiDim.width(), dsiDim.height(),
+                           dsiDim.width()*sizeof(float));
   
   err << cudaBindTexture2D(NULL, texRightImg, rightImg_d, 
                            cudaCreateChannelDesc<float>(),
-                           imgDim.width(), imgDim.height(),
-                           imgDim.width()*sizeof(float));
+                           dsiDim.width(), dsiDim.height(),
+                           dsiDim.width()*sizeof(float));
   
   texLeftImg.addressMode[0] = texRightImg.addressMode[0] = cudaAddressModeWrap;
   texLeftImg.addressMode[1] = texRightImg.addressMode[1] = cudaAddressModeWrap;
@@ -59,7 +62,7 @@ void DevSSDRun(int maxDisparity,
   texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;
     
   CudaConstraits constraits;  
-  WorkSize ws = constraits.imageWorkSize(imgDim);
+  WorkSize ws = constraits.imageWorkSize(dsiDim);
   
   ssdKern<<<ws.blocks, ws.threads>>>(maxDisparity, 
                                      dim3(dsiDim.width(), dsiDim.height(),

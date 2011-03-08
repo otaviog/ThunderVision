@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <cuda_runtime.h>
 
 TDV_NAMESPACE_BEGIN
 

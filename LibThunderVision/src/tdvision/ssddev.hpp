@@ -1,5 +1,5 @@
-#ifndef TDV_SSDWUDEV_HPP
-#define TDV_SSDWUDEV_HPP
+#ifndef TDV_SSDDEV_HPP
+#define TDV_SSDDEV_HPP
 
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
@@ -9,10 +9,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-class SSDWUDev: public WorkUnit
+class SSDDev: public WorkUnit
 {
 public:    
-    SSDWUDev(int disparityMax, size_t memoryByPacket);
+    SSDDev(int disparityMax, size_t memoryByPacket);
     
     void leftImageInput(ReadPipe<FloatImage> *lpipe)
     {
@@ -29,7 +29,7 @@ public:
         return &m_wpipe;
     }
         
-    void process();    
+    bool update();    
     
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
@@ -39,4 +39,4 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_SSDWUDEV_HPP */
+#endif /* TDV_SSDDEV_HPP */

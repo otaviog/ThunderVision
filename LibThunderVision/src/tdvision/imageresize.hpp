@@ -1,5 +1,5 @@
-#ifndef TDV_RESIZEIMAGE_HPP
-#define TDV_RESIZEIMAGE_HPP
+#ifndef TDV_IMAGERESIZE_HPP
+#define TDV_IMAGERESIZE_HPP
 
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
@@ -8,7 +8,7 @@
 
 TDV_NAMESPACE_BEGIN
 
-class ResizeImageWU: public WorkUnit
+class ImageResize: public WorkUnit
 {
     enum Mode
     {
@@ -17,7 +17,7 @@ class ResizeImageWU: public WorkUnit
 
 public:    
 
-    ResizeImageWU()
+    ImageResize()
         : m_newDim(-1)
     {     
         workName("Image resize");
@@ -25,7 +25,7 @@ public:
         m_rpipe = NULL;         
     }
         
-    ResizeImageWU(const Dim &newDim)
+    ImageResize(const Dim &newDim)
         : m_newDim(newDim)
     {
         workName("Image resize");
@@ -33,7 +33,7 @@ public:
         m_rpipe = NULL; 
     }
     
-    ResizeImageWU(float xpercent, float ypercent)
+    ImageResize(float xpercent, float ypercent)
         : m_newDim(-1)
     {
         workName("Image resize");
@@ -56,7 +56,7 @@ public:
         return &m_wpipe;
     }
     
-    void process();
+    bool update();
     
 private:
     ReadPipe<FloatImage> *m_rpipe;
@@ -69,5 +69,5 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_RESIZEIMAGE_HPP */
+#endif /* TDV_IMAGERESIZE_HPP */
 

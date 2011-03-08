@@ -1,5 +1,5 @@
-#ifndef TDV_MEDIANFILTERWUDEV_HPP
-#define TDV_MEDIANFILTERWUDEV_HPP
+#ifndef TDV_MEDIANFILTERDEV_HPP
+#define TDV_MEDIANFILTERDEV_HPP
 
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
@@ -8,10 +8,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-class MedianFilterWUDev: public WorkUnit
+class MedianFilterDev: public WorkUnit
 {
 public:        
-    MedianFilterWUDev()       
+    MedianFilterDev()       
     { 
         workName("Median filter device");
     }
@@ -26,7 +26,7 @@ public:
         return &m_wpipe;
     }
 
-    void process();
+    bool update();
 
 private:
     ReadPipe<FloatImage> *m_rpipe;
@@ -35,4 +35,4 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_MEDIANFILTERWUDEV_HPP */
+#endif /* TDV_MEDIANFILTERDEV_HPP */

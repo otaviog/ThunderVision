@@ -7,3 +7,5 @@ TARGET_LINK_LIBRARIES(${output}
 ENDMACRO(ADD_QTEST)
 
 ADD_QTEST(testcamerawidget testcamerawidget.cpp)
+
+ADD_QTEST(testcamerawidgetsimple testcamerawidgetsimple.cpp)

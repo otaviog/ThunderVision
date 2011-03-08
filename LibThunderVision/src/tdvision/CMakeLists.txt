@@ -1,21 +1,29 @@
-CUDA_ADD_LIBRARY(tdvision
-  floatimage.hpp floatimage.cpp
-  imagefilterwu.hpp
-  medianfilterwucpu.hpp medianfilterwucpu.cpp
-  medianfilterwudev.hpp medianfilterwudev.cpp medianfilter.cu
-  cudaconstraits.hpp cudaconstraits.cu
-  cuerr.hpp cuerr.cpp
-  workunit.hpp  
-  workunitrunner.hpp workunitrunner.cpp
+CUDA_ADD_LIBRARY(tdvision  
   pipe.hpp
-  capturewu.hpp capturewu.cpp
-  ssdwudev.hpp ssdwudev.cpp ssd.cu
-  dsimem.hpp dsimem.cpp
-  resizeimagewu.hpp resizeimagewu.cpp
-  imagereaderwu.hpp imagereaderwu.cpp
-  imagewriterwu.hpp imagewriterwu.cpp
+  workunit.hpp  
+  process.hpp
+  workunitprocess.hpp workunitprocess.cpp
+  cudaprocess.hpp cudaprocess.cpp
+  processrunner.hpp processrunner.cpp
+  floatimage.hpp floatimage.cpp
+  dsimem.hpp dsimem.cpp    
+  cuerr.hpp cuerr.cpp
+  cudaconstraits.hpp cudaconstraits.cu
+  imagereader.hpp imagereader.cpp
+  imagewriter.hpp imagewriter.cpp  
+  imageresize.hpp imageresize.cpp
   imagesink.hpp imagesink.cpp
+  iplimagesink.hpp iplimagesink.cpp  
   rgbconv.hpp rgbconv.cpp
-  iplimagesink.hpp iplimagesink.cpp
-  benchmark.hpp benchmark.cpp
-  )
+  cpyimagetocpu.hpp cpyimagetocpu.cpp
+  medianfiltercpu.hpp medianfiltercpu.cpp
+  medianfilterdev.hpp medianfilterdev.cpp medianfilter.cu
+  ssddev.hpp ssddev.cpp ssd.cu
+  wtadev.hpp wtadev.cpp wta.cu
+  benchmark.hpp benchmark.cpp  
+  captureproc.hpp captureproc.cpp)
+
+SET(TDVISION_CUDA_SRCS 
+  ${CMAKE_CURRENT_SOURCE_DIR}/mediafilter.cu 
+  ssd.cu 
+  wta.cu)

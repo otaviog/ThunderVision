@@ -1,69 +1,66 @@
 #include <gtest/gtest.h>
-#include <tdvision/medianfilterwucpu.hpp>
-#include <tdvision/medianfilterwudev.hpp>
-#include <tdvision/imagereaderwu.hpp>
-#include <tdvision/imagewriterwu.hpp>
-#include <tdvision/workunitrunner.hpp>
+#include <tdvision/medianfiltercpu.hpp>
+#include <tdvision/medianfilterdev.hpp>
+#include <tdvision/imagereader.hpp>
+#include <tdvision/imagewriter.hpp>
+#include <tdvision/cpyimagetocpu.hpp>
+#include <tdvision/processrunner.hpp>
+#include <tdvision/workunitprocess.hpp>
+#include <tdvision/cudaprocess.hpp>
 #include <cv.h>
 #include <highgui.h>
-
-class ErrorHandle: public tdv::WorkExceptionReport
-{
-public:
-    void errorOcurred(const std::exception &err)
-    {
-        std::cout<<err.what()<<std::endl;
-    }
-};
+#include "errorhandler.hpp"
 
 TEST(MedianFilterTest, CPU)
 {    
-    tdv::ImageReaderWU reader("../../res/west.png");
-    tdv::MedianFilterWUCPU mfilter;        
-    tdv::ImageWriterWU writer("../../res/medianfilter_west.png");
+    tdv::ImageReader reader("../../res/west.png");
+    tdv::MedianFilterDev mfilter;        
+    tdv::ImageWriter writer("../../res/medianfilter_west.png");
     
     mfilter.input(reader.output());    
-    writer.input(mfilter.output());
+    writer.input(mfilter.output());    
     
-    tdv::WorkUnit *wus[] = {&reader, &mfilter, &writer};
-    ErrorHandle errHdl;
-    tdv::WorkUnitRunner runner(wus, 3, &errHdl);
-    
-    runner.run();
-    runner.join();
-    
-    EXPECT_FALSE(runner.errorOcurred());
-    
-    if ( !runner.errorOcurred() )
+    reader.update();
+    mfilter.update();
+    writer.update();
+        
+    tdv::FloatImage output;
+    bool read;
+    read = writer.output()->read(&output);
+        
+    EXPECT_TRUE(read);
+        
+    if ( read )
     {
-        tdv::FloatImage output;
-        bool read;
-        read = writer.output()->read(&output);
+        cvShowImage("image", output.cpuMem());
+        cvWaitKey(0);
         
-        EXPECT_TRUE(read);
-        
-        if ( read )
-        {
-            cvShowImage("image", output.cpuMem());
-            cvWaitKey(0);
-            
-            output.dispose();
-        }
-    }        
+        output.dispose();
+    }   
 }
 
 TEST(MedianFilterTest, Dev)
 {
-    tdv::ImageReaderWU reader("../../res/west.png");
-    tdv::MedianFilterWUDev mfilter;        
-    tdv::ImageWriterWU writer("../../res/medianfilter_west.png");
-    
+    tdv::ImageReader reader("../../res/west.png");
+    tdv::MedianFilterDev mfilter;        
+    tdv::CpyImageToCPU mconv;
+    tdv::ImageWriter writer("../../res/medianfilter_west.png");
+
     mfilter.input(reader.output());    
-    writer.input(mfilter.output());
+    mconv.input(mfilter.output());
+    writer.input(mconv.output());
     
-    tdv::WorkUnit *wus[] = {&reader, &mfilter, &writer};
-    ErrorHandle errHdl;
-    tdv::WorkUnitRunner runner(wus, 3, &errHdl);
+    tdv::WorkUnitProcess p0(reader);
+    tdv::WorkUnitProcess p1(writer);
+    tdv::CUDAProcess p2(0);
+    
+    p2.addWork(&mfilter);
+    p2.addWork(&mconv);
+               
+    tdv::Process *s[] = {&p0, &p1, &p2, NULL};
+    ErrorHandler errHdl;
+
+    tdv::ProcessRunner runner(s, &errHdl);
     
     runner.run();
     runner.join();
@@ -90,5 +87,5 @@ TEST(MedianFilterTest, Dev)
 
 TEST(MedianFilterTest, CPUDevDevCPU)
 {
-
+    
 }

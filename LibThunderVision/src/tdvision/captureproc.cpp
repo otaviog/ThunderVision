@@ -2,23 +2,22 @@
 #include <highgui.h>
 #include <highgui.hpp>
 #include <boost/format.hpp>
-#include "capturewu.hpp"
+#include "captureproc.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-CaptureWU::CaptureWU(int device)
-{
-    workName((boost::format("Capture unit on device %1%") % device).str());
+CaptureProc::CaptureProc(int device)
+{    
     m_endCapture = false;
     m_capDevice = device;    
 }
 
-void CaptureWU::finish()
+void CaptureProc::finish()
 {
     m_endCapture = true;
 }
 
-void CaptureWU::process()
+void CaptureProc::process()
 {
     CvCapture *capture = cvCaptureFromCAM(m_capDevice);
     

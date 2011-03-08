@@ -126,10 +126,10 @@ IplImage* FloatImageImpl::cpuMem()
         
         for (size_t row=0; row<m_cpuMem->height; row++)
         {
-            cudaMemcpy(m_cpuMem->imageData + row*m_cpuMem->widthStep, 
-                       devMem + row*m_cpuMem->width,
-                       m_cpuMem->width*sizeof(float),
-                       cudaMemcpyDeviceToHost);
+            cuerr << cudaMemcpy(m_cpuMem->imageData + row*m_cpuMem->widthStep, 
+                                devMem + row*m_cpuMem->width,
+                                m_cpuMem->width*sizeof(float),
+                                cudaMemcpyDeviceToHost);
         }
 
         m_syncDev = -1;

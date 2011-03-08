@@ -1,14 +1,14 @@
-#include "medianfilterwucpu.hpp"
+#include "medianfiltercpu.hpp"
 #include <cv.h>
 
 TDV_NAMESPACE_BEGIN
 
-void MedianFilterWUCPU::process()
+bool MedianFilterCPU::update()
 {
     FloatImage input;
     WriteFinishGuard wg(&m_wpipe);
     
-    while ( m_rpipe->read(&input) )
+    if ( m_rpipe->read(&input) )
     {        
         const Dim dim = input.dim();
 
@@ -20,7 +20,12 @@ void MedianFilterWUCPU::process()
         cvSmooth(image, img_output, CV_MEDIAN);
         
         m_wpipe.write(output);
+        
+        wg.finishNotNeed();
+        return true;
     }    
+    
+    return false;
 }
 
 TDV_NAMESPACE_END

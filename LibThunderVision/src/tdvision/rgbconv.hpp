@@ -24,7 +24,7 @@ public:
         return &m_wpipe;
     }
     
-    void process();
+    bool update();
 
 private:
     ReadPipe<FloatImage> *m_rpipe;

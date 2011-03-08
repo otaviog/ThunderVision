@@ -20,7 +20,12 @@ public:
     {
         return m_mem;
     }
-
+    
+    const Dim& dim() const
+    {
+        return m_dim;
+    }
+    
 private:
     Dim m_dim;
     float *m_mem;
@@ -39,13 +44,17 @@ public:
         return m_handle->mem();
     }
     
+    const Dim& dim() const
+    {
+        return m_handle->dim();
+    }
 private:
     DSIMem(DSIMemImpl *impl)
         : m_handle(impl)
     {
     }
 
-    boost::shared_ptr<DSIMemImpl> m_handle; 
+    boost::shared_ptr<DSIMemImpl> m_handle;     
 };
 
 TDV_NAMESPACE_END
