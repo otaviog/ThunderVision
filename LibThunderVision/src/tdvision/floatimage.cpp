@@ -124,15 +124,15 @@ IplImage* FloatImageImpl::cpuMem()
                                      IPL_DEPTH_32F, 1);
         }
         
-        for (size_t row=0; row<m_cpuMem->height; row++)
+        for (size_t row=0; row<m_dim.height(); row++)
         {
             cudaMemcpy(m_cpuMem->imageData + row*m_cpuMem->widthStep, 
-                       devMem + row*m_cpuMem->width,
-                       m_cpuMem->width*sizeof(float),
+                       devMem + row*m_dim.width(),
+                       m_dim.width()*sizeof(float),
                        cudaMemcpyDeviceToHost);
         }
 
-        m_syncDev = -1;
+        m_syncDev = -1;      
     }
 
     return m_cpuMem;

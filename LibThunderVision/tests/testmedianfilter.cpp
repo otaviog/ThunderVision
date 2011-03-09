@@ -56,14 +56,16 @@ TEST(MedianFilterTest, Dev)
 {
     tdv::ImageReaderWU reader("../../res/west.png");
     tdv::MedianFilterWUDev mfilter;        
-    tdv::ImageWriterWU writer("../../res/medianfilter_west.png");
+    //tdv::ImageWriterWU writer("../../res/medianfilter_west.png");
     
     mfilter.input(reader.output());    
-    writer.input(mfilter.output());
+    //writer.input(mfilter.output());
     
-    tdv::WorkUnit *wus[] = {&reader, &mfilter, &writer};
+    tdv::WorkUnit *wus[] = {&reader, &mfilter};
     ErrorHandle errHdl;
-    tdv::WorkUnitRunner runner(wus, 3, &errHdl);
+    tdv::WorkUnitRunner runner(wus, 2, &errHdl);
+    
+    cudaSetDevice(0);
     
     runner.run();
     runner.join();
@@ -74,7 +76,7 @@ TEST(MedianFilterTest, Dev)
     {
         tdv::FloatImage output;
         bool read;
-        read = writer.output()->read(&output);
+        read = mfilter.output()->read(&output);
         
         EXPECT_TRUE(read);
         

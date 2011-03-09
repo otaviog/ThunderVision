@@ -20,26 +20,39 @@ __device__ void mysort(float values[])
     }
 }
 
+__global__ void simple(float *dest, const int maxOffset)
+{
+   const int x = threadIdx.x + blockIdx.x*blockDim.x;
+   const int y = threadIdx.y + blockIdx.y*blockDim.y;
+   const int offset = x + y*blockDim.x*gridDim.x;
+
+   if ( offset < maxOffset ) {
+      dest[offset] = 1.0f;
+   }
+
+   dest[0] = 255.0f;
+}
+
 __global__ void medianKernel(float *dest, const int maxOffset)
 {
     const int x = threadIdx.x + blockIdx.x*blockDim.x;
     const int y = threadIdx.y + blockIdx.y*blockDim.y;
     const int offset = x + y*blockDim.x*gridDim.x;
-    
-    if ( offset < maxOffset ) {        
+
+    if ( offset < maxOffset ) {
       int vcnt = 0;
       float values[KernelSize];
-      
+
       for (int i=-KernelDimH; i<=KernelDimH; i++) {
-        for (int j=-KernelDimH; j<=KernelDimH; j++) {     
-          values[vcnt++] = tex2D(imageTex, x + j, y + i);          
+        for (int j=-KernelDimH; j<=KernelDimH; j++) {
+          values[vcnt++] = tex2D(imageTex, x + j, y + i);
         }
       }
-      
+
       mysort(values);
-      
+
       //dest[offset] = values[4];
-      dest[offset] = 0.5f;
+      dest[offset] = 4.0f;
     }
 }
 
@@ -47,22 +60,23 @@ TDV_NAMESPACE_BEGIN
 
 void DevMedianFilterRun(const Dim &dim, float *input_d, float *output_d)
 {
-  CUerrExp cuerr;  
-  
+  CUerrExp cuerr;
+
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
   cuerr << cudaBindTexture2D(NULL, imageTex, input_d, desc, dim.width(),
                              dim.height(), dim.width()*sizeof(float));
-  
+
   imageTex.addressMode[0] = cudaAddressModeWrap;
-  imageTex.addressMode[1] = cudaAddressModeWrap;  
+  imageTex.addressMode[1] = cudaAddressModeWrap;
   imageTex.normalized = false;
   imageTex.filterMode = cudaFilterModePoint;
-  
+
   WorkSize ws = CudaConstraits().imageWorkSize(dim);
-  medianKernel<<<ws.blocks, ws.threads>>>(output_d, dim.size());
+  //medianKernel<<<ws.blocks, ws.threads>>>(output_d, dim.size());
+  simple<<<ws.blocks, ws.threads>>>(output_d, dim.size());
 
   CUerrExp::checkGlobalError();
-  
+
   cuerr << cudaUnbindTexture(imageTex);
 }
 

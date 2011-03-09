@@ -11,6 +11,7 @@ void DevMedianFilterRun(const Dim &dim, float *input_d, float *output_d);
 void MedianFilterWUDev::process()
 {
   CUerrExp cuerr;  
+  cudaSetDevice(0);
   
   FloatImage inimg;
   while ( m_rpipe->read(&inimg) )
