@@ -72,7 +72,7 @@ public:
 private:
 };
 
-template<typename ReadType, typename WriteType, 
+template<typename ReadType, typename WriteType = ReadType, 
          typename Adapter = PasstruPipeAdapter<ReadType> >
 class ReadWritePipe: public WritePipe<WriteType>, public ReadPipe<ReadType>
 {

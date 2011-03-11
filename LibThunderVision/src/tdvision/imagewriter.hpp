@@ -31,7 +31,7 @@ public:
         
 private:
     ReadPipe<FloatImage> *m_rpipe;
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+    ReadWritePipe<FloatImage> m_wpipe;
     
     std::string m_filename;
 };
