@@ -4,9 +4,10 @@
 #include "cudaconstraits.hpp"
 
 texture<float, 2> imageTex;
-const int KernelSize = 9;
-const int KernelDim = 3;
+const int KernelSize = 49;
+const int KernelDim = 7;
 const int KernelDimH = KernelDim/2;
+const int KernelSizeH = KernelSize/2;
 
 __device__ void mysort(float values[])
 {
@@ -50,9 +51,8 @@ __global__ void medianKernel(float *dest, const int maxOffset)
       }
 
       mysort(values);
-
-      //dest[offset] = values[4];
-      dest[offset] = 4.0f;
+      
+      dest[offset] = values[KernelSizeH];
     }
 }
 

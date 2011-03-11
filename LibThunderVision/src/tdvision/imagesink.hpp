@@ -10,18 +10,13 @@ TDV_NAMESPACE_BEGIN
 
 class ImageSink: public WorkUnit
 {
-public:
-    ImageSink()    
-    {
-        workName("FloatImage Sink");
-    }
-    
+public:    
     void input(ReadPipe<FloatImage> *rpipe)
     {
         m_rpipe = rpipe;
     }
         
-    void process();
+    bool update();
     
 private:
     ReadPipe<FloatImage> *m_rpipe;

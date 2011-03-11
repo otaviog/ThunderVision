@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <tdvision/pipe.hpp>
 #include <tdvision/workunit.hpp>
-#include <tdvision/workunitrunner.hpp>
+#include <tdvision/processrunner.hpp>
+#include <tdvision/workunitprocess.hpp>
+#include "errorhandler.hpp"
 
 static void procSimple(tdv::ReadPipe<int> *inp, tdv::WritePipe<int> *outp)
 {
@@ -48,7 +50,7 @@ public:
         outpipe = o;
     }
 
-    void process()
+    bool update()
     {
         workName("Filter 2");
         
@@ -75,7 +77,7 @@ public:
         outpipe = o;
     }
     
-    void process()
+    bool update()
     {
         int value;
         while ( inpipe->read(&value) )
@@ -97,9 +99,12 @@ TEST(PipeTest, PipeAndFilter)
     
     Filter1 f1(&p1, &p2);
     Filter2 f2(&p2, &p3);
-
-    tdv::WorkUnit *procs[] = { &f1, &f2 };    
-    tdv::WorkUnitRunner runner(procs, 2);
+    tdv::WorkUnitProcess pr1(f1);
+    tdv::WorkUnitProcess pr2(f2);
+    
+    ErrorHandler errHdl;
+    tdv::Process *procs[] = { &pr1, &pr2, NULL};    
+    tdv::ProcessRunner runner(procs, &errHdl);
     runner.run();
         
     p1.write(2);

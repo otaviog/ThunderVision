@@ -2,15 +2,17 @@
 #include <QApplication>
 #include <camerawidget.hpp>
 #include <tdvision/pipe.hpp>
-#include <tdvision/capturewu.hpp>
+#include <tdvision/captureproc.hpp>
 #include <tdvision/imagesink.hpp>
-#include <tdvision/workunitrunner.hpp>
+#include <tdvision/processrunner.hpp>
+#include <tdvision/cudaprocess.hpp>
+#include <tdvision/workunitprocess.hpp>
 #include <tdvision/rgbconv.hpp>
-#include <tdvision/medianfilterwucpu.hpp>
-#include <tdvision/medianfilterwudev.hpp>
-#include <tdvision/resizeimagewu.hpp>
+#include <tdvision/medianfiltercpu.hpp>
+#include <tdvision/medianfilterdev.hpp>
+#include <tdvision/imageresize.hpp>
 
-class ErrorHandle: public tdv::WorkExceptionReport
+class ErrorHandle: public tdv::ProcessExceptionReport
 {
 public:
     ErrorHandle(CameraWidget *wid0, CameraWidget *wid1)
@@ -35,12 +37,12 @@ int main(int argc, char *argv[])
     
     QApplication app(argc, argv);
     
-    tdv::CaptureWU capture0(0);
-    tdv::CaptureWU capture1(1);
+    tdv::CaptureProc capture0(0);
+    tdv::CaptureProc capture1(1);
     tdv::RGBConv conv1;    
     tdv::ImageSink sink0;
-    tdv::MedianFilterWUDev median;
-    tdv::ResizeImageWU resize(tdv::Dim(512, 512));
+    tdv::MedianFilterDev median;
+    tdv::ImageResize resize(tdv::Dim(512, 512));
     
     // First Camera
     CameraWidget *wid0 = new CameraWidget(capture0.colorImage(), false);
@@ -56,12 +58,18 @@ int main(int argc, char *argv[])
     wid0->show();
     wid1->show();
 
-    tdv::WorkUnit *wus[] = { &capture0, wid0, &sink0, 
-                             &capture1, &median, &conv1, wid1,
-                             &resize };
+    tdv::CUDAProcess cproc(0);
+    cproc.addWork(&median);
+    cproc.addWork(&conv1);
+    tdv::WorkUnitProcess rproc(resize);
+    tdv::WorkUnitProcess sinkproc(sink0);
+    tdv::Process *wus[] = { 
+        &capture0, wid0, &sinkproc, 
+        &capture1, &rproc, &cproc, wid1, NULL
+    };
     
     ErrorHandle errHdl(wid0, wid1);
-    tdv::WorkUnitRunner runner(wus, 8, &errHdl);
+    tdv::ProcessRunner runner(wus, &errHdl);
     runner.run();
     
     int r = app.exec();    
@@ -73,5 +81,3 @@ int main(int argc, char *argv[])
     
     return r;
 }
-
-

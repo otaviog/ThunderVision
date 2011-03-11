@@ -1,5 +1,5 @@
-#ifndef TDV_WORKUNITRUNNER_HPP
-#define TDV_WORKUNITRUNNER_HPP
+#ifndef TDV_PROCESSRUNNER_HPP
+#define TDV_PROCESSRUNNER_HPP
 
 #include <tdvbasic/common.hpp>
 #include <tdvbasic/exception.hpp>
@@ -7,9 +7,9 @@
 
 TDV_NAMESPACE_BEGIN
 
-class WorkUnit;
+class Process;
 
-class WorkExceptionReport
+class ProcessExceptionReport
 {
 public:
     virtual void errorOcurred(const std::exception &err) = 0;
@@ -17,11 +17,10 @@ public:
 private:
 };
 
-class WorkUnitRunner
+class ProcessRunner
 {
 public:
-    WorkUnitRunner(WorkUnit **wus, size_t wuCount, 
-                   WorkExceptionReport *report);
+    ProcessRunner(Process **wus, ProcessExceptionReport *report);
     
     void run();
 
@@ -35,21 +34,21 @@ public:
         m_errorOc;
     }
 private:
-    friend struct WorkUnitCaller;
+    friend struct ProcessCaller;
     
     void reportError(const std::exception &ex);
         
-    WorkUnitRunner(const WorkUnitRunner &cpy);
+    ProcessRunner(const ProcessRunner &cpy);
     
-    WorkUnitRunner& operator=(const WorkUnitRunner &cpy);
+    ProcessRunner& operator=(const ProcessRunner &cpy);
     
     boost::thread_group m_threads;
-    WorkExceptionReport *m_errReport;
-    std::vector<WorkUnit*> m_workUnits;
+    ProcessExceptionReport *m_errReport;
+    std::vector<Process*> m_workUnits;
     
     bool m_errorOc;
 };
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_WORKUNITRUNNER_HPP */
+#endif /* TDV_PROCESSRUNNER_HPP */

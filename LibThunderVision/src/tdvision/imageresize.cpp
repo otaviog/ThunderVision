@@ -2,14 +2,16 @@
 #include <highgui.h>
 #include <cassert>
 #include <tdvbasic/util.hpp>
-#include "resizeimagewu.hpp"
+#include "imageresize.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-void ResizeImageWU::process()
+bool ImageResize::update()
 {
     FloatImage inimg;
-    while ( m_rpipe->read(&inimg) )
+    WriteFinishGuard wg(&m_wpipe);
+    
+    if ( m_rpipe->read(&inimg) )
     {
         const Dim origDim(inimg.dim());
         
@@ -36,9 +38,12 @@ void ResizeImageWU::process()
         cvResize(inimg.cpuMem(), outimg.cpuMem(), CV_INTER_CUBIC);
         
         m_wpipe.write(outimg);
-    }
+        wg.finishNotNeed();
+        
+        return true;
+    }    
 
-    m_wpipe.finish();
+    return false;
 }
 
 TDV_NAMESPACE_END

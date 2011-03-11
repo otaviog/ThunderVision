@@ -2,13 +2,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-void ImageSink::process()
+bool ImageSink::update()
 {
     FloatImage finalImage;
-    while ( m_rpipe->read(&finalImage) )
-    {
-        
-    }
+    return m_rpipe->read(&finalImage);
 }
 
 TDV_NAMESPACE_END

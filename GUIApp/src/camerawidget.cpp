@@ -91,8 +91,7 @@ void CameraWidget::process()
             }    
             
             m_lastFrame = image;
-            update();
-            
+            update();            
         }
     }
 }

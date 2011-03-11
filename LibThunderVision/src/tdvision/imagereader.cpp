@@ -1,11 +1,11 @@
 #include <cv.h>
 #include <highgui.h>
 #include <tdvbasic/exception.hpp>
-#include "imagereaderwu.hpp"
+#include "imagereader.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-void ImageReaderWU::process()
+bool ImageReader::update()
 {
     WriteFinishGuard guard(&m_wpipe);
         
@@ -15,13 +15,14 @@ void ImageReaderWU::process()
     {
         FloatImage image(limg);
         m_wpipe.write(image);
-        m_wpipe.finish();
     }
     else
     {
         throw Exception(boost::format("can't open image: %1%")
                         % m_filename.c_str());
     }
+
+    return false;
 }
 
 TDV_NAMESPACE_END

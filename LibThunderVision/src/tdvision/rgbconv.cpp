@@ -7,12 +7,12 @@ RGBConv::RGBConv()
     workName("RGB converter");
 }
 
-void RGBConv::process()
+bool RGBConv::update()
 {
     WriteFinishGuard wguard(&m_wpipe);
     
     FloatImage image;
-    while ( m_rpipe->read(&image) )
+    if ( m_rpipe->read(&image) )
     {
         IplImage *img = image.cpuMem();
         IplImage *scaleImg = cvCreateImage(cvGetSize(img), 
@@ -27,7 +27,12 @@ void RGBConv::process()
         image.dispose();
         
         m_wpipe.write(imgRGB);
+        
+        wguard.finishNotNeed();
+        return true;
     }    
+    
+    return false;
 }
 
 TDV_NAMESPACE_END

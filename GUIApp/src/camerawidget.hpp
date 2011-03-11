@@ -2,22 +2,22 @@
 #define TDV_CAMERAWIDGET_HPP
 
 #include <tdvision/pipe.hpp>
-#include <tdvision/workunit.hpp>
+#include <tdvision/process.hpp>
 #include <tdvision/floatimage.hpp>
 #include <cv.h>
 #include <QWidget>
 #include <QThread>
 #include <QMutex>
 
-class CameraWidget: public QWidget, public tdv::WorkUnit
+class CameraWidget: public QWidget, public tdv::Process
 {
 public:    
     CameraWidget(tdv::ReadPipe<IplImage*> *framePipe, bool sink);   
     
     ~CameraWidget();
     
-    void process();
-        
+    void process();        
+    
 protected:
     virtual void paintEvent(QPaintEvent *event);
     

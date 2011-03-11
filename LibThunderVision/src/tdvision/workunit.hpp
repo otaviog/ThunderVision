@@ -17,7 +17,7 @@ public:
     virtual ~WorkUnit()
     { }
         
-    virtual void process() = 0;
+    virtual bool update() = 0;
         
     const std::string& workName() const
     {
@@ -28,10 +28,7 @@ public:
     {
         m_workName = name;
     }        
-    
-    virtual void finish()
-    { }
-    
+        
 private:    
     std::string m_workName;
 };

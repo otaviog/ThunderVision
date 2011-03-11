@@ -1,18 +1,18 @@
-#ifndef TDV_CAPTUREWU_HPP
-#define TDV_CAPTUREWU_HPP
+#ifndef TDV_CAPTUREPROC_HPP
+#define TDV_CAPTUREPROC_HPP
 
 #include <tdvbasic/common.hpp>
 #include <cv.h>
 #include "floatimage.hpp"
-#include "workunit.hpp"
+#include "process.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class CaptureWU: public WorkUnit
+class CaptureProc: public Process
 {
 public:
-    CaptureWU(int device);
+    CaptureProc(int device);
     
     ReadPipe<FloatImage>* output()
     {
@@ -37,4 +37,4 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_CAPTUREWU_HPP */
+#endif /* TDV_CAPTUREPROC_HPP */

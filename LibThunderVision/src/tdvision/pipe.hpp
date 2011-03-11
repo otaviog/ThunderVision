@@ -41,6 +41,8 @@ template<typename WriteType>
 class WritePipe: public BaseWritePipe
 {
 public:    
+    typedef WriteType WriteValueType;
+    
     virtual ~WritePipe()
     { }
     
@@ -139,15 +141,62 @@ public:
     {
         assert(pipe != NULL);
         m_pipe = pipe;
+        m_finishIt = true;
     }
     
     ~WriteFinishGuard()
     {
-        m_pipe->finish();
+        if ( m_finishIt )
+            m_pipe->finish();
+    }
+    
+    void finishNotNeed()
+    {
+        m_finishIt = false;
     }
     
 private:
     BaseWritePipe *m_pipe;
+    bool m_finishIt;
+};
+
+template<typename WritePipeType>
+class WriteGuard: public  WritePipe<typename WritePipeType::WriteValueType>
+{
+public:
+    typedef typename WritePipeType::WriteValueType WriteValueType;
+    
+    WriteGuard(WritePipeType &pipe)
+        : m_pipe(pipe)
+    { m_wasWrite = false; }
+    
+    ~WriteGuard()
+    {
+        if ( !m_wasWrite )
+        {
+            m_pipe.finish();
+        }
+    }
+    
+    void write(WriteValueType packet)
+    {
+        m_pipe.write(packet);
+        m_wasWrite = true;
+    }
+    
+    void finish()
+    {
+        m_pipe.finish();
+    }
+    
+    bool wasWrite() const
+    {
+        return m_wasWrite;
+    }
+
+private:
+    WritePipeType &m_pipe;
+    bool m_wasWrite;
 };
 
 TDV_NAMESPACE_END

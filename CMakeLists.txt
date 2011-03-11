@@ -14,7 +14,9 @@ FIND_PACKAGE(CUDA REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 
-SET(ThunderVision_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES} tdvision tdvbasic)
+SET(ThunderBasic_LIBRARIES ${Boost_LIBRARIES})
+SET(ThunderVision_LIBRARIES ${OpenCV_LIBS} ${Boost_LIBRARIES}
+  tdvision tdvbasic )
 
 ADD_SUBDIRECTORY(LibThunderBasic)
 ADD_SUBDIRECTORY(LibThunderVision)

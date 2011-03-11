@@ -2,19 +2,19 @@
 #include <cuda.h>
 #include "benchmark.hpp"
 #include "cuerr.hpp"
-#include "medianfilterwudev.hpp"
+#include "medianfilterdev.hpp"
 
 TDV_NAMESPACE_BEGIN
 
 void DevMedianFilterRun(const Dim &dim, float *input_d, float *output_d);
 
-void MedianFilterWUDev::process()
+bool MedianFilterDev::update()
 {
-  CUerrExp cuerr;  
-  cudaSetDevice(0);
-  
+  CUerrExp cuerr;    
   FloatImage inimg;
-  while ( m_rpipe->read(&inimg) )
+  WriteFinishGuard wguard(&m_wpipe);
+      
+  if ( m_rpipe->read(&inimg) )
   {
       const Dim dim = inimg.dim();
       float *input_d = inimg.devMem();
@@ -29,9 +29,13 @@ void MedianFilterWUDev::process()
       marker.end();
       
       m_wpipe.write(outimg);
+
+      wguard.finishNotNeed();
+      
+      return true;
   }
-  
-  m_wpipe.finish();
+
+  return false;
 }
 
 TDV_NAMESPACE_END

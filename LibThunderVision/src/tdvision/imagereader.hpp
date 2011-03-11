@@ -1,5 +1,5 @@
-#ifndef TDV_IMAGEREADERWU_HPP
-#define TDV_IMAGEREADERWU_HPP
+#ifndef TDV_IMAGEREADER_HPP
+#define TDV_IMAGEREADER_HPP
 
 #include <tdvbasic/common.hpp>
 #include "floatimage.hpp"
@@ -8,10 +8,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-class ImageReaderWU: public WorkUnit
+class ImageReader: public WorkUnit
 {
 public:    
-    ImageReaderWU(const std::string &filename)
+    ImageReader(const std::string &filename)
         : m_filename(filename)
     {
         workName("Image Reader");
@@ -21,8 +21,8 @@ public:
     {
         return &m_wpipe;
     }
-
-    void process();
+    
+    bool update();
 
 private:
     ReadWritePipe<FloatImage, FloatImage> m_wpipe;
@@ -31,4 +31,4 @@ private:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_IMAGEREADERWU_HPP */
+#endif /* TDV_IMAGEREADER_HPP */
