@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <iostream>
 #include <boost/scoped_array.hpp>
+#include <tdvision/processrunner.hpp>
 #include "camerawidget.hpp"
 
 static QImage::Format queryQFormat(IplImage *img)
@@ -39,16 +40,36 @@ static QImage::Format queryQFormat(IplImage *img)
 }
 
 CameraWidget::CameraWidget(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
-{
-    m_framePipe = framePipe;
+{    
     m_lastFrame = NULL;
     m_end = false;
-    m_sink = sink;
+    m_framePipe = NULL;
+    m_sink = true;
 }
 
 CameraWidget::~CameraWidget()
 {
     m_end = true;
+}
+
+void CameraWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
+{
+    QMutexLocker locker(&m_imageMutex);
+    m_framePipe = framePipe;
+    m_sink = sink;
+}
+
+void CameraWidget::init(tdv::ExceptionReport *report)
+{
+    tdv::Process *procs[] = { this, NULL };
+
+    m_procRunner = new tdv::ProcessRunner(procs, report);    
+    runner->run();    
+}
+
+void CameraWidget::shutdown()
+{    
+    runner.join();
 }
 
 void CameraWidget::paintEvent(QPaintEvent *event)
@@ -76,22 +97,34 @@ void CameraWidget::paintEvent(QPaintEvent *event)
 
 void CameraWidget::process()
 {
-    if ( m_framePipe != NULL )
+    assert(m_framePipe != NULL);
+    
+    IplImage *image;    
+    while ( m_framePipe->read(&image) && !m_end )
     {
-        IplImage *image;    
-        while ( m_framePipe->read(&image) && !m_end )
+        QMutexLocker locker(&m_imageMutex);
+        if ( m_lastFrame != NULL )
         {
-            QMutexLocker locker(&m_imageMutex);
-            if ( m_lastFrame != NULL )
+            if ( m_sink )
             {
-                if ( m_sink )
-                {
-                    cvReleaseImage(&m_lastFrame);
-                }
-            }    
+                cvReleaseImage(&m_lastFrame);
+            }
+        }    
             
-            m_lastFrame = image;
-            update();            
-        }
+        m_lastFrame = image;
+        update();            
     }
+}
+
+IplImage* CameraWidget::lastFrame()
+{
+    IplImage *lfCopy = NULL;
+    
+    QMutexLocker locker(&m_imageMutex);
+    if ( m_lastFrame != NULL )
+    {
+        lfCopy = cvCloneImage(m_lastFrame);
+    }
+
+    return lfCopy;
 }

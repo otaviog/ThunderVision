@@ -11,7 +11,6 @@
 
 TEST(TestSSD, Dev)
 {
-#if 0
     tdv::ImageReader readerL("../../res/tsukuba_L.png");
     tdv::ImageReader readerR("../../res/tsukuba_R.png");
     
@@ -30,7 +29,6 @@ TEST(TestSSD, Dev)
     EXPECT_EQ(384, dsi.dim().width());
     EXPECT_EQ(288, dsi.dim().height());
     EXPECT_EQ(155, dsi.dim().depth());    
-#endif
 }
 
 TEST(TestSSD, WithWTA)

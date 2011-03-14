@@ -1,5 +1,6 @@
 #include <iostream>
 #include "process.hpp"
+#include "exceptionreport.hpp"
 #include "processrunner.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -31,7 +32,7 @@ private:
 };
 
 ProcessRunner::ProcessRunner(Process **wus, 
-                             ProcessExceptionReport *report)
+                             ExceptionReport *report)
 {
     m_errReport = NULL;
     size_t wuCount = 0;

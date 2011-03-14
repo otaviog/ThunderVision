@@ -18,10 +18,27 @@ public:
     
     void process();
     
-    void finish() { }
+    virtual void finish() { }
     
 private:
     WorkUnit &m_work;
+};
+
+template<typename WorkUnitType>
+class TWorkUnitProcess: public Process, public WorkUnitType
+{
+public:
+    TWorkUnitProcess()
+    { }
+    
+    void process()
+    {
+        while ( WorkUnitType::update() );
+    }
+    
+    virtual void finish() { }
+    
+private:
 };
 
 TDV_NAMESPACE_END

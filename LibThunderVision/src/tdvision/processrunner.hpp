@@ -8,19 +8,12 @@
 TDV_NAMESPACE_BEGIN
 
 class Process;
-
-class ProcessExceptionReport
-{
-public:
-    virtual void errorOcurred(const std::exception &err) = 0;
-    
-private:
-};
+class ExceptionReport;
 
 class ProcessRunner
 {
 public:
-    ProcessRunner(Process **wus, ProcessExceptionReport *report);
+    ProcessRunner(Process **wus, ExceptionReport *report);
     
     void run();
 
@@ -43,7 +36,7 @@ private:
     ProcessRunner& operator=(const ProcessRunner &cpy);
     
     boost::thread_group m_threads;
-    ProcessExceptionReport *m_errReport;
+    ExceptionReport *m_errReport;
     std::vector<Process*> m_workUnits;
     
     bool m_errorOc;

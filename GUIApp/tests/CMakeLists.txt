@@ -9,3 +9,5 @@ ENDMACRO(ADD_QTEST)
 ADD_QTEST(testcamerawidget testcamerawidget.cpp)
 
 ADD_QTEST(testcamerawidgetsimple testcamerawidgetsimple.cpp)
+
+ADD_QTEST(testcamerasviewwidget testcamerasviewwidget.cpp)
