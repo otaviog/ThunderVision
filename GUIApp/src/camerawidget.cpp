@@ -95,3 +95,16 @@ void CameraWidget::process()
         }
     }
 }
+
+IplImage* CameraWidget::lastFrame()
+{
+    IplImage *lfCopy = NULL;
+    
+    QMutexLocker locker(&m_imageMutex);
+    if ( m_lastFrame != NULL )
+    {
+        lfCopy = cvCloneImage(m_lastFrame);
+    }
+
+    return lfCopy;
+}

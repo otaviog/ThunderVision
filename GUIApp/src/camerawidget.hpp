@@ -11,12 +11,16 @@
 
 class CameraWidget: public QWidget, public tdv::Process
 {
-public:    
+    Q_OBJECT;
+    
+public:            
     CameraWidget(tdv::ReadPipe<IplImage*> *framePipe, bool sink);   
     
     ~CameraWidget();
     
     void process();        
+    
+    IplImage* lastFrame();
     
 protected:
     virtual void paintEvent(QPaintEvent *event);

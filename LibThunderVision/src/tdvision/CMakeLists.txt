@@ -21,7 +21,9 @@ CUDA_ADD_LIBRARY(tdvision
   ssddev.hpp ssddev.cpp ssd.cu
   wtadev.hpp wtadev.cpp wta.cu
   benchmark.hpp benchmark.cpp  
-  captureproc.hpp captureproc.cpp)
+  captureproc.hpp captureproc.cpp
+  rectificationcv.hpp rectificationcv.cpp
+  calibration.hpp calibration.cpp)
 
 SET(TDVISION_CUDA_SRCS 
   ${CMAKE_CURRENT_SOURCE_DIR}/mediafilter.cu 
