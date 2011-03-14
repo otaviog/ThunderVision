@@ -76,14 +76,15 @@ bool RectificationCV::update()
         CvMat *leftHomography = cvCreateMat(3, 3, CV_32FC1), 
             *rightHomography = cvCreateMat(3, 3, CV_32FC1);
         
-        cvFindFundamentalMat(leftPoints, rightPoints, fundMat);
+        cvFindFundamentalMat(leftPoints, rightPoints, fundMat);        
         cvStereoRectifyUncalibrated(leftPoints, rightPoints, fundMat, 
                                     cvSize(maxwidth, maxheight),
                                     leftHomography,
                                     rightHomography);
         
+        
                                     
-                                    
+        
         
     }
     
