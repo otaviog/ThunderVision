@@ -1,11 +1,10 @@
 #include <QApplication>
-#include "calibrationwidget.hpp"
+#include "calibrationdialog.hpp"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    CalibrationWidget *wid = new CalibrationWidget;
-    wid->show();
-    
-    return app.exec();
+    CalibrationDialog *calibDlg = new CalibrationDialog;
+    calibDlg->init();
+    return calibDlg->exec();    
 }

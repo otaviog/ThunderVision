@@ -23,10 +23,7 @@ CUDA_ADD_LIBRARY(tdvision
   wtadev.hpp wtadev.cpp wta.cu
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
+  cameraparameters.hpp cameraparameters.cpp
+  chessboardpattern.hpp chessboardpattern.cpp
   rectificationcv.hpp rectificationcv.cpp
   calibration.hpp calibration.cpp)
-
-SET(TDVISION_CUDA_SRCS 
-  ${CMAKE_CURRENT_SOURCE_DIR}/mediafilter.cu 
-  ssd.cu 
-  wta.cu)

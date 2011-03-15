@@ -14,13 +14,13 @@ namespace tdv {
 class CamCalibrationContext
 {
 public: 
-    CamCalibrationContext();
+    CamCalibrationContext(size_t numFrames);
     
-    void start(tdv::ExceptionReport *report);
+    void init(tdv::ExceptionReport *report);
 
-    void stop();
+    void dispose();
     
-    tdv::ReadPipe<IplImage*>* patternDetectProgress(int cam)
+    tdv::ReadPipe<IplImage*>* patternDetectProgress()
     {
         return m_calib.detectionImage();
     }
@@ -28,9 +28,10 @@ public:
 private:
     tdv::ProcessRunner *m_procRunner;       
     tdv::CaptureProc m_capture0;
-    tdv::CaptureProc m_capture1;
-    tdv::TWorkUnitProcess<tdv::Calibration> m_calib;
+    tdv::CaptureProc m_capture1;    
     tdv::TWorkUnitProcess<tdv::ImageSink> m_sink0, m_sink1;    
+    tdv::Calibration m_calib;
+    tdv::WorkUnitProcess *m_calibProc;
 };
 
 #endif /* TDV_CAMCALIBRATIONCONTEXT_HPP */

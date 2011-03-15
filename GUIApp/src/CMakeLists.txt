@@ -1,13 +1,16 @@
 QT4_WRAP_CPP(QT_WRAPS camerawidget.hpp camerasviewwidget.hpp 
   calibrationwidget.hpp)
 
+QT4_WRAP_UI(QT_UICS calibrationwidget.ui calibrationdialog.ui)
+  
 ADD_LIBRARY(GUILib 
   mainwindow.hpp mainwindow.cpp
   camerawidget.hpp camerawidget.cpp
   camerasviewwidget.hpp camerasviewwidget.cpp
   calibrationwidget.hpp calibrationwidget.cpp
+  calibrationdialog.hpp calibrationdialog.cpp
   camcalibrationcontext.hpp camcalibrationcontext.cpp
-  ${QT_WRAPS})
+  ${QT_WRAPS} ${QT_UICS})
 
 ADD_EXECUTABLE(GUIApp
   main.cpp)

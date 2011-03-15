@@ -39,7 +39,8 @@ static QImage::Format queryQFormat(IplImage *img)
     return fmt;    
 }
 
-CameraWidget::CameraWidget()
+CameraWidget::CameraWidget(QWidget *parent)
+    : QWidget(parent)
 {    
     m_lastFrame = NULL;
     m_end = false;
@@ -67,7 +68,7 @@ void CameraWidget::init(tdv::ExceptionReport *report)
     m_procRunner->run();    
 }
 
-void CameraWidget::shutdown()
+void CameraWidget::dispose()
 {    
     m_procRunner->join();
 }

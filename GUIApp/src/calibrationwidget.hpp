@@ -2,37 +2,40 @@
 #define TDV_CALIBRATIONWIDGET_HPP
 
 #include <QWidget>
-#include <tdvision/processrunner.hpp>
-#include <tdvision/calibration.hpp>
-#include <tdvision/captureproc.hpp>
-#include <tdvision/imagesink.hpp>
+#include <QLabel>
+#include <QProgressBar>
 #include <tdvision/exceptionreport.hpp>
-#include <tdvision/workunitprocess.hpp>
+#include "ui_calibrationwidget.h"
+#include "camcalibrationcontext.hpp"
 
 class CameraWidget;
 
-class CalibrationWidget: public QWidget, public tdv::ExceptionReport
+class CalibrationWidget: 
+    public QWidget, 
+    public tdv::ExceptionReport, 
+    protected Ui::CalibrationWidget,
+    public tdv::CalibrationObserver
 {
     Q_OBJECT;
+    
 public:
     CalibrationWidget();
     
+    void init(tdv::ReadPipe<IplImage*> *patternDetect, bool sink);
+    
+    void dispose();
+    
     void errorOcurred(const std::exception &err);
-
+    
+    virtual void calibrationUpdate(const tdv::Calibration &calib);
+                                                
 public slots:
-    void openCameras();
-    
-    void closeCameras();
-            
-private:
-    tdv::ProcessRunner *m_procRunner;       
-    tdv::CaptureProc m_capture0;
-    tdv::CaptureProc m_capture1;
-    tdv::TWorkUnitProcess<tdv::Calibration> m_calib;
-    tdv::TWorkUnitProcess<tdv::ImageSink> m_sink0, m_sink1;
-    
-    CameraWidget *m_camWid;
 
+    
+private:
+    CameraWidget *m_camWid;
+    QLabel *m_lbStatus;
+    QProgressBar *m_pbProgress;
 };
 
 #endif /* TDV_CALIBRATION_HPP */

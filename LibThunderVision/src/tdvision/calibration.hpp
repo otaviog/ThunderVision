@@ -3,56 +3,21 @@
 
 #include <tdvbasic/common.hpp>
 #include <cv.h>
+#include "chessboardpattern.hpp"
+#include "cameraparameters.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class ChessboardPattern
-{
-public:
-    ChessboardPattern();
-        
-    CvSize dim()
-    {
-        return m_dim;
-    }
-    
-    size_t totalCorners() const
-    {
-        return m_dim.width*m_dim.height;
-    }
-    
-    void generateObjectPoints(std::vector<CvPoint3D32f> &v) const;
-    
-private:       
-    CvSize m_dim;    
-    float m_squareSize;
-};
+class Calibration;
 
-class CameraParameters
+class CalibrationObserver
 {
 public:
-    CameraParameters();
-    
-    ~CameraParameters()
-    {
-        
-    }
-    
-    CvMat intrinsecs() 
-    {
-        return cvMat(3, 3, CV_64F, m_intrinsecs);
-    }
-    
-    CvMat distorsion()
-    {
-        return cvMat(1, 5, CV_64F, m_distorsion);
-    }
+    virtual void calibrationUpdate(const Calibration &calib) = 0;
     
 private:
-    double m_intrinsecs[3][3];
-    double m_distorsion[5];
 };
 
 class Calibration: public WorkUnit
@@ -76,13 +41,38 @@ public:
         return &m_dipipe;
     }
     
+    size_t framesProcessed() const
+    {
+        return m_avalFrames;
+    }
+    
+    size_t numFrames() const
+    {
+        return m_numFrames;
+    }
+
+    void observer(CalibrationObserver *obsr)
+    {
+        m_observer = obsr;
+    }
+    
+    const CameraParameters& leftCamParms() const
+    {
+        return m_lParms;
+    }
+    
+    const CameraParameters& rightCamParms() const
+    {
+        return m_rParms;
+    }
+
     bool update();
-        
+    
 private:
 
-    IplImage* updateChessboardCorners(IplImage *limg, IplImage *rimg);
+    IplImage* updateChessboardCorners(const IplImage *limg, const IplImage *rimg, size_t nextFrame);
     
-    void updateCalibration();
+    void updateCalibration(const CvSize &imgSize);
     
     ChessboardPattern m_cbpattern;
     
@@ -95,6 +85,9 @@ private:
     std::vector<CvPoint3D32f> m_objPoints;
     
     size_t m_numFrames, m_frameCount;
+    size_t m_avalFrames;
+
+    CalibrationObserver *m_observer;
 };
 TDV_NAMESPACE_END
 

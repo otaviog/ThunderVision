@@ -5,6 +5,7 @@
 #include <tdvision/pipe.hpp>
 #include <cv.h>
 #include <tdvision/processrunner.hpp>
+#include <tdvision/exceptionreport.hpp>
 
 class CameraWidget;
 

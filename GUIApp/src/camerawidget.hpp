@@ -21,7 +21,7 @@ class CameraWidget: public QWidget, public tdv::Process
     Q_OBJECT;
 
 public:
-    CameraWidget();
+    CameraWidget(QWidget *parent = NULL);
 
     ~CameraWidget();
 
@@ -29,7 +29,7 @@ public:
 
     void init(tdv::ExceptionReport *report);
 
-    void shutdown();
+    void dispose();
 
     IplImage* lastFrame();
 
