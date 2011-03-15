@@ -39,7 +39,7 @@ static QImage::Format queryQFormat(IplImage *img)
     return fmt;    
 }
 
-CameraWidget::CameraWidget(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
+CameraWidget::CameraWidget()
 {    
     m_lastFrame = NULL;
     m_end = false;
@@ -64,12 +64,12 @@ void CameraWidget::init(tdv::ExceptionReport *report)
     tdv::Process *procs[] = { this, NULL };
 
     m_procRunner = new tdv::ProcessRunner(procs, report);    
-    runner->run();    
+    m_procRunner->run();    
 }
 
 void CameraWidget::shutdown()
 {    
-    runner.join();
+    m_procRunner->join();
 }
 
 void CameraWidget::paintEvent(QPaintEvent *event)

@@ -6,6 +6,7 @@ ADD_LIBRARY(GUILib
   camerawidget.hpp camerawidget.cpp
   camerasviewwidget.hpp camerasviewwidget.cpp
   calibrationwidget.hpp calibrationwidget.cpp
+  camcalibrationcontext.hpp camcalibrationcontext.cpp
   ${QT_WRAPS})
 
 ADD_EXECUTABLE(GUIApp

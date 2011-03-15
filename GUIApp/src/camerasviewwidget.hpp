@@ -8,7 +8,7 @@
 
 class CameraWidget;
 
-class CamerasViewWidget: public QWidget, tdv::ProcessExceptionReport
+class CamerasViewWidget: public QWidget, tdv::ExceptionReport
 {
     Q_OBJECT ;
 public:    

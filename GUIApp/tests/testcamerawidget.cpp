@@ -11,8 +11,9 @@
 #include <tdvision/medianfiltercpu.hpp>
 #include <tdvision/medianfilterdev.hpp>
 #include <tdvision/imageresize.hpp>
+#include <tdvision/exceptionreport.hpp>
 
-class ErrorHandle: public tdv::ProcessExceptionReport
+class ErrorHandle: public tdv::ExceptionReport
 {
 public:
     ErrorHandle(CameraWidget *wid0, CameraWidget *wid1)
@@ -45,7 +46,8 @@ int main(int argc, char *argv[])
     tdv::ImageResize resize(tdv::Dim(512, 512));
     
     // First Camera
-    CameraWidget *wid0 = new CameraWidget(capture0.colorImage(), false);
+    CameraWidget *wid0 = new CameraWidget;
+    wid0->input(capture0.colorImage(), false);
     sink0.input(capture0.output());
     
     // Second Camera
@@ -53,19 +55,20 @@ int main(int argc, char *argv[])
     median.input(resize.output());
     conv1.input(median.output());    
     
-    CameraWidget *wid1 = new CameraWidget(conv1.output(), true); 
+    CameraWidget *wid1 = new CameraWidget; 
+    wid1->input(capture1.colorImage(), false);
     
     wid0->show();
     wid1->show();
-
+    
     tdv::CUDAProcess cproc(0);
     cproc.addWork(&median);
     cproc.addWork(&conv1);
     tdv::WorkUnitProcess rproc(resize);
     tdv::WorkUnitProcess sinkproc(sink0);
     tdv::Process *wus[] = { 
-        &capture0, wid0, &sinkproc, 
-        &capture1, &rproc, &cproc, wid1, NULL
+        &capture0, &sinkproc, 
+        &capture1, &rproc, &cproc, NULL
     };
     
     ErrorHandle errHdl(wid0, wid1);

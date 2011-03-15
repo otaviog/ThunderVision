@@ -12,88 +12,103 @@ static IplImage* convertTo8UGray(IplImage *img)
     return grayImg;
 }
 
+CameraParameters::CameraParameters()
+{
+    CvMat M = intrinsecs();
+    CvMat D = distorsion();
+    cvSetIdentity(&M);
+    cvSetIdentity(&D);
+}
+
 ChessboardPattern::ChessboardPattern()
 {
-    m_dim = cvSize(8, 8);
-    m_objPoints = new CvPoint3D32f[totalCorners()];
-    m_squareSize = 1.0f;
-    
+    m_dim = cvSize(8, 8);    
+    m_squareSize = 1.0f;        
+}
+
+void ChessboardPattern::generateObjectPoints(std::vector<CvPoint3D32f> &objPts)
+{
     for (size_t i=0; i<m_dim.height; i++)
     {
         for (size_t j=0; j<m_dim.width; j++)
         {
-            m_objPoints[i*m_dim.width + j] = 
+            objPts[i*m_dim.width + j] = 
                 cvPoint3D32f(i*m_squareSize, j*m_squareSize, 0);
         }
     }
 }
 
-Calibration::Calibration()
+Calibration::Calibration(size_t numFrames)
 {
-    
+    m_numFrames = numFrames;
+    m_frameCount = 0;
 }
 
-bool Calibration::update()
-{
-    WriteGuard<ReadWritePipe<IplImage*> > wg(m_dipipe);
+void Calibration::chessPattern(const ChessboardPattern &cbpattern)
+{    
+    m_cbpattern = cbpattern;
     
-    IplImage *limgOrigin, *rimgOrigin;
-    
-    if ( !m_rlpipe->read(&limgOrigin) || !m_rrpipe->read(&rimgOrigin) )
-        return false;
-    
-    IplImage *limg = convertTo8UGray(limgOrigin), 
-        *rimg = convertTo8UGray(rimgOrigin);
+    const size_t totalPoints = cbpattern.totalCorners()*m_numFrames;    
+    m_lPoints.resize(totalPoints);
+    m_rPoints.resize(totalPoints);    
+    m_objPoints.resize(cbpattern.totalCorners());        
 
-    //cvReleaseImage(&limgOrigin);
-    //cvReleaseImage(&rimgOrigin);
+    cbpattern.generateObjectPoints(m_objPoints);
     
-    const size_t totalCorners = m_chessboard.totalCorners();
-    
+    for (size_t i=1; i<m_numFrames; i++)
+    {
+        std::copy(m_objPoints.begin(),
+                  m_objPoints.end(),
+                  m_objPoints.begin() + cbpattern.totalCorners()*i);
+    }
+}
+
+IplImage* Calibration::updateChessboardCorners(IplImage *limg, IplImage *rimg)
+{    
     boost::scoped_array<CvPoint2D32f> leftPoints(
         new CvPoint2D32f[totalCorners]);
+    
     boost::scoped_array<CvPoint2D32f> rightPoints(
         new CvPoint2D32f[totalCorners]);
-    
+
     int leftPointsCount, rightPointsCount;
     leftPointsCount = rightPointsCount = totalCorners;
+        
+    cvFindChessboardCorners(limg, m_cbpattern.dim(), leftPoints.begin(),
+                            &leftPointsCount);
     
-    cvFindChessboardCorners(limg, m_chessboard.dim(), leftPoints.get(),
-                            &leftPointsCount);    
-    cvFindChessboardCorners(rimg, m_chessboard.dim(), rightPoints.get(),
+    cvFindChessboardCorners(rimg, m_cbpattern.dim(), rightPoints.begin(),
                             &rightPointsCount);
 
+    if ( leftPointsCount < totalCorners 
+         && rightPointsCount < totalCorners )
+    {
+        return NULL;
+    }
+        
     IplImage *dtcImg = cvCreateImage(cvGetSize(limg), 8, 3);
     int chessboardFound = 0;
     
     cvCvtColor(limg, dtcImg, CV_GRAY2BGR);
-    cvDrawChessboardCorners(dtcImg, m_chessboard.dim(), leftPoints.get(),
+    cvDrawChessboardCorners(dtcImg, m_cbpattern.dim(), leftPoints.get(),
                             leftPointsCount, chessboardFound);
     
-    wg.write(dtcImg);
+    return dtcImg;        
+}
 
-    const size_t N = 2*m_chessboard.totalCorners();
-        
-    std::vector<CvPoint3D32f> objectPoints;
-    objectPoints.resize(N);
-    std::copy(m_chessboard.objectPoints(), 
-              m_chessboard.objectPoints() + m_chessboard.totalCorners(), 
-              objectPoints.begin());
-    std::copy(m_chessboard.objectPoints(), 
-              m_chessboard.objectPoints() + m_chessboard.totalCorners(), 
-              objectPoints.begin() + m_chessboard.totalCorners());
+void Calibration::updateCalibration()
+{
+    const size_t totalPoints = m_frameCount*m_cbpattern.totalCorners();            
     
-    std::vector<int> npoints;
-    npoints.resize(2, m_chessboard.totalCorners());
-    
-    CvMat v_objectPoints = cvMat(1, N, CV_32FC3, &objectPoints[0]);
-    CvMat v_leftPoints = cvMat(1, N, CV_32FC3, leftPoints.get());
-    CvMat v_rightPoints = cvMat(1, N, CV_32FC3, rightPoints.get());
+    CvMat v_objectPoints = cvMat(1, N, CV_32FC3, &m_objPoints[0]);
+    CvMat v_leftPoints = cvMat(1, N, CV_32FC3, m_lPoints[0]);
+    CvMat v_rightPoints = cvMat(1, N, CV_32FC3, m_rightPoints[0]);
     CvMat v_npoints = cvMat(1, npoints.size(), CV_32S, &npoints[0]);
     
     double leftM[3][3], rightM[3][3], leftD[5], rightD[5],
         R[3][3], T[3];
 
+    m_calib
     CvMat v_leftM = cvMat(3, 3, CV_64F, leftM),
         v_rightM = cvMat(3, 3, CV_64F, rightM),
         v_leftD = cvMat(1, 5, CV_64F, leftD),
@@ -109,13 +124,42 @@ bool Calibration::update()
         cvGetSize(limg), 
         &v_R, &v_T, NULL, NULL,
         cvTermCriteria(CV_TERMCRIT_ITER+
-        CV_TERMCRIT_EPS, 100, 1e-5),
-        CV_CALIB_FIX_ASPECT_RATIO +
-        CV_CALIB_ZERO_TANGENT_DIST +
-        CV_CALIB_SAME_FOCAL_LENGTH);        
+                       CV_TERMCRIT_EPS, 100, 1e-5),
+        CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH);        
     
+}
+
+bool Calibration::update()
+{
+    WriteGuard<ReadWritePipe<IplImage*> > wg(m_dipipe);
     
-    return wg.wasWrite();
+    IplImage *limgOrigin, *rimgOrigin;
+    
+    if ( !m_rlpipe->read(&limgOrigin) || !m_rrpipe->read(&rimgOrigin) )
+        return false;
+
+    if ( m_sinkLeft )
+        cvReleaseImage(&limgOrigin);
+
+    if ( m_sinkRight )
+        cvReleaseImage(&rimgOrigin);
+
+    IplImage *limg = convertTo8UGray(limgOrigin), 
+        *rimg = convertTo8UGray(rimgOrigin);
+    
+    IplImage *patternDetectPrg = updateChessboardCorners(limg, rimg);
+        
+    if ( patternDetectPrg == NULL )
+    {
+        return true;
+    }
+    
+    wg.write(patternDetectPrg);                
+    m_frameCount = (m_frameCount + 1) % m_numFrames;
+            
+    updateCalibration();
+    
+    return true;
 }
 
 TDV_NAMESPACE_END

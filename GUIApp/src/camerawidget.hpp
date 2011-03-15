@@ -10,6 +10,12 @@
 #include <QThread>
 #include <QMutex>
 
+TDV_NAMESPACE_BEGIN
+
+class ProcessRunner;
+
+TDV_NAMESPACE_END
+
 class CameraWidget: public QWidget, public tdv::Process
 {
     Q_OBJECT;

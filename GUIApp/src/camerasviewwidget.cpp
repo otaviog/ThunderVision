@@ -7,8 +7,11 @@
 
 CamerasViewWidget::CamerasViewWidget(tdv::ReadPipe<IplImage*> *leftPipe, tdv::ReadPipe<IplImage*> *rightPipe)
 {
-    leftCamW = new CameraWidget(leftPipe, false);
-    rightCamW = new CameraWidget(rightPipe, false);
+    leftCamW = new CameraWidget;
+    rightCamW = new CameraWidget;
+    
+    leftCamW->input(leftPipe, false);
+    rightCamW->input(rightPipe, false);
     
     QHBoxLayout *box = new QHBoxLayout;
     box->addWidget(leftCamW);

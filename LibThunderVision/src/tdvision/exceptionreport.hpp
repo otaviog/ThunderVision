@@ -2,10 +2,11 @@
 #define TDV_EXCEPTIONREPORT_HPP
 
 #include <tdvbasic/common.hpp>
+#include <exception>
 
 TDV_NAMESPACE_BEGIN
 
-class ProcessExceptionReport
+class ExceptionReport
 {
 public:
     virtual void errorOcurred(const std::exception &err) = 0;

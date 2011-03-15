@@ -7,17 +7,22 @@
 #include <tdvision/imagesink.hpp>
 #include <tdvision/workunitprocess.hpp>
 
+namespace tdv {
+    class ExceptionReport;
+}
+
 class CamCalibrationContext
 {
 public: 
     CamCalibrationContext();
     
-    void start();
+    void start(tdv::ExceptionReport *report);
 
     void stop();
     
     tdv::ReadPipe<IplImage*>* patternDetectProgress(int cam)
     {
+        return m_calib.detectionImage();
     }
     
 private:
@@ -25,9 +30,7 @@ private:
     tdv::CaptureProc m_capture0;
     tdv::CaptureProc m_capture1;
     tdv::TWorkUnitProcess<tdv::Calibration> m_calib;
-    tdv::TWorkUnitProcess<tdv::ImageSink> m_sink0, m_sink1;
-    
-    CameraWidget *m_camWid;
+    tdv::TWorkUnitProcess<tdv::ImageSink> m_sink0, m_sink1;    
 };
 
 #endif /* TDV_CAMCALIBRATIONCONTEXT_HPP */

@@ -6,18 +6,19 @@
 #include <tdvision/calibration.hpp>
 #include <tdvision/captureproc.hpp>
 #include <tdvision/imagesink.hpp>
+#include <tdvision/exceptionreport.hpp>
 #include <tdvision/workunitprocess.hpp>
 
 class CameraWidget;
 
-class CalibrationWidget: public QWidget, public tdv::ProcessExceptionReport
+class CalibrationWidget: public QWidget, public tdv::ExceptionReport
 {
     Q_OBJECT;
 public:
     CalibrationWidget();
     
     void errorOcurred(const std::exception &err);
-                                                                                                
+
 public slots:
     void openCameras();
     

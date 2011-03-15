@@ -9,6 +9,14 @@ TDV_NAMESPACE_BEGIN
 class WorkUnit
 {
 public:
+    enum UpdateStatus
+    {
+        SUS_STOP, 
+        SUS_CONTINUE, 
+        FAIL_STOP,
+        FAIL_CONTINUE
+    };
+    
     WorkUnit()
         : m_workName("Unknow")
     {

@@ -2,28 +2,28 @@
 
 CamCalibrationContext::CamCalibrationContext()
 {
-    m_calib.inputLeft(m_capture0.colorImage());
-    m_calib.inputRight(m_capture1.colorImage());
+    m_calib.input(m_capture0.colorImage(), 
+                  m_capture1.colorImage(), 
+                  false, false);
     
     m_sink0.input(m_capture0.output());
     m_sink1.input(m_capture1.output());        
 }
 
-void CamCalibration::start()
+void CamCalibrationContext::start(tdv::ExceptionReport *errHdl)
 {
     if ( m_procRunner != NULL )
     {
         tdv::Process *procs[] = {
             &m_capture0, &m_capture1, 
-            m_camWid, &m_calib,
-            &m_sink0, &m_sink1, NULL };
+            &m_calib, &m_sink0, &m_sink1, NULL };
         
-        m_procRunner = new tdv::ProcessRunner(procs, this);     
+        m_procRunner = new tdv::ProcessRunner(procs, errHdl);
         m_procRunner->run();
     }
 }
 
-void CamCalibration::stop()
+void CamCalibrationContext::stop()
 {
     if ( m_procRunner != NULL )
     {
