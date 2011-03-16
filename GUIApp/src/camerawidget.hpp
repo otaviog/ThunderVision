@@ -42,7 +42,7 @@ private:
     tdv::ReadPipe<IplImage*> *m_framePipe;
     tdv::ProcessRunner *m_procRunner;
     
-    IplImage *m_lastFrame;
+    IplImage *m_lastFrame, *m_pixmap;
     bool m_end, m_sink;
 
     QMutex m_imageMutex;

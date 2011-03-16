@@ -27,17 +27,17 @@ void Calibration::chessPattern(const ChessboardPattern &cbpattern)
     const size_t totalPoints = cbpattern.totalCorners()*m_numFrames;    
     m_lPoints.resize(totalPoints);
     m_rPoints.resize(totalPoints);    
-    m_objPoints.resize(cbpattern.totalCorners());        
+    m_objPoints.resize(totalPoints);        
 
     cbpattern.generateObjectPoints(m_objPoints);
     
     for (size_t i=1; i<m_numFrames; i++)
     {
         std::copy(m_objPoints.begin(),
-                  m_objPoints.end(),
-                  m_objPoints.begin() + cbpattern.totalCorners()*i);
+                  m_objPoints.begin() + cbpattern.totalCorners(),
+                  &m_objPoints[cbpattern.totalCorners()*i]);
     }
-    
+
     m_avalFrames = 0;
     m_frameCount = 0;
 }
@@ -136,20 +136,27 @@ bool Calibration::update()
     IplImage *limg = convertTo8UGray(limgOrigin), 
         *rimg = convertTo8UGray(rimgOrigin);
     
+    const CvSize imgSz = cvGetSize(limg);
+    
     const size_t nextFrame = (m_frameCount + 1) % m_numFrames;
     IplImage *patternDetectPrg = updateChessboardCorners(limg, rimg, nextFrame);
-        
+            
+    cvReleaseImage(&rimg);
+    
     if ( patternDetectPrg == NULL )
     {
+        wg.write(limg);
         return true;
     }
+    
+    cvReleaseImage(&limg);    
     
     m_frameCount = nextFrame;  
     m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);
         
-    wg.write(patternDetectPrg);                    
+    //wg.write(patternDetectPrg);                    
             
-    updateCalibration(cvGetSize(limg));
+    updateCalibration(imgSz);
     
     if ( m_observer != NULL )
     {

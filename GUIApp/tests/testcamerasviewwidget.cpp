@@ -7,8 +7,9 @@
 #include <tdvision/imagesink.hpp>
 #include <tdvision/processrunner.hpp>
 #include <tdvision/workunitprocess.hpp>
+#include <tdvision/exceptionreport.hpp>
 
-class ErrorHandle: public tdv::ProcessExceptionReport
+class ErrorHandle: public tdv::ExceptionReport
 {
 public:    
     void errorOcurred(const std::exception &err)

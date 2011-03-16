@@ -7,8 +7,9 @@
 #include <tdvision/processrunner.hpp>
 #include <tdvision/cudaprocess.hpp>
 #include <tdvision/workunitprocess.hpp>
+#include <tdvision/exceptionreport.hpp>
 
-class ErrorHandle: public tdv::ProcessExceptionReport
+class ErrorHandle: public tdv::ExceptionReport
 {
 public:
     ErrorHandle(CameraWidget *wid0)
@@ -35,24 +36,28 @@ int main(int argc, char *argv[])
     tdv::CaptureProc capture0(0);    
     tdv::ImageSink sink0;
     
-    CameraWidget *wid0 = new CameraWidget(capture0.colorImage(), false);
-    sink0.input(capture0.output());
+    CameraWidget *wid0 = new CameraWidget;
+    ErrorHandle errHdl(wid0);
     
+    wid0->input(capture0.colorImage(), false);
+    wid0->init(&errHdl);
+    
+    sink0.input(capture0.output());    
     wid0->show();
     
     tdv::WorkUnitProcess sink0proc(sink0);
     
     tdv::Process *procs[] = { 
-        &capture0, wid0, &sink0proc, NULL
+        &capture0, &sink0proc, NULL
     };
     
-    ErrorHandle errHdl(wid0);
     tdv::ProcessRunner runner(procs, &errHdl);
     runner.run();
     
     int r = app.exec();    
     
     capture0.finish();    
+    wid0->dispose();
     runner.join();
     
     return r;

@@ -30,7 +30,7 @@ public:
     virtual void calibrationUpdate(const tdv::Calibration &calib);
                                                 
 public slots:
-
+    void progress(float percent);
     
 private:
     CameraWidget *m_camWid;

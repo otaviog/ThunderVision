@@ -38,3 +38,8 @@ void CalibrationWidget::calibrationUpdate(const tdv::Calibration &calib)
 {
     
 }
+
+void CalibrationWidget::progress(float percent)
+{
+    
+}
