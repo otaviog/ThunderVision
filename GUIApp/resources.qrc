@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="imgs">
+    <file>thunder.ico</file>
+    <file>thunder.png</file>
+  </qresource>
+</RCC>
