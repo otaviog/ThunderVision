@@ -96,13 +96,21 @@ bool RectificationCV::update()
 
         double _leftHomography[3][3], _rightHomography[3][3];
         double _iM[3][3], _R1[3][3], _R2[3][3], _TR[3][3];
+        
+#if 0
         double _intrinsic[3][3] = { 
-            {1, 0, 200}, 
-            {0, 1, 100 }, 
+            {1, 0, 0 }, 
+            {0, 1, 0 }, 
             {0, 0, 1 } };
         
-        double _distcoeffs[4] = {0, 0, 0, 0.0};
-        
+        double _distcoeffs[4] = {1, 0, 0, 0.0};
+#else
+        double _intrinsic[3][3] = {
+            {396.86, 0, 383.257},
+            {0, 396.86, 297.927},
+            {0, 0, 1, } };
+        double _distcoeffs[5] = {-0.151323, 0.48451, 0, 0, -0.347086};
+#endif
         CvMat intrinsic = cvMat(3, 3, CV_64F, _intrinsic);
         CvMat leftHomography = cvMat(3, 3, CV_64F, _leftHomography), 
             rightHomography = cvMat(3, 3, CV_64F, _rightHomography);
@@ -110,7 +118,7 @@ bool RectificationCV::update()
         CvMat R1 = cvMat(3, 3, CV_64F, _R1);
         CvMat R2 = cvMat(3, 3, CV_64F, _R2);
         CvMat TR = cvMat(3, 3, CV_64F, _TR);
-        CvMat distcoffs = cvMat(4, 1, CV_64F, _distcoeffs);
+        CvMat distcoffs = cvMat(5, 1, CV_64F, _distcoeffs);
         
         const int fmCount = cvFindFundamentalMat(
             leftPoints, rightPoints, &fundMat);

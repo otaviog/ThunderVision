@@ -4,7 +4,7 @@ TDV_NAMESPACE_BEGIN
 
 ChessboardPattern::ChessboardPattern()
 {
-    m_dim = cvSize(8, 7);
+    m_dim = cvSize(7, 6);
     m_squareSize = 1.0f;        
 }
 

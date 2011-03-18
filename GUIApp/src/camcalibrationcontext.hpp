@@ -20,6 +20,11 @@ public:
 
     void dispose();
     
+    void calibObserver(tdv::CalibrationObserver *obs)
+    {
+        m_calib.observer(obs);
+    }
+    
     tdv::ReadPipe<IplImage*>* patternDetectProgress()
     {
         return m_calib.detectionImage();

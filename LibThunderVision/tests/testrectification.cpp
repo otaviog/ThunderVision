@@ -5,8 +5,8 @@
 
 TEST(TestRectification, RectificationCV)
 {
-    tdv::ImageReader readerL("../../res/rect-left2.png");
-    tdv::ImageReader readerR("../../res/rect-right2.png");
+    tdv::ImageReader readerL("../../res/rect-left.png");
+    tdv::ImageReader readerR("../../res/rect-right.png");
     tdv::ImageWriter writerL("rect-left-done.png");
     tdv::ImageWriter writerR("rect-right-done.png");
 

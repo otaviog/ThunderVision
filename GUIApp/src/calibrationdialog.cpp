@@ -18,6 +18,7 @@ void CalibrationDialog::init()
     m_calibCtx = new CamCalibrationContext(10);
     m_calibCtx->init(&m_errHandle);    
     m_calibWid->init(m_calibCtx->patternDetectProgress(), true);    
+    m_calibCtx->calibObserver(m_calibWid);
 }
 
 void CalibrationDialog::dispose()

@@ -28,10 +28,7 @@ public:
     void errorOcurred(const std::exception &err);
     
     virtual void calibrationUpdate(const tdv::Calibration &calib);
-                                                
-public slots:
-    void progress(float percent);
-    
+                                                    
 private:
     CameraWidget *m_camWid;
     QLabel *m_lbStatus;

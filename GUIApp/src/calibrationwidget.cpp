@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -36,10 +37,20 @@ void CalibrationWidget::errorOcurred(const std::exception &err)
 
 void CalibrationWidget::calibrationUpdate(const tdv::Calibration &calib)
 {
+    float percent = float(calib.framesProcessed())/float(calib.numFrames());
+    QMetaObject::invokeMethod(pbProgress, "setValue", Qt::QueuedConnection,
+                              Q_ARG(int, percent*100));
     
-}
-
-void CalibrationWidget::progress(float percent)
-{
-    
+    if ( calib.framesProcessed() == calib.numFrames() )
+    {
+        QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
+                                  Q_ARG(QString, tr("Calibration done")));
+        std::cout<<calib.leftCamParms()<<std::endl
+                 <<calib.rightCamParms()<<std::endl;
+    }
+    else
+    {
+        QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
+                                  Q_ARG(QString, tr("Calibrating...")));
+    }
 }

@@ -65,12 +65,12 @@ public:
     {
         return m_rParms;
     }
-
+        
     bool update();
     
 private:
 
-    IplImage* updateChessboardCorners(const IplImage *limg, const IplImage *rimg, size_t nextFrame);
+    IplImage* updateChessboardCorners(const IplImage *limg, const IplImage *rimg);
     
     void updateCalibration(const CvSize &imgSize);
     
@@ -84,8 +84,7 @@ private:
     std::vector<CvPoint2D32f> m_lPoints, m_rPoints;
     std::vector<CvPoint3D32f> m_objPoints;
     
-    size_t m_numFrames, m_frameCount;
-    size_t m_avalFrames;
+    size_t m_numFrames, m_avalFrames, m_currFrame;
 
     CalibrationObserver *m_observer;
 };

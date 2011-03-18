@@ -3,8 +3,9 @@
 
 #include <iostream>
 #include <tdvision/processrunner.hpp>
+#include <tdvision/exceptionreport.hpp>
 
-class ErrorHandler: public tdv::ProcessExceptionReport
+class ErrorHandler: public tdv::ExceptionReport
 {
 public:
     void errorOcurred(const std::exception &err)
