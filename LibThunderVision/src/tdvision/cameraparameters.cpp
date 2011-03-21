@@ -1,36 +1,48 @@
+#include <cstdlib>
+#include <cstring>
 #include "cameraparameters.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-CameraParameters::CameraParameters()
+static void identity(double m[9])
 {
-    m_vi = cvMat(3, 3, CV_64F, m_intrinsecs);
-    m_vd = cvMat(1, 5, CV_64F, m_distorsion);
-    cvSetIdentity(&m_vi);
-    cvSetIdentity(&m_vd);
+    m[0] = 1.0; m[1] = 0.0; m[2] = 0.0;
+    m[3] = 0.0; m[4] = 1.0; m[5] = 0.0;
+    m[6] = 0.0; m[7] = 0.0; m[8] = 1.0;
 }
 
-void CameraParameters::copy(const CameraParameters &cp)
+CameraParameters::CameraParameters()
 {
-    memcpy(m_intrinsecs, cp.m_intrinsecs, 
-           sizeof(double)*9);
-    memcpy(m_distorsion, cp.m_distorsion,
-           sizeof(double)*5);
+    m_distortion[0] 
+        = m_distortion[1]
+        = m_distortion[2]
+        = m_distortion[3]
+        = m_distortion[4] = 0.0;
     
-    m_vi = cvMat(3, 3, CV_64F, m_intrinsecs);
-    m_vd = cvMat(1, 5, CV_64F, m_distorsion);        
+    identity(m_intrinsics);
+    identity(m_extrinsics);
+}
+
+void CameraParameters::intrinsics(double mtx[9])
+{
+    memcpy(m_intrinsics, mtx, sizeof(double)*9);
+}
+    
+void CameraParameters::extrinsics(double mtx[9])
+{
+    memcpy(m_extrinsics, mtx, sizeof(double)*9);
 }
 
 std::ostream& operator<<(std::ostream& out, const CameraParameters &cp)
-{
-    const CvMat &M = cp.intrinsecs();
-    const CvMat &D = cp.distorsion();
-        
-    out << "[[" << M.data.db[0] << ", " << M.data.db[4] << ", " << M.data.db[8]
-        << ", " << M.data.db[2] << ", " << M.data.db[5]
+{        
+    const double *M = cp.intrinsics();
+    const double *D = cp.distortion();
+    
+    out << "[[" << M[0] << ", " << M[4] << ", " << M[8]
+        << ", " << M[2] << ", " << M[5]
         << "], [" 
-        << D.data.db[0] << ", " << D.data.db[1] << ", " << D.data.db[2]
-        << ", " << D.data.db[3] << ", " << D.data.db[4] << "]]";
+        << D[0] << ", " << D[1] << ", " << D[2]
+        << ", " << D[3] << ", " << D[4] << "]]";
     
     return out;
 }

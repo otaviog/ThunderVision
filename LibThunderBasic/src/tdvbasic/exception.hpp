@@ -2,6 +2,7 @@
 #define TDV_EXCEPTION_HPP
 
 #include <exception>
+#include <string>
 #include <boost/format.hpp>
 #include "common.hpp"
 

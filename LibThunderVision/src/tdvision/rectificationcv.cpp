@@ -12,7 +12,8 @@ IplImage*  convert32FTo8U(IplImage *img)
 }
 
 void RectificationCV::findCorners(IplImage *img, CvPoint2D32f *corners, 
-                                  int *cornerCount, IplImage *eigImage, IplImage *tmpImage)
+                                  int *cornerCount, IplImage *eigImage, 
+                                  IplImage *tmpImage)
 {
     static const size_t CORNER_SEARCH_WIN_DIM = 9;
         
@@ -25,7 +26,8 @@ void RectificationCV::findCorners(IplImage *img, CvPoint2D32f *corners,
     cvFindCornerSubPix(tmpSPImg, corners, *cornerCount, 
                        cvSize(CORNER_SEARCH_WIN_DIM, CORNER_SEARCH_WIN_DIM),
                        cvSize(-1, -1), 
-                       cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+                       cvTermCriteria(
+                           CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
     cvReleaseImage(&tmpSPImg);
 }
 

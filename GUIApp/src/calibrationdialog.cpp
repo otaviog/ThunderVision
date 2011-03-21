@@ -1,4 +1,6 @@
 #include <QMessageBox>
+#include <QFileDialog>
+#include <tdvision/thunderlang.hpp>
 #include "camcalibrationcontext.hpp"
 #include "calibrationwidget.hpp"
 #include "calibrationdialog.hpp"
@@ -40,4 +42,21 @@ void CalibrationDialog::closeEvent(QCloseEvent *ev)
 void CalibrationDialog::informCriticalError(QString message)
 {
     QMessageBox::critical(this, "Error", message);
+}
+
+void CalibrationDialog::save()
+{
+    if ( m_calibCtx == NULL )
+        return ;
+    
+    QString filename = QFileDialog::getSaveFileName(
+        this, tr("Save Calibration"), QString(),
+        tr("ThunderLang (*.tl)"));
+    
+    if ( !filename.isEmpty() )
+    {
+        ThunderLangWriter writer(filename.stdString());
+        writer.write(m_calibCtx->camerasDesc());
+    }
+        
 }

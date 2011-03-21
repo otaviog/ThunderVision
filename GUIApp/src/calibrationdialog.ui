@@ -69,5 +69,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pbClose</sender>
+   <signal>clicked()</signal>
+   <receiver>CalibrationDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>593</x>
+     <y>449</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

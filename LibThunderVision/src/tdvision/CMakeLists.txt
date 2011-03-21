@@ -1,3 +1,5 @@
+ADD_ANTLR3_GRAMMAR(ThunderLang)
+
 CUDA_ADD_LIBRARY(tdvision  
   pipe.hpp
   workunit.hpp  
@@ -23,7 +25,12 @@ CUDA_ADD_LIBRARY(tdvision
   wtadev.hpp wtadev.cpp wta.cu
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
+  camerasdesc.hpp camerasdesc.cpp
   cameraparameters.hpp cameraparameters.cpp
   chessboardpattern.hpp chessboardpattern.cpp
   rectificationcv.hpp rectificationcv.cpp
-  calibration.hpp calibration.cpp)
+  calibration.hpp calibration.cpp
+  thunderlang.hpp thunderlang.cpp
+  tlctx.h tlctx.cpp
+  ThunderLangParser.h ThunderLangParser.c
+  ThunderLangLexer.h ThunderLangLexer.c)

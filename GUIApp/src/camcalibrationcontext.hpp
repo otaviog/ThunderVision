@@ -30,6 +30,11 @@ public:
         return m_calib.detectionImage();
     }
     
+    const tdv::CamerasDesc& camerasDesc() const
+    {
+        return m_calib.camerasDesc();
+    }
+    
 private:
     tdv::ProcessRunner *m_procRunner;       
     tdv::CaptureProc m_capture0;

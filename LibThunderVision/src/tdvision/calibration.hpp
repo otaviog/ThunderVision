@@ -4,7 +4,7 @@
 #include <tdvbasic/common.hpp>
 #include <cv.h>
 #include "chessboardpattern.hpp"
-#include "cameraparameters.hpp"
+#include "camerasdesc.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
 
@@ -56,21 +56,17 @@ public:
         m_observer = obsr;
     }
     
-    const CameraParameters& leftCamParms() const
+    const CamerasDesc& camerasDesc() const
     {
-        return m_lParms;
+        return m_camDesc;
     }
     
-    const CameraParameters& rightCamParms() const
-    {
-        return m_rParms;
-    }
-        
     bool update();
     
 private:
 
-    IplImage* updateChessboardCorners(const IplImage *limg, const IplImage *rimg);
+    IplImage* updateChessboardCorners(const IplImage *limg, 
+                                      const IplImage *rimg);
     
     void updateCalibration(const CvSize &imgSize);
     
@@ -80,7 +76,8 @@ private:
     bool m_sinkLeft, m_sinkRight;    
     ReadWritePipe<IplImage*> m_dipipe;
     
-    CameraParameters m_lParms, m_rParms;    
+    CamerasDesc m_camDesc;
+    
     std::vector<CvPoint2D32f> m_lPoints, m_rPoints;
     std::vector<CvPoint3D32f> m_objPoints;
     

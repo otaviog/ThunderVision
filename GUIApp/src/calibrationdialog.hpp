@@ -26,7 +26,9 @@ public:
 
 public slots:
     void informCriticalError(QString message);
-
+    
+    void save();
+    
 private:
     CalibrationWidget *m_calibWid;
     CamCalibrationContext *m_calibCtx;

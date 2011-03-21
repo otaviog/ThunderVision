@@ -99,28 +99,24 @@ void Calibration::updateCalibration(const CvSize &imgSize)
     npoints.resize(m_avalFrames, m_cbpattern.totalCorners());
     CvMat v_npoints = cvMat(1, m_avalFrames, CV_32S, &npoints[0]);
 
-    double leftM[3][3], rightM[3][3], leftD[5] = {0, 0, 0, 0, 0}, 
-        rightD[5] = {0, 0, 0, 0, 0},
-        R[3][3], T[3] = {0, 0, 0};
+    double R[3][3], T[3] = {0, 0, 0};
     
-    CvMat v_leftM = cvMat(3, 3, CV_64F, leftM),
-        v_rightM = cvMat(3, 3, CV_64F, rightM),
-        v_leftD = cvMat(1, 5, CV_64F, leftD),
-        v_rightD = cvMat(1, 5, CV_64F, rightD),
+    CvMat v_leftM = cvMat(3, 3, CV_64F, m_camDesc.leftCamera().intrinsics()),
+        v_rightM = cvMat(3, 3, CV_64F, m_camDesc.rightCamera().intrinsics()),
+        v_leftD = cvMat(1, 5, CV_64F, m_camDesc.leftCamera().distortion()),
+        v_rightD = cvMat(1, 5, CV_64F, m_camDesc.rightCamera().distortion()),
         v_R = cvMat(3, 3, CV_64F, R),
         v_T = cvMat(3, 1, CV_64F, T);
 
     cvSetIdentity(&v_leftM);
     cvSetIdentity(&v_rightM);
-    cvSetIdentity(&v_R);
-
+    cvSetIdentity(&v_R);    
+    
     cvStereoCalibrate(
         &v_objectPoints, &v_leftPoints, &v_rightPoints,
         &v_npoints,
-        //&v_leftM, &v_leftD,
-        //&v_rightM, &v_rightD,
-        &m_lParms.intrinsecs(), &m_lParms.distorsion(),
-        &m_rParms.intrinsecs(), &m_rParms.distorsion(),
+        &v_leftM, &v_leftD,
+        &v_rightM, &v_rightD,
         imgSize,
         &v_R, &v_T, NULL, NULL,
         cvTermCriteria(CV_TERMCRIT_ITER+

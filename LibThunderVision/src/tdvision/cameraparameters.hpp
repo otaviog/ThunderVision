@@ -2,54 +2,70 @@
 #define TDV_CAMERAPARAMETERS_HPP
 
 #include <tdvbasic/common.hpp>
-#include <cv.h>
 #include <ostream>
 
 TDV_NAMESPACE_BEGIN
+
+class CamerasDescription
+{
+public:
+    
+private:
+};
 
 class CameraParameters
 {
 public:
     CameraParameters();
-        
-    CameraParameters(const CameraParameters &cp)
+                
+    void distortion(double d1, double d2, double d3, 
+                    double d4, double d5)
     {
-        copy(cp);
+        m_distortion[0] = d1;
+        m_distortion[1] = d2;
+        m_distortion[2] = d3;
+        m_distortion[3] = d4;
+        m_distortion[4] = d5;
     }
     
-    CameraParameters& operator=(const CameraParameters &cp)
+    void intrinsics(double mtx[9]);
+    
+    void extrinsics(double mtx[9]);
+    
+    const double* intrinsics() const
     {
-        copy(cp);
-        return *this;
+        return m_intrinsics;
     }
     
-    const CvMat& intrinsecs() const
+    const double* extrinsics() const
     {
-        return m_vi;
+        return m_extrinsics;
     }
     
-    const CvMat& distorsion() const
+    const double *distortion() const
     {
-        return m_vd;
-    }
-
-    CvMat& intrinsecs()
-    {
-        return m_vi;
-    }
-    
-    CvMat& distorsion()
-    {
-        return m_vd;
+        return m_distortion;
     }
 
-private:
+    double* intrinsics() 
+    {
+        return m_intrinsics;
+    }
     
-    void copy(const CameraParameters &cp);
+    double* extrinsics()
+    {
+        return m_extrinsics;
+    }
     
-    double m_intrinsecs[3][3];
-    double m_distorsion[5];
-    CvMat m_vi, m_vd;    
+    double *distortion() 
+    {
+        return m_distortion;
+    }
+    
+private:        
+    double m_intrinsics[9];
+    double m_extrinsics[9];
+    double m_distortion[5];    
 };
 
 std::ostream& operator<<(std::ostream& out, const CameraParameters &cp);
