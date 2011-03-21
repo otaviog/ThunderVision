@@ -21,6 +21,16 @@ public:
     {
         return m_rightCam;
     }
+    
+    const CameraParameters& leftCamera() const
+    {
+        return m_leftCam;
+    }
+    
+    const CameraParameters& rightCamera() const
+    {
+        return m_rightCam;
+    }
 
     void fundamentalMatrix(const double mtx[9]);
     

@@ -17,7 +17,6 @@ CEXTERN void tlcSetIntrinsic(void *tlc, const char *descId, int leftOrRight,
 CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, int leftOrRight,
                              double mtx[9]);
 
-CEXTERN void tlcSetFundamental(void *tlc, const char *descId, int leftOrRight,
-                               double mtx[9]);
+CEXTERN void tlcSetFundamental(void *tlc, const char *descId, double mtx[9]);
 
 #endif /* TDV_TLCTX_H */

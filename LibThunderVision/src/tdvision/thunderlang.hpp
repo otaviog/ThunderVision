@@ -9,7 +9,7 @@
 
 TDV_NAMESPACE_BEGIN
 
-class ThunderLang
+class ThunderSpec
 {
 public:
     typedef std::map<std::string, CamerasDesc> CamerasDescMap;
@@ -17,6 +17,16 @@ public:
     CamerasDesc& camerasDesc(const std::string &name)
     {
         return m_cdmap[name];
+    }
+    
+    CamerasDescMap::const_iterator camerasBegIt() const
+    {
+        return m_cdmap.begin();
+    }
+    
+    CamerasDescMap::const_iterator camerasEndIt() const
+    {
+        return m_cdmap.end();
     }
     
 private:
@@ -38,7 +48,7 @@ public:
     
     typedef std::list<Error> ErrorList;
     
-    ThunderLangParser(ThunderLang &ctx)
+    ThunderLangParser(ThunderSpec &ctx)
         : m_context(ctx)
     { }
                      
@@ -49,20 +59,20 @@ public:
         m_errors.push_back(error);
     }
     
-    ThunderLang& context()
+    ThunderSpec& context()
     {
         return m_context;
     }
     
 private:    
     ErrorList m_errors;
-    ThunderLang &m_context;
+    ThunderSpec &m_context;
 };
 
 class ThunderLangWriter
 {
-public:
-    void write();
+public:    
+    void write(const std::string &filename, const ThunderSpec &spec);
     
 private:
 };

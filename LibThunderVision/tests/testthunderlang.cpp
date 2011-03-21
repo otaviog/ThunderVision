@@ -3,12 +3,12 @@
 
 TEST(ThunderLangTest, ParseFile)
 {
-    tdv::ThunderLang lang;
-    tdv::ThunderLangParser parser(lang);
+    tdv::ThunderSpec spec;
+    tdv::ThunderLangParser parser(spec);
     
     parser.parseFile("../../res/camerasdesc.tl");
     
-    tdv::CamerasDesc desc = lang.camerasDesc("default");
+    tdv::CamerasDesc desc = spec.camerasDesc("default");
     EXPECT_DOUBLE_EQ(1.0, desc.leftCamera().distortion()[0]);
     EXPECT_DOUBLE_EQ(2.0, desc.leftCamera().distortion()[1]);
     EXPECT_DOUBLE_EQ(3.0, desc.leftCamera().distortion()[2]);
@@ -23,6 +23,19 @@ TEST(ThunderLangTest, ParseFile)
     EXPECT_DOUBLE_EQ(6.0, desc.leftCamera().intrinsics()[5]);
     EXPECT_DOUBLE_EQ(7.0, desc.leftCamera().intrinsics()[6]);
     EXPECT_DOUBLE_EQ(8.0, desc.leftCamera().intrinsics()[7]);
-    EXPECT_DOUBLE_EQ(9.0, desc.leftCamera().intrinsics()[8]);
-    
+    EXPECT_DOUBLE_EQ(9.0, desc.leftCamera().intrinsics()[8]);    
 }
+
+TEST(ThunderLangTest, WriteFile)
+{
+    tdv::ThunderSpec spec;
+    tdv::ThunderLangParser parser(spec);
+    
+    parser.parseFile("../../res/camerasdesc.tl");
+    
+    tdv::ThunderLangWriter writer;
+    writer.write("camerasdesc-w.tl", spec);
+    
+    parser.parseFile("camerasdesc-w.tl");
+}
+

@@ -3,7 +3,7 @@
 
 using namespace tdv;
 
-static CameraParameters& getCameraParms(ThunderLang &lang, const char *descId, 
+static CameraParameters& getCameraParms(ThunderSpec &lang, const char *descId, 
     int leftOrRight)
 {
     CamerasDesc &camsDesc = lang.camerasDesc(descId);    
@@ -14,7 +14,7 @@ static CameraParameters& getCameraParms(ThunderLang &lang, const char *descId,
         return camsDesc.rightCamera();    
 }
 
-static ThunderLang& getLang(void *tlc)
+static ThunderSpec& getLang(void *tlc)
 {    
     return reinterpret_cast<ThunderLangParser*>(tlc)->context();       
 }
@@ -44,8 +44,7 @@ CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, int leftOrRight,
    camParms.extrinsics(mtx); 
 }
 
-CEXTERN void tlcSetFundamental(void *tlc, const char *descId, int leftOrRight,
-                               double mtx[9])
+CEXTERN void tlcSetFundamental(void *tlc, const char *descId, double mtx[9])
 {
     CamerasDesc &camsDesc = getLang(tlc).camerasDesc(descId);    
     camsDesc.fundamentalMatrix(mtx);

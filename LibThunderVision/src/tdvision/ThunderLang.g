@@ -90,20 +90,25 @@ thunderLang [void *ctxobj]
 	:	(camerasDesc[ctxobj] | stereo[ctxobj]) * ;
 
 camerasDesc [void *ctxobj]
-	: 'CamerasDesc' id=ID '{' cameraParms[ctxobj, MY_TXT_C(id)]* '}' 
+	: 'CamerasDesc' id=ID '{' camerasDescOpts[ctxobj, MY_TXT_C(id)]* '}' 
 	;
 	
-cameraParms [void *ctxobj, char *descId]
+camerasDescOpts [void *ctxobj, const char *descId]
+	@init { double mtx[9]; }
+	: cameraParms[ctxobj, descId]
+	| 'fundamental' '=' matrix33[mtx] { tlcSetFundamental(ctxobj, descId, mtx); }
+	;
+	
+cameraParms [void *ctxobj, const char *descId]
 	@init { int leftOrRight = 0; }
 	:	'Camera' ('Left' { leftOrRight = 0; } | 'Right' { leftOrRight = 1; } ) '{' cameraParmsOpts[ctxobj, descId, leftOrRight]* '}'
 	;
 
-cameraParmsOpts[void *ctxobj, char *descId, int leftOrRight]
+cameraParmsOpts[void *ctxobj, const char *descId, int leftOrRight]
 	@init { double mtx[9]; }
 	: 'intrinsic_transform' '=' matrix33[mtx] { tlcSetIntrinsic(ctxobj, descId, leftOrRight, mtx); } 
 	| 'intrinsic_distortion' '=' '[' d1=FLOAT d2=FLOAT d3=FLOAT d4=FLOAT d5=FLOAT ']' 
-		{ tlcSetDistortion(ctxobj, descId, leftOrRight, MY_DBL(d1), MY_DBL(d2), MY_DBL(d3), MY_DBL(d4), MY_DBL(d5)); }
-	| 'fundamental' '=' matrix33[mtx] { tlcSetFundamental(ctxobj, descId, leftOrRight, mtx); }
+		{ tlcSetDistortion(ctxobj, descId, leftOrRight, MY_DBL(d1), MY_DBL(d2), MY_DBL(d3), MY_DBL(d4), MY_DBL(d5)); }	
 	| 'extrinsic_transform' '=' matrix33[mtx] { tlcSetExtrinsic(ctxobj, descId, leftOrRight, mtx); }
 	;
 

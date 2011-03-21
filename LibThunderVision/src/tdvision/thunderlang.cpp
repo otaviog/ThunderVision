@@ -1,9 +1,11 @@
+#include <fstream>
+#include <boost/system/error_code.hpp>
 #include "parserexception.hpp"
+#include "writeexception.hpp"
 #include "thunderlang.hpp"
 #include "ThunderLangLexer.h"
 #include "ThunderLangParser.h"
 #include <map>
-
 
 TDV_NAMESPACE_BEGIN
 
@@ -137,6 +139,73 @@ void ThunderLangParser::parseFile(const std::string &filename)
     tstream->free(tstream);
     lexer->free(lexer);
     input->close(input);
+}
+
+static void printMatrix33(std::ostream &stream, const double matrix[9])
+{
+    stream << "[[" 
+           << matrix[0] << ' '<< matrix[1] << ' ' << matrix[2] 
+           << ']' << std::endl
+           << '[' 
+           << matrix[3] << ' ' << matrix[4] << ' ' << matrix[5] 
+           << ']' << std::endl
+           << '[' 
+           << matrix[6] << ' ' << matrix[7] << ' ' << matrix[8] 
+           << "]]" << std::endl;
+}
+
+static void printArray(std::ostream &out, size_t len, const double *array)
+{
+    out << '[';
+    
+    for (size_t i=0; i<len; i++)
+    {
+        out << array[i] << ' ';
+    }
+    
+    out << ']' << std::endl;        
+}
+
+static void printCameraParms(std::ostream &out, const CameraParameters &parms)
+{
+    out<< "intrinsic_transform = ";
+    printMatrix33(out, parms.intrinsics());
+    out << "intrinsic_distortion = ";
+    printArray(out, 5, parms.distortion());
+    out << "extrinsic_transform = ";
+    printMatrix33(out, parms.extrinsics());
+}
+
+void ThunderLangWriter::write(const std::string &filename, const ThunderSpec &spec)
+{    
+    std::ofstream out(filename.c_str());
+        
+    if ( !out.good() )
+    {
+        boost::system::error_code errcode;
+        throw WriteException(boost::format("Can't open file %1%: %2%") 
+                             % filename % errcode.message());
+    }
+    
+    for (ThunderSpec::CamerasDescMap::const_iterator cIt=spec.camerasBegIt();
+         cIt != spec.camerasEndIt(); cIt++)
+    {
+        const CamerasDesc &desc = cIt->second;        
+        const CameraParameters &lparms = desc.leftCamera();
+        const CameraParameters &rparms = desc.rightCamera();
+        
+        out << "CamerasDesc " << cIt->first << " {" << std::endl
+            << "Camera Left {" << std::endl;            
+        printCameraParms(out, lparms);
+        out << '}' <<std::endl;        
+        out << "Camera Right {" << std::endl;
+        printCameraParms(out, rparms);
+        out << "}" << std::endl;
+        
+        out << "fundamental = ";
+        printMatrix33(out, desc.fundamentalMatrix());
+        out << "}";
+    }    
 }
 
 TDV_NAMESPACE_END

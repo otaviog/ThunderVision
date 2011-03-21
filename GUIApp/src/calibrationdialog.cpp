@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <tdvision/thunderlang.hpp>
+#include <tdvision/writeexception.hpp>
 #include "camcalibrationcontext.hpp"
 #include "calibrationwidget.hpp"
 #include "calibrationdialog.hpp"
@@ -55,8 +56,13 @@ void CalibrationDialog::save()
     
     if ( !filename.isEmpty() )
     {
-        ThunderLangWriter writer(filename.stdString());
-        writer.write(m_calibCtx->camerasDesc());
-    }
-        
+        try
+        {
+            tdv::ThunderLangWriter writer;
+            writer.write(filename.stdString(), m_calibCtx->camerasDesc());
+        }
+        catch (const tdv::WriteException &ex)
+        {
+        }
+    }        
 }
