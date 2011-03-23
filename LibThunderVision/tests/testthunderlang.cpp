@@ -1,14 +1,8 @@
 #include <gtest/gtest.h>
 #include <tdvision/thunderlang.hpp>
 
-TEST(ThunderLangTest, ParseFile)
+static void testSampleDesc1(const tdv::CamerasDesc &desc)
 {
-    tdv::ThunderSpec spec;
-    tdv::ThunderLangParser parser(spec);
-    
-    parser.parseFile("../../res/camerasdesc.tl");
-    
-    tdv::CamerasDesc desc = spec.camerasDesc("default");
     EXPECT_DOUBLE_EQ(1.0, desc.leftCamera().distortion()[0]);
     EXPECT_DOUBLE_EQ(2.0, desc.leftCamera().distortion()[1]);
     EXPECT_DOUBLE_EQ(3.0, desc.leftCamera().distortion()[2]);
@@ -24,6 +18,20 @@ TEST(ThunderLangTest, ParseFile)
     EXPECT_DOUBLE_EQ(7.0, desc.leftCamera().intrinsics()[6]);
     EXPECT_DOUBLE_EQ(8.0, desc.leftCamera().intrinsics()[7]);
     EXPECT_DOUBLE_EQ(9.0, desc.leftCamera().intrinsics()[8]);    
+    
+    EXPECT_TRUE(desc.hasFundamentalMatrix());
+    EXPECT_TRUE(desc.hasExtrinsics());
+}
+
+TEST(ThunderLangTest, ParseFile)
+{
+    tdv::ThunderSpec spec;
+    tdv::ThunderLangParser parser(spec);
+    
+    parser.parseFile("../../res/camerasdesc.tl");
+    
+    tdv::CamerasDesc desc = spec.camerasDesc("default");
+    testSampleDesc1(desc);
 }
 
 TEST(ThunderLangTest, WriteFile)
@@ -34,8 +42,13 @@ TEST(ThunderLangTest, WriteFile)
     parser.parseFile("../../res/camerasdesc.tl");
     
     tdv::ThunderLangWriter writer;
-    writer.write("camerasdesc-w.tl", spec);
-    
+    writer.write("camerasdesc-w.tl", spec);    
     parser.parseFile("camerasdesc-w.tl");
+    
+    tdv::ThunderSpec spec2;
+    tdv::ThunderLangParser parser2(spec2);
+    
+    parser2.parseFile("../../res/camerasdesc.tl");
+    testSampleDesc1(spec2.camerasDesc("default"));
 }
 

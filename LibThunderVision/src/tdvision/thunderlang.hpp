@@ -64,6 +64,11 @@ public:
         return m_context;
     }
     
+    const ErrorList& errors() const
+    {
+        return m_errors;
+    }
+    
 private:    
     ErrorList m_errors;
     ThunderSpec &m_context;

@@ -34,14 +34,38 @@ public:
 
     void fundamentalMatrix(const double mtx[9]);
     
+    bool hasFundamentalMatrix() const
+    {
+        return m_hasF;
+    }
+
     const double* fundamentalMatrix() const
     {
         return m_F;
     }
+
+    void extrinsics(const double R[9], const double T[3]);
     
+    const double* extrinsicsR() const
+    {
+        return m_extrinsicsR;
+    }
+    
+    const double* extrinsicsT() const
+    {
+        return m_extrinsicsT;
+    }
+    
+    bool hasExtrinsics() const
+    {
+        return m_hasExt;
+    }
+
 private:
     CameraParameters m_leftCam, m_rightCam;
-    double m_F[9];    
+    double m_F[9], m_extrinsicsR[9], m_extrinsicsT[3];
+    bool m_hasF, m_hasExt;
+    
 };
 
 TDV_NAMESPACE_END

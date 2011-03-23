@@ -101,7 +101,7 @@ void ThunderLangParser::parseFile(const std::string &filename)
     pThunderLangLexer lexer;
     pThunderLangParser parser;
 
-    //m_errors.clear();
+    m_errors.clear();
     input = antlr3AsciiFileStreamNew( (pANTLR3_UINT8) filename.c_str());
     if ( NULL == input )
         throw ParserException("Filename doens't exists");
@@ -172,8 +172,6 @@ static void printCameraParms(std::ostream &out, const CameraParameters &parms)
     printMatrix33(out, parms.intrinsics());
     out << "intrinsic_distortion = ";
     printArray(out, 5, parms.distortion());
-    out << "extrinsic_transform = ";
-    printMatrix33(out, parms.extrinsics());
 }
 
 void ThunderLangWriter::write(const std::string &filename, const ThunderSpec &spec)
@@ -202,8 +200,19 @@ void ThunderLangWriter::write(const std::string &filename, const ThunderSpec &sp
         printCameraParms(out, rparms);
         out << "}" << std::endl;
         
-        out << "fundamental = ";
-        printMatrix33(out, desc.fundamentalMatrix());
+        if ( desc.hasFundamentalMatrix() )
+        {
+            out << "fundamental = ";
+            printMatrix33(out, desc.fundamentalMatrix());         
+        }
+        
+        if ( desc.hasExtrinsics() )
+        {
+            out << "extrinsics = [";
+            printMatrix33(out, desc.extrinsicsR());
+            printArray(out, 3, desc.extrinsicsT());            
+        }              
+        
         out << "}";
     }    
 }

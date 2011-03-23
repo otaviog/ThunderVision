@@ -45,8 +45,7 @@ void CalibrationWidget::calibrationUpdate(const tdv::Calibration &calib)
     {
         QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
                                   Q_ARG(QString, tr("Calibration done")));
-        std::cout<<calib.leftCamParms()<<std::endl
-                 <<calib.rightCamParms()<<std::endl;
+
     }
     else
     {

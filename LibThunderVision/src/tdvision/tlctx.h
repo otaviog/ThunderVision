@@ -14,8 +14,8 @@ CEXTERN void tlcSetDistortion(void *tlc, const char *descId, int leftOrRight,
 CEXTERN void tlcSetIntrinsic(void *tlc, const char *descId, int leftOrRight, 
                              double mtx[9]);
 
-CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, int leftOrRight,
-                             double mtx[9]);
+CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, double mtx[9], 
+                             double t1, double t2, double t3);
 
 CEXTERN void tlcSetFundamental(void *tlc, const char *descId, double mtx[9]);
 

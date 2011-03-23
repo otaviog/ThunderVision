@@ -19,8 +19,7 @@ CameraParameters::CameraParameters()
         = m_distortion[3]
         = m_distortion[4] = 0.0;
     
-    identity(m_intrinsics);
-    identity(m_extrinsics);
+    identity(m_intrinsics);    
 }
 
 void CameraParameters::intrinsics(double mtx[9])
@@ -28,10 +27,6 @@ void CameraParameters::intrinsics(double mtx[9])
     memcpy(m_intrinsics, mtx, sizeof(double)*9);
 }
     
-void CameraParameters::extrinsics(double mtx[9])
-{
-    memcpy(m_extrinsics, mtx, sizeof(double)*9);
-}
 
 std::ostream& operator<<(std::ostream& out, const CameraParameters &cp)
 {        

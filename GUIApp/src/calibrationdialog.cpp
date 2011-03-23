@@ -14,6 +14,10 @@ CalibrationDialog::CalibrationDialog()
     
     connect(&m_errHandle, SIGNAL(informError(QString)),
             this, SLOT(informCriticalError(QString)));
+    connect(pbSave, SIGNAL(clicked()),
+            this, SLOT(save()));
+    
+    //pbSabe->setEnable(false);
 }
 
 void CalibrationDialog::init()
@@ -59,7 +63,9 @@ void CalibrationDialog::save()
         try
         {
             tdv::ThunderLangWriter writer;
-            writer.write(filename.stdString(), m_calibCtx->camerasDesc());
+            tdv::ThunderSpec spec;
+            spec.camerasDesc("default") = m_calibCtx->camerasDesc();
+            writer.write(filename.toStdString(), spec);
         }
         catch (const tdv::WriteException &ex)
         {

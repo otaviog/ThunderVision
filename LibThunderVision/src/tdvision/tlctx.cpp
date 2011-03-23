@@ -36,12 +36,13 @@ CEXTERN void tlcSetIntrinsic(void *tlc, const char *descId, int leftOrRight,
    camParms.intrinsics(mtx);   
 }
 
-CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, int leftOrRight,
-                             double mtx[9])
+CEXTERN void tlcSetExtrinsic(void *tlc, const char *descId, double rot[9], 
+                             double t1, double t2, double t3)
 {
-   CameraParameters &camParms = getCameraParms(
-        getLang(tlc), descId, leftOrRight);    
-   camParms.extrinsics(mtx); 
+    CamerasDesc &camsDesc = getLang(tlc).camerasDesc(descId);    
+    const double loc[3] = {t1, t2, t3};
+    camsDesc.extrinsics(rot, loc);
+
 }
 
 CEXTERN void tlcSetFundamental(void *tlc, const char *descId, double mtx[9])

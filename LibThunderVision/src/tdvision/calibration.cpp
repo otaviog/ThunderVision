@@ -98,18 +98,24 @@ void Calibration::updateCalibration(const CvSize &imgSize)
     std::vector<int> npoints;
     npoints.resize(m_avalFrames, m_cbpattern.totalCorners());
     CvMat v_npoints = cvMat(1, m_avalFrames, CV_32S, &npoints[0]);
-
-    double R[3][3], T[3] = {0, 0, 0};
     
-    CvMat v_leftM = cvMat(3, 3, CV_64F, m_camDesc.leftCamera().intrinsics()),
-        v_rightM = cvMat(3, 3, CV_64F, m_camDesc.rightCamera().intrinsics()),
-        v_leftD = cvMat(1, 5, CV_64F, m_camDesc.leftCamera().distortion()),
-        v_rightD = cvMat(1, 5, CV_64F, m_camDesc.rightCamera().distortion()),
-        v_R = cvMat(3, 3, CV_64F, R),
-        v_T = cvMat(3, 1, CV_64F, T);
+    double c_lM[9], c_rM[9], 
+        c_lD[5] = {0, 0, 0, 0, 0},
+        c_rD[5] = {0, 0, 0, 0, 0},
+            c_F[9], c_R[9], 
+                c_T[3] = {0, 0, 0};
+    
+    CvMat v_leftM = cvMat(3, 3, CV_64F, c_lM),
+        v_rightM = cvMat(3, 3, CV_64F, c_rM),
+        v_leftD = cvMat(1, 5, CV_64F, c_lD),
+        v_rightD = cvMat(1, 5, CV_64F, c_rD),
+        v_R = cvMat(3, 3, CV_64F, c_R),
+        v_T = cvMat(3, 1, CV_64F, c_T),
+        v_F = cvMat(3, 3, CV_64F, c_F);
 
     cvSetIdentity(&v_leftM);
     cvSetIdentity(&v_rightM);
+    cvSetIdentity(&v_F);
     cvSetIdentity(&v_R);    
     
     cvStereoCalibrate(
@@ -118,13 +124,20 @@ void Calibration::updateCalibration(const CvSize &imgSize)
         &v_leftM, &v_leftD,
         &v_rightM, &v_rightD,
         imgSize,
-        &v_R, &v_T, NULL, NULL,
+        &v_R, &v_T, NULL, &v_F,
         cvTermCriteria(CV_TERMCRIT_ITER+
                        CV_TERMCRIT_EPS, 100, 1e-5),
         CV_CALIB_FIX_ASPECT_RATIO 
         + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH);
     
+    m_camDesc.leftCamera().intrinsics(c_lM);
+    m_camDesc.leftCamera().distortion(c_lD[0], c_lD[1], c_lD[2], c_lD[3], c_lD[4]);
     
+    m_camDesc.rightCamera().intrinsics(c_rM);
+    m_camDesc.rightCamera().distortion(c_rD[0], c_rD[1], c_rD[2], c_rD[3], c_rD[4]);
+    
+    m_camDesc.fundamentalMatrix(c_F);
+    m_camDesc.extrinsics(c_R, c_T);
 }
 
 bool Calibration::update()

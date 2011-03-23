@@ -6,13 +6,6 @@
 
 TDV_NAMESPACE_BEGIN
 
-class CamerasDescription
-{
-public:
-    
-private:
-};
-
 class CameraParameters
 {
 public:
@@ -28,44 +21,21 @@ public:
         m_distortion[4] = d5;
     }
     
-    void intrinsics(double mtx[9]);
-    
-    void extrinsics(double mtx[9]);
-    
-    const double* intrinsics() const
-    {
-        return m_intrinsics;
-    }
-    
-    const double* extrinsics() const
-    {
-        return m_extrinsics;
-    }
-    
     const double *distortion() const
     {
         return m_distortion;
     }
 
-    double* intrinsics() 
+    void intrinsics(double mtx[9]);
+            
+    const double* intrinsics() const
     {
         return m_intrinsics;
     }
-    
-    double* extrinsics()
-    {
-        return m_extrinsics;
-    }
-    
-    double *distortion() 
-    {
-        return m_distortion;
-    }
-    
+        
 private:        
-    double m_intrinsics[9];
-    double m_extrinsics[9];
-    double m_distortion[5];    
+    double m_intrinsics[9];    
+    double m_distortion[5];        
 };
 
 std::ostream& operator<<(std::ostream& out, const CameraParameters &cp);

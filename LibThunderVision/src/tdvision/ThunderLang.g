@@ -32,13 +32,13 @@ static char* RemoveQuotMark(ANTLR3_STRING *quotedString)
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
-INT :	'0'..'9'+
-    ;
+//INT :	'0'..'9'+
+  //  ;
 
 FLOAT
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
+    :  ('+'|'-')? ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+    |  ('+'|'-')? '.' ('0'..'9')+ EXPONENT?
+    |  ('+'|'-')? ('0'..'9')+ EXPONENT?
     ;
 
 COMMENT
@@ -97,6 +97,7 @@ camerasDescOpts [void *ctxobj, const char *descId]
 	@init { double mtx[9]; }
 	: cameraParms[ctxobj, descId]
 	| 'fundamental' '=' matrix33[mtx] { tlcSetFundamental(ctxobj, descId, mtx); }
+	| 'extrinsics' '=' '[' matrix33[mtx] '[' t1=FLOAT t2=FLOAT t3=FLOAT ']' ']' { tlcSetExtrinsic(ctxobj, descId, mtx, MY_DBL(t1), MY_DBL(t2), MY_DBL(t3)); }
 	;
 	
 cameraParms [void *ctxobj, const char *descId]
@@ -109,7 +110,6 @@ cameraParmsOpts[void *ctxobj, const char *descId, int leftOrRight]
 	: 'intrinsic_transform' '=' matrix33[mtx] { tlcSetIntrinsic(ctxobj, descId, leftOrRight, mtx); } 
 	| 'intrinsic_distortion' '=' '[' d1=FLOAT d2=FLOAT d3=FLOAT d4=FLOAT d5=FLOAT ']' 
 		{ tlcSetDistortion(ctxobj, descId, leftOrRight, MY_DBL(d1), MY_DBL(d2), MY_DBL(d3), MY_DBL(d4), MY_DBL(d5)); }	
-	| 'extrinsic_transform' '=' matrix33[mtx] { tlcSetExtrinsic(ctxobj, descId, leftOrRight, mtx); }
 	;
 
 matrix33 [ double *mtx ]
