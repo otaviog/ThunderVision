@@ -4,9 +4,9 @@
 #include <boost/scoped_array.hpp>
 #include <tdvision/processrunner.hpp>
 #include <highgui.h>
-#include "camerawidget.hpp"
+#include "videowidget.hpp"
 
-CameraWidget::CameraWidget(QWidget *parent)
+VideoWidget::VideoWidget(QWidget *parent)
     : QWidget(parent)
 {
     m_lastFrame = NULL;
@@ -16,7 +16,7 @@ CameraWidget::CameraWidget(QWidget *parent)
     m_pixmap = NULL;
 }
 
-CameraWidget::~CameraWidget()
+VideoWidget::~VideoWidget()
 {
     m_end = true;
 
@@ -27,14 +27,14 @@ CameraWidget::~CameraWidget()
     }
 }
 
-void CameraWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
+void VideoWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
 {
     QMutexLocker locker(&m_imageMutex);
     m_framePipe = framePipe;
     m_sink = sink;
 }
 
-void CameraWidget::init(tdv::ExceptionReport *report)
+void VideoWidget::init(tdv::ExceptionReport *report)
 {
     tdv::Process *procs[] = { this, NULL };
 
@@ -42,12 +42,12 @@ void CameraWidget::init(tdv::ExceptionReport *report)
     m_procRunner->run();
 }
 
-void CameraWidget::dispose()
+void VideoWidget::dispose()
 {
     m_procRunner->join();
 }
 
-void CameraWidget::paintEvent(QPaintEvent *event)
+void VideoWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     if ( m_lastFrame == NULL )
@@ -82,7 +82,7 @@ void CameraWidget::paintEvent(QPaintEvent *event)
     setFixedSize(img.width(), img.height());
 }
 
-void CameraWidget::process()
+void VideoWidget::process()
 {
     assert(m_framePipe != NULL);
 
@@ -103,7 +103,7 @@ void CameraWidget::process()
     }
 }
 
-IplImage* CameraWidget::lastFrame()
+IplImage* VideoWidget::lastFrame()
 {
     IplImage *lfCopy = NULL;
 

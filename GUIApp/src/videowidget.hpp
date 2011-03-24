@@ -1,5 +1,5 @@
-#ifndef TDV_CAMERAWIDGET_HPP
-#define TDV_CAMERAWIDGET_HPP
+#ifndef TDV_VIDEOWIDGET_HPP
+#define TDV_VIDEOWIDGET_HPP
 
 #include <tdvision/pipe.hpp>
 #include <tdvision/process.hpp>
@@ -16,14 +16,14 @@ class ProcessRunner;
 
 TDV_NAMESPACE_END
 
-class CameraWidget: public QWidget, public tdv::Process
+class VideoWidget: public QWidget, public tdv::Process
 {
     Q_OBJECT;
 
 public:
-    CameraWidget(QWidget *parent = NULL);
+    VideoWidget(QWidget *parent = NULL);
 
-    ~CameraWidget();
+    ~VideoWidget();
 
     void input(tdv::ReadPipe<IplImage*> *framePipe, bool sink);
 
@@ -48,4 +48,4 @@ private:
     QMutex m_imageMutex;
 };
 
-#endif /* TDV_CAMERAWIDGET_HPP */
+#endif /* TDV_VIDEOWIDGET_HPP */

@@ -10,4 +10,4 @@ ADD_QTEST(testcamerawidget testcamerawidget.cpp)
 
 ADD_QTEST(testcamerawidgetsimple testcamerawidgetsimple.cpp)
 
-ADD_QTEST(testcamerasviewwidget testcamerasviewwidget.cpp)
+#ADD_QTEST(testcamerasviewwidget testcamerasviewwidget.cpp)

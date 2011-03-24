@@ -8,7 +8,7 @@
 #include "ui_calibrationwidget.h"
 #include "camcalibrationcontext.hpp"
 
-class CameraWidget;
+class VideoWidget;
 
 class CalibrationWidget: 
     public QWidget, 
@@ -30,7 +30,7 @@ public:
     virtual void calibrationUpdate(const tdv::Calibration &calib);
                                                     
 private:
-    CameraWidget *m_camWid;
+    VideoWidget *m_camWid;
     QLabel *m_lbStatus;
     QProgressBar *m_pbProgress;
 };

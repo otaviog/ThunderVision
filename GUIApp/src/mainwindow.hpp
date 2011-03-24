@@ -2,17 +2,16 @@
 #define TDV_MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include "camerawidget.hpp"
+#include "ui_mainwindow.h"
+#include "videowidget.hpp"
 
-class MainWindow: public QMainWindow
+class MainWindow: public QMainWindow, private Ui::MainWindow
 {
+    Q_OBJECT;
 public:
     MainWindow();
     
-    virtual ~MainWindow();
-        
-private:
-    CameraWidget *m_cameras[2];
+    virtual ~MainWindow();        
 };
 
 #endif /* TDV_MAINWINDOW_HPP */

@@ -2,4 +2,9 @@
 
 MainWindow::MainWindow()
 {
+    setupUi(this);
+}
+
+MainWindow::~MainWindow()
+{
 }

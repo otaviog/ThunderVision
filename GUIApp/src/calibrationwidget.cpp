@@ -7,7 +7,7 @@
 #include <tdvision/imagesink.hpp>
 #include <tdvision/calibration.hpp>
 #include <tdvision/rgbconv.hpp>
-#include "camerawidget.hpp"
+#include "videowidget.hpp"
 #include "camerasviewwidget.hpp"
 #include "calibrationwidget.hpp"
 
@@ -15,7 +15,7 @@ CalibrationWidget::CalibrationWidget()
 {    
     setupUi(this);
     
-    m_camWid = new CameraWidget;    
+    m_camWid = new VideoWidget;    
     lyCamWid->addWidget(m_camWid);
 }
 
