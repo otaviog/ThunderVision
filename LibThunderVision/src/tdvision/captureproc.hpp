@@ -13,15 +13,10 @@ class CaptureProc: public Process
 {
 public:
     CaptureProc(int device);
-    
-    ReadPipe<FloatImage>* output()
+        
+    ReadPipe<IplImage*>* output()
     {
         return &m_wpipe;
-    }
-    
-    ReadPipe<IplImage*>* colorImage()
-    {
-        return &m_colorImagePipe;
     }
     
     void process();
@@ -29,8 +24,7 @@ public:
     void finish();
     
 private:
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
-    ReadWritePipe<IplImage*, IplImage*> m_colorImagePipe;
+    ReadWritePipe<IplImage*> m_wpipe;
     bool m_endCapture;
     int m_capDevice;
 };

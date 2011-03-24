@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="imgs">
+    <file>image-x-generic.png</file>
+    <file>video.png</file>
+    <file>camera-web.png</file>
     <file>thunder.ico</file>
     <file>thunder.png</file>
   </qresource>

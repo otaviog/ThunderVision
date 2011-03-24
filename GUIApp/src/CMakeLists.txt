@@ -1,5 +1,5 @@
 QT4_WRAP_CPP(QT_WRAPS 
-  videowidget.hpp 
+  videowidget.hpp
   #camerasviewwidget.hpp 
   calibrationwidget.hpp
   calibrationdialog.hpp
@@ -9,13 +9,15 @@ QT4_WRAP_CPP(QT_WRAPS
 QT4_WRAP_UI(QT_UICS calibrationwidget.ui calibrationdialog.ui mainwindow.ui)
   
 ADD_LIBRARY(GUILib 
-  errorreport.hpp
+  errorreport.hpp  
+  inputprocess.hpp
+  camerasinputprocess.hpp camerasinputprocess.cpp
   mainwindow.hpp mainwindow.cpp
-  videowidget.hpp videowidget.cpp
+  videowidget.hpp videowidget.cpp  
   #camerasviewwidget.hpp camerasviewwidget.cpp
   calibrationwidget.hpp calibrationwidget.cpp
   calibrationdialog.hpp calibrationdialog.cpp
-  camcalibrationcontext.hpp camcalibrationcontext.cpp  
+  calibrationcontext.hpp calibrationcontext.cpp  
   ${QT_WRAPS} ${QT_UICS})
 
 ADD_EXECUTABLE(GUIApp

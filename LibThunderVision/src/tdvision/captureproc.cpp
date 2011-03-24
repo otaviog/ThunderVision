@@ -30,15 +30,13 @@ void CaptureProc::process()
             
             if ( frame != NULL )
             {
-                m_wpipe.write(FloatImage(frame));
-                m_colorImagePipe.write(frame);
+                m_wpipe.write(frame);                
             }
         }
                 
         cvReleaseCapture(&capture);
         capture = NULL;
         
-        m_colorImagePipe.finish();
         m_wpipe.finish();
     }
     catch (const std::exception &ex)

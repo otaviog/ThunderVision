@@ -11,12 +11,14 @@ namespace tdv {
     class ExceptionReport;
 }
 
-class CamCalibrationContext
+class CalibrationContext
 {
 public: 
-    CamCalibrationContext(size_t numFrames);
+    CalibrationContext(size_t numFrames);
     
-    void init(tdv::ExceptionReport *report);
+    void init(tdv::ReadPipe<IplImage*> *leftImgInput,
+              tdv::ReadPipe<IplImage*> *rightImgInput,
+              tdv::ExceptionReport *report);
 
     void dispose();
     
@@ -37,8 +39,6 @@ public:
     
 private:
     tdv::ProcessRunner *m_procRunner;       
-    tdv::CaptureProc m_capture0;
-    tdv::CaptureProc m_capture1;    
     tdv::TWorkUnitProcess<tdv::ImageSink> m_sink0, m_sink1;    
     tdv::Calibration m_calib;
     tdv::WorkUnitProcess *m_calibProc;

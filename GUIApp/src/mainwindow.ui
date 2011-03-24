@@ -43,14 +43,14 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QPushButton" name="pushButton_9">
+           <widget class="QPushButton" name="pbReconstFrame">
             <property name="text">
              <string>Reconstruct Frame</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_10">
+           <widget class="QPushButton" name="pbReconstStream">
             <property name="text">
              <string>Reconstruct Stream</string>
             </property>
@@ -70,14 +70,17 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_11">
+           <widget class="QPushButton" name="pbExport">
             <property name="text">
              <string>Export</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_12">
+           <widget class="QPushButton" name="pbFullscreen">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Fullscreen</string>
             </property>
@@ -99,28 +102,21 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <widget class="QPushButton" name="pushButton_14">
-        <property name="text">
-         <string>Configure Cameras</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_15">
+       <widget class="QPushButton" name="pbConfigReconst">
         <property name="text">
          <string>Configure Reconstruction</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_16">
+       <widget class="QPushButton" name="pbCamerasView">
         <property name="text">
          <string>Cameras View</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_13">
+       <widget class="QPushButton" name="pbDisparityMap">
         <property name="text">
          <string>Disparity Map</string>
         </property>

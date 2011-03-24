@@ -1,6 +1,6 @@
 #include "camcalibrationcontext.hpp"
 
-CamCalibrationContext::CamCalibrationContext(size_t numFrames)
+CalibrationContext::CalibrationContext(size_t numFrames)
     : m_capture0(0), 
       m_capture1(1),
       m_calib(numFrames)
@@ -14,14 +14,13 @@ CamCalibrationContext::CamCalibrationContext(size_t numFrames)
     m_sink1.input(m_capture1.output());        
 }
 
-void CamCalibrationContext::init(tdv::ExceptionReport *errHdl)
+void CalibrationContext::init(tdv::ExceptionReport *errHdl)
 {
     if ( m_procRunner == NULL )
     {
         m_calibProc = new tdv::WorkUnitProcess(m_calib);
         
-        tdv::Process *procs[] = {
-            &m_capture0, &m_capture1, 
+        tdv::Process *procs[] = {        
             m_calibProc, &m_sink0, &m_sink1, NULL 
         };
         
@@ -30,7 +29,7 @@ void CamCalibrationContext::init(tdv::ExceptionReport *errHdl)
     }
 }
 
-void CamCalibrationContext::dispose()
+void CalibrationContext::dispose()
 {
     if ( m_procRunner != NULL )
     {
