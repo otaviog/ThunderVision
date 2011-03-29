@@ -51,10 +51,8 @@ void ProcessRunner::run()
     }    
 }
 
-void ProcessRunner::reportError(const std::exception &ex)
-{    
-    m_errorOc = true;
-    m_errReport->errorOcurred(ex);    
+void ProcessRunner::finishAll()
+{
     Process **procs = m_procGrp.processes();
     Process *proc = *procs++;
     
@@ -63,6 +61,14 @@ void ProcessRunner::reportError(const std::exception &ex)
         proc->finish();
         proc = *procs++;
     }
+}
+
+void ProcessRunner::reportError(const std::exception &ex)
+{    
+    m_errorOc = true;
+    m_errReport->errorOcurred(ex);    
+    
+    finishAll();
 }
 
 TDV_NAMESPACE_END

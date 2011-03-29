@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <tdvision/tdvcontext.hpp>
-#include <tdvision/camerastereoinputsource.hpp>
+#include <tdvision/capturestereoinputsource.hpp>
+#include <tdvision/reconstruction.hpp>
 #include <cv.h>
 #include <highgui.h>
 
@@ -9,39 +10,40 @@ using namespace tdv;
 TEST(TestTDVContext, CameraView)
 {
     TDVContext ctx;
-    CameraStereoInputSource inputSrc;
-    
-    //ctx.loadSpecFromFile("");            
+    CaptureStereoInputSource inputSrc;
+    inputSrc.init("../../res/cam0.avi", "../../res/cam1.avi");
+        
     ctx.start(&inputSrc);
     
     ReadPipe<IplImage*> *lftImgP, *rgtImgP;
-    ctx.dupInputSource(&lftImgP, &rgtImgP);
-    
-    //ctx.runReconstruction();
-    //ctx.releaseReconstruction();
-    
-    //ctx.runCalibration();
-    //ctx.releaseCalibration();
+    ctx.dupInputSource(&lftImgP, &rgtImgP);        
     
     IplImage *lftImg, *rgtImg;
-    while ( lftImgP->read(&lftImg) && rgtImgP->read(&rgtImg) )
-    {
-        cvShowImage("Left", lftImg);
-        cvShowImage("Right", rgtImg);        
-        cvWaitKey(0);
-    }
+    EXPECT_TRUE(lftImgP->read(&lftImg));
+    EXPECT_TRUE(rgtImgP->read(&rgtImg));
+    
+    ctx.dispose();
 }
 
 TEST(TestTDVContext, ShouldCreateReconstruction)
 {
     TDVContext ctx;
-    CameraStereoInputSource inputSrc;
     
+    CaptureStereoInputSource inputSrc;
+    inputSrc.init("../../res/cam0.avi", "../../res/cam1.avi");
+
     ctx.start(&inputSrc);
     Reconstruction *reconst = ctx.runReconstruction("CPU");
     
-    reconst->start();
-    reconst->stop();
+    ASSERT_TRUE(reconst != NULL);
+
+    reconst->step();
+    reconst->pause();        
     
+    ctx.releaseReconstruction(reconst);
     
+    reconst = ctx.runReconstruction("Device");
+    reconst->step();
+    
+    ctx.releaseReconstruction(reconst);
 }

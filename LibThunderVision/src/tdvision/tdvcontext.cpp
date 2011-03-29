@@ -48,6 +48,7 @@ void TDVContext::dispose()
 {
     if ( m_runner != NULL )
     {
+        m_runner->finishAll();
         m_runner->join();
         delete m_runner;
         m_runner = NULL;
@@ -58,12 +59,15 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
 {
     Reconstruction *reconst = NULL;
     
+    if ( m_reconstRunner == NULL )
+    {
+        return reconst;
+    }    
+    
     if ( profileName == "Device" )
-    {        
-        
+    {                
         DevStereoMatcher *matcher = new DevStereoMatcher;
-        m_matcher = matcher;
-        
+        m_matcher = matcher;        
         matcher->setMatchingCost(boost::shared_ptr<SSDDev>(
                                      new SSDDev(255, 1024*1024*256)));
         matcher->setOptimizer(boost::shared_ptr<WTADev>(new WTADev));
@@ -87,9 +91,14 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     return reconst;
 }
     
-void releaseReconstruction(Reconstruction *reconst)
+void TDVContext::releaseReconstruction(Reconstruction *reconst)
 {
-    m_reconstRunner->join();
+    if ( m_reconstRunner != NULL ) 
+    {
+        m_reconstRunner->finishAll();
+        m_reconstRunner->join();
+        delete m_reconstRunner;
+    }
 }
 
 Calibration* TDVContext::runCalibration()

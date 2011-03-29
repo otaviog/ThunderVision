@@ -1,15 +1,39 @@
 #include <cv.h>
 #include <highgui.h>
-#include <highgui.hpp>
 #include <boost/format.hpp>
 #include "captureproc.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-CaptureProc::CaptureProc(int device)
+Capture::Capture()
+{
+    m_capture = NULL;
+}
+
+void Capture::init(const std::string &filename)
+{
+    m_capture = cvCaptureFromFile(filename.c_str());
+}
+
+void Capture::init(int capDevice)
+{
+    m_capture = cvCaptureFromCAM(capDevice);
+}
+
+void Capture::update()
+{
+    cvGrabFrame(m_capture);
+    IplImage *frame = cvRetrieveFrame(m_capture);
+            
+    if ( frame != NULL )
+    {
+        m_wpipe.write(frame);                
+    }    
+}
+
+CaptureProc::CaptureProc()
 {    
-    m_endCapture = false;
-    m_capDevice = device;    
+    m_endCapture = false;    
 }
 
 void CaptureProc::finish()
@@ -18,34 +42,22 @@ void CaptureProc::finish()
 }
 
 void CaptureProc::process()
-{
-    CvCapture *capture = cvCaptureFromCAM(m_capDevice);
-    
+{        
     try 
     {        
         while ( !m_endCapture )
         {
-            cvGrabFrame(capture);
-            IplImage *frame = cvRetrieveFrame(capture);
-            
-            if ( frame != NULL )
-            {
-                m_wpipe.write(frame);                
-            }
+            m_capture.update();
         }
                 
-        cvReleaseCapture(&capture);
-        capture = NULL;
-        
-        m_wpipe.finish();
+        m_capture.dispose();
     }
     catch (const std::exception &ex)
     {
-        if ( capture != NULL )
-            cvReleaseCapture(&capture);
-
+        m_capture.dispose();
         throw ex;
     }
+
 }
 
 TDV_NAMESPACE_END

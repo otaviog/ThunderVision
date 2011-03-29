@@ -3,20 +3,53 @@
 
 #include <tdvbasic/common.hpp>
 #include <cv.h>
+#include <highgui.h>
 #include "floatimage.hpp"
 #include "process.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class CaptureProc: public Process
+class Capture
 {
 public:
-    CaptureProc(int device);
-        
+    Capture();
+    
+    void init(const std::string  &filename);
+    
+    void init(int device);
+    
     ReadPipe<IplImage*>* output()
     {
         return &m_wpipe;
+    }
+    
+    void update();
+    
+    void dispose()
+    {
+        if ( m_capture != NULL )
+        {
+            cvReleaseCapture(&m_capture);
+            m_capture = NULL;
+            m_wpipe.finish();
+        } 
+    }
+    
+private:
+    ReadWritePipe<IplImage*> m_wpipe;
+    CvCapture *m_capture;    
+};
+
+
+class CaptureProc: public Process
+{
+public:    
+    CaptureProc();
+        
+    ReadPipe<IplImage*>* output()
+    {
+        return m_capture.output();
     }
     
     void process();
@@ -24,9 +57,8 @@ public:
     void finish();
     
 private:
-    ReadWritePipe<IplImage*> m_wpipe;
+    Capture m_capture;
     bool m_endCapture;
-    int m_capDevice;
 };
 
 TDV_NAMESPACE_END

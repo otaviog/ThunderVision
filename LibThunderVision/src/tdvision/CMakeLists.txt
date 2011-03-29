@@ -1,6 +1,7 @@
 ADD_ANTLR3_GRAMMAR(ThunderLang)
 
 CUDA_ADD_LIBRARY(tdvision  
+  dim.hpp dim.cpp
   pipe.hpp
   workunit.hpp  
   process.hpp
@@ -31,7 +32,7 @@ CUDA_ADD_LIBRARY(tdvision
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
   stereoinputsource.hpp
-  camerastereoinputsource.hpp camerastereoinputsource.cpp
+  capturestereoinputsource.hpp capturestereoinputsource.cpp
   camerasdesc.hpp camerasdesc.cpp
   cameraparameters.hpp cameraparameters.cpp
   chessboardpattern.hpp chessboardpattern.cpp

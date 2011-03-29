@@ -14,7 +14,7 @@ TDV_NAMESPACE_BEGIN
 class StereoMatcher;
 class Benchmark;
 
-class Reconstruction: private ArrayProcessGroup
+class Reconstruction: public ProcessGroup
 {
 public:
     Reconstruction(StereoMatcher *matcher, 
@@ -23,7 +23,7 @@ public:
     
     Process** processes()
     {
-        return ArrayProcessGroup::processes();
+        return m_procs.processes();
     }
     
     void continuous()
@@ -53,6 +53,8 @@ private:
     TWorkUnitProcess<RectificationCV> m_rectify;
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];    
     StereoMatcher *m_matcher;    
+    
+    ArrayProcessGroup m_procs;
 };
 
 

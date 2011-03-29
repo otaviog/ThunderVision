@@ -24,6 +24,8 @@ public:
         m_threads.join_all();
     }
     
+    void finishAll();
+    
     bool errorOcurred() const
     {
         return m_errorOc;

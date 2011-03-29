@@ -20,11 +20,11 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_matcher->inputs(m_rectTee[0].output1(),
                       m_rectTee[1].output1());
     
-    addProcess(&m_ctrlProc);
-    addProcess(&m_rectify);
-    addProcess(&m_rectTee[0]);
-    addProcess(&m_rectTee[1]);
-    addProcess(*m_matcher);    
+    m_procs.addProcess(&m_ctrlProc);
+    m_procs.addProcess(&m_rectify);
+    m_procs.addProcess(&m_rectTee[0]);
+    m_procs.addProcess(&m_rectTee[1]);
+    m_procs.addProcess(*m_matcher);    
 }
 
 void Reconstruction::dupRectficatin(ReadPipe<FloatImage> **leftRectOut, 
