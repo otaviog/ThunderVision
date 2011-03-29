@@ -1,4 +1,5 @@
 #include <highgui.h>
+#include <tdvbasic/log.hpp>
 #include "rectificationcv.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -151,21 +152,18 @@ bool RectificationCV::update()
 {
     WriteGuard<ReadWritePipe<FloatImage> > lwg(m_wlpipe), rwg(m_wrpipe);
 
-    FloatImage limg, rimg;
+    IplImage *limg_c, *rimg_c;
 
-    if ( !m_rlpipe->read(&limg)  )
+    if ( !m_rlpipe->read(&limg_c)  )
     {
         return false;
     }
 
-    if ( !m_rrpipe->read(&rimg) )
+    if ( !m_rrpipe->read(&rimg_c) )
     {
         //limg.dispose();
         return false;
     }
-
-    IplImage *limg_c = limg.cpuMem();
-    IplImage *rimg_c = rimg.cpuMem();
 
     CvSize imgSz = cvSize(std::max(limg_c->width, rimg_c->width),
                         std::max(limg_c->height, rimg_c->height));
@@ -181,6 +179,7 @@ bool RectificationCV::update()
     {
         const int fmCount = cvFindFundamentalMat(
             leftPoints, rightPoints, &v_F);
+        TDV_LOG(deb).printf("Fundamental matrices found = %d", fmCount);
     }
     else
     {

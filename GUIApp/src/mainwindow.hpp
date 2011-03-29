@@ -5,6 +5,9 @@
 #include "ui_mainwindow.h"
 #include "videowidget.hpp"
 
+class AppContext;
+class CamerasViewDialog;
+
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT;
@@ -20,9 +23,8 @@ public slots:
     void showDisparityMap();
         
 private:
-    AppContext *m_appCtx;
-    CamerasViewDialog *m_camsDialog;
-    
+    TDVContext *m_ctx;
+    CamerasViewDialog *m_camsDialog;    
 };
 
 #endif /* TDV_MAINWINDOW_HPP */

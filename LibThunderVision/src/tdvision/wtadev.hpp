@@ -2,14 +2,11 @@
 #define TDV_WTADEV_HPP
 
 #include <tdvbasic/common.hpp>
-#include "workunit.hpp"
-#include "pipe.hpp"
-#include "dsimem.hpp"
-#include "floatimage.hpp"
+#include "optimizer.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class WTADev: public WorkUnit
+class WTADev: public Optimizer
 {
 public:
     WTADev()

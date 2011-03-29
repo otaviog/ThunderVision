@@ -16,7 +16,7 @@ class ProcessRunner;
 
 TDV_NAMESPACE_END
 
-class VideoWidget: public QWidget, public tdv::Process
+class VideoWidget: public QWidget, public tdv::Process, tdv::ExceptionReport
 {
     Q_OBJECT;
 
@@ -27,14 +27,19 @@ public:
 
     void input(tdv::ReadPipe<IplImage*> *framePipe, bool sink);
 
-    void init(tdv::ExceptionReport *report);
+    void init();
 
     void dispose();
 
     IplImage* lastFrame();
 
     void process();
+    
+    void errorOcurred(const std::exception &err);
 
+private slots:
+    void processError(QString message);
+    
 protected:
     virtual void paintEvent(QPaintEvent *event);
 

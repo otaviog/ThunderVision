@@ -61,7 +61,18 @@ public:
         return sz;
     }
 
+    static Dim minDim(const Dim &d1, const Dim &d2);
+    
 private:
+    Dim(size_t dm[3], size_t n)
+    {
+        dim[0] = dm[0];
+        dim[1] = dm[1];
+        dim[2] = dm[2];        
+        
+        ndim = n;
+    }
+    
     size_t dim[3];
     size_t ndim;
 };

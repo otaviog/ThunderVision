@@ -68,10 +68,6 @@ namespace util
             newStr = new char[nLen + 1];
             newStr[nLen] = '\0';
 
-            size_t lastFoundEndIdx = 0,
-                newStrInsertLastEndIdx = 0,
-                foundCount = 0;
-
             memcpy(newStr, orign, foundLocs[0]);
 
             for (size_t found=0; found<foundLocs.size(); found++)

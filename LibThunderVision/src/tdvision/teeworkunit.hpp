@@ -3,6 +3,7 @@
 
 #include <tdvbasic/common.hpp>
 #include "workunit.hpp"
+#include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -31,12 +32,12 @@ public:
         m_enableOut2 = false;
     }
 
-    ReadPipe<TeeType> output1()
+    ReadPipe<TeeType>* output1()
     {
         return &m_wp1;
     }
     
-    ReadPipe<TeeType> output2()
+    ReadPipe<TeeType>* output2()
     {
         return &m_wp2;
     }
@@ -60,7 +61,7 @@ private:
     tdv::ReadWritePipe<TeeType> m_wp1;
     tdv::ReadWritePipe<TeeType> m_wp2;
     bool m_enableOut2;
-}
+};
 
 TDV_NAMESPACE_END
 

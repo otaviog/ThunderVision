@@ -3,6 +3,7 @@
 #include <tdvision/workunit.hpp>
 #include <tdvision/processrunner.hpp>
 #include <tdvision/workunitprocess.hpp>
+#include <tdvision/processgroup.hpp>
 #include "errorhandler.hpp"
 
 static void procSimple(tdv::ReadPipe<int> *inp, tdv::WritePipe<int> *outp)
@@ -59,6 +60,8 @@ public:
         {
             outpipe->write(value*2);
         }
+        
+        return false;
     }
        
 private:
@@ -84,6 +87,8 @@ public:
         {
             outpipe->write(value*2);
         }
+        
+        return false;
     }    
     
 private:
@@ -104,7 +109,8 @@ TEST(PipeTest, PipeAndFilter)
     
     ErrorHandler errHdl;
     tdv::Process *procs[] = { &pr1, &pr2, NULL};    
-    tdv::ProcessRunner runner(procs, &errHdl);
+    tdv::ArrayProcessGroup grp(procs);
+    tdv::ProcessRunner runner(grp, &errHdl);
     runner.run();
         
     p1.write(2);

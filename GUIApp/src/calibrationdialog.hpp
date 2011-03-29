@@ -1,10 +1,10 @@
 #ifndef TDV_CALIBRATIONDIALOG_HPP
 #define TDV_CALIBRATIONDIALOG_HPP
 
+#include <tdvision/calibration.hpp>
 #include "errorreport.hpp"
 #include "ui_calibrationdialog.h"
 
-class CamCalibrationContext;
 class CalibrationWidget;
 
 class CalibrationDialog: public QDialog,
@@ -12,26 +12,23 @@ class CalibrationDialog: public QDialog,
 {
     Q_OBJECT;
 public:
-    CalibrationDialog();
+    CalibrationDialog(tdv::Calibration *calib);
 
     void init();
 
     void dispose();
 
-    void showCalibration();
-
-    void errorOcurred(const std::exception &ex);
-
+protected:
     virtual void closeEvent(QCloseEvent *ev);
 
-public slots:
+private slots:
     void informCriticalError(QString message);
     
     void save();
     
 private:
-    CalibrationWidget *m_calibWid;
-    CamCalibrationContext *m_calibCtx;
+    tdv::Calibration *m_calib;
+    CalibrationWidget *m_calibWid;    
     ErrorReport m_errHandle;
 };
 

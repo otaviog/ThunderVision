@@ -6,7 +6,7 @@ CamerasInputProcess::CamerasInputProcess()
     m_procRunner = NULL;
 }
 
-void CamerasInputProcess::init(ExceptionReport *report)
+void CamerasInputProcess::init(tdv::ExceptionReport *report)
 {
     if ( m_procRunner == NULL )
     {        
@@ -26,9 +26,9 @@ void CamerasInputProcess::dispose()
         m_capture0.finish();
         m_capture1.finish();
         
-        m_procRunner.join();
+        m_procRunner->join();
         
-        delete m_procRunner();
+        delete m_procRunner;
         m_procRunner = NULL;
     }        
 }

@@ -4,6 +4,7 @@
 #include <tdvision/imagereader.hpp>
 #include <tdvision/imagewriter.hpp>
 #include <tdvision/cpyimagetocpu.hpp>
+#include <tdvision/processgroup.hpp>
 #include <tdvision/processrunner.hpp>
 #include <tdvision/workunitprocess.hpp>
 #include <tdvision/cudaprocess.hpp>
@@ -59,9 +60,8 @@ TEST(MedianFilterTest, Dev)
                
     tdv::Process *s[] = {&p0, &p1, &p2, NULL};
     ErrorHandler errHdl;
-
-    tdv::ProcessRunner runner(s, &errHdl);
-    
+    tdv::ArrayProcessGroup procs(s);
+    tdv::ProcessRunner runner(procs, &errHdl);    
     runner.run();
     runner.join();
     

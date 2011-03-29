@@ -31,26 +31,23 @@ private:
     ProcessRunner *m_runner;
 };
 
-ProcessRunner::ProcessRunner(Process **wus, 
-                             ExceptionReport *report)
+ProcessRunner::ProcessRunner(ProcessGroup &procGrp, ExceptionReport *report)
+    : m_procGrp(procGrp)
 {
-    m_errReport = NULL;
-    size_t wuCount = 0;
-    
-    while ( wus[wuCount] != NULL )
-        wuCount++;
-    
-    m_workUnits.resize(wuCount);
-    std::copy(wus, wus + wuCount, m_workUnits.begin());
     m_errReport = report;
     m_errorOc = false;
 }
 
 void ProcessRunner::run()
 {
-    for (size_t i=0; i<m_workUnits.size(); i++)
+    Process **procs = m_procGrp.processes();
+    Process *proc = *procs;
+    
+    while ( proc != NULL )
     {
-        boost::thread* thread = m_threads.create_thread(ProcessCaller(this, m_workUnits[i]));
+        (void) m_threads.create_thread(
+            ProcessCaller(this, proc));
+        proc = *++procs;
     }    
 }
 
@@ -58,9 +55,13 @@ void ProcessRunner::reportError(const std::exception &ex)
 {    
     m_errorOc = true;
     m_errReport->errorOcurred(ex);    
-    for (size_t i=0; i<m_workUnits.size(); i++)
-    {
-        m_workUnits[i]->finish();
+    Process **procs = m_procGrp.processes();
+    Process *proc = *procs++;
+    
+    while ( proc != NULL )
+    {        
+        proc->finish();
+        proc = *procs++;
     }
 }
 

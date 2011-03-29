@@ -1,4 +1,5 @@
 #include <QImage>
+#include <QMessageBox>
 #include <QPainter>
 #include <iostream>
 #include <boost/scoped_array.hpp>
@@ -34,11 +35,11 @@ void VideoWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
     m_sink = sink;
 }
 
-void VideoWidget::init(tdv::ExceptionReport *report)
+void VideoWidget::init()
 {
     tdv::Process *procs[] = { this, NULL };
 
-    m_procRunner = new tdv::ProcessRunner(procs, report);
+    m_procRunner = new tdv::ProcessRunner(procs, this);
     m_procRunner->run();
 }
 
@@ -103,6 +104,17 @@ void VideoWidget::process()
     }
 }
 
+void VideoWidget::errorOcurred(const std::exception &err)
+{
+    QMetaObject::invokeMethod(this, "processError", Q_ARG(QString, tr(err.what())));
+}
+
+void VideoWidget::processError(QString msg)
+{
+    QMessageBox::critical(this, tr("Video input error"),
+                          msg);
+}
+
 IplImage* VideoWidget::lastFrame()
 {
     IplImage *lfCopy = NULL;
@@ -115,3 +127,4 @@ IplImage* VideoWidget::lastFrame()
 
     return lfCopy;
 }
+

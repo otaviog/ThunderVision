@@ -12,12 +12,12 @@ TDV_NAMESPACE_BEGIN
 class RectificationCV: public WorkUnit
 {
 public:
-    void leftImgInput(ReadPipe<FloatImage> *rlpipe)
+    void leftImgInput(ReadPipe<IplImage*> *rlpipe)
     {
         m_rlpipe = rlpipe;
     }
     
-    void rightImgInput(ReadPipe<FloatImage> *rrpipe)
+    void rightImgInput(ReadPipe<IplImage*> *rrpipe)
     {
         m_rrpipe = rrpipe;
     }
@@ -68,7 +68,7 @@ private:
                             CvMat *mxLeft, CvMat *myLeft,
                             CvMat *mxRight, CvMat *myRight);
 
-    ReadPipe<FloatImage> *m_rlpipe, *m_rrpipe;
+    ReadPipe<IplImage*> *m_rlpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wlpipe, m_wrpipe;
     CamerasDesc m_camsDesc;
 };

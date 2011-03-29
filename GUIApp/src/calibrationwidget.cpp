@@ -15,24 +15,19 @@ CalibrationWidget::CalibrationWidget()
 {    
     setupUi(this);
     
-    m_camWid = new VideoWidget;    
-    lyCamWid->addWidget(m_camWid);
+    m_videoWid = new VideoWidget;    
+    lyCamWid->addWidget(m_videoWid);
 }
 
 void CalibrationWidget::init(tdv::ReadPipe<IplImage*> *patternDetect, bool sink)
 {
-    m_camWid->input(patternDetect, sink);
-    m_camWid->init(this);
+    m_videoWid->input(patternDetect, sink);
+    m_videoWid->init();
 }
 
 void CalibrationWidget::dispose()
 {
-    m_camWid->dispose();
-}
-
-void CalibrationWidget::errorOcurred(const std::exception &err)
-{
-    QMessageBox::critical(this, tr(""), err.what());
+    m_videoWid->dispose();
 }
 
 void CalibrationWidget::calibrationUpdate(const tdv::Calibration &calib)

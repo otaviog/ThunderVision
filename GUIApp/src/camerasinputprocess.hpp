@@ -3,7 +3,6 @@
 
 #include <tdvision/captureproc.hpp>
 #include <tdvision/processrunner.hpp>
-#include <tdvision/exceptionreport.hpp>
 #include "inputprocess.hpp"
 
 class CamerasInputProcess: public InputProcess
@@ -15,12 +14,12 @@ public:
     
     void dispose();    
     
-    tdv::ReadPipe<IplImage*>* leftImage()
+    tdv::ReadPipe<IplImage*>* leftImgOutput()
     {
         return m_capture0.output();
     }
 
-    tdv::ReadPipe<IplImage*>* rightImage()
+    tdv::ReadPipe<IplImage*>* rightImgOutput()
     {
         return m_capture1.output();
     }
@@ -30,10 +29,11 @@ public:
     public:
         InputProcess *create()
         {
-            return new CaptureInputProcess;
+            return new CamerasInputProcess;
         }
     private:
     };
+    
 private:
     tdv::ProcessRunner *m_procRunner;       
     tdv::CaptureProc m_capture0;

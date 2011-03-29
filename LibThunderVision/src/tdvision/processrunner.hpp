@@ -4,6 +4,7 @@
 #include <tdvbasic/common.hpp>
 #include <tdvbasic/exception.hpp>
 #include <boost/thread.hpp>
+#include "processgroup.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -13,8 +14,9 @@ class ExceptionReport;
 class ProcessRunner
 {
 public:
-    ProcessRunner(Process **wus, ExceptionReport *report);
-    
+    ProcessRunner(ProcessGroup &procs,
+                  ExceptionReport *report);
+
     void run();
 
     void join()
@@ -24,8 +26,9 @@ public:
     
     bool errorOcurred() const
     {
-        m_errorOc;
+        return m_errorOc;
     }
+    
 private:
     friend struct ProcessCaller;
     
@@ -35,10 +38,10 @@ private:
     
     ProcessRunner& operator=(const ProcessRunner &cpy);
     
+    ArrayProcessGroup m_procGrp;
+
     boost::thread_group m_threads;
     ExceptionReport *m_errReport;
-    std::vector<Process*> m_workUnits;
-    
     bool m_errorOc;
 };
 

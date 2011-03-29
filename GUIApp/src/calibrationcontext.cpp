@@ -1,15 +1,8 @@
-#include "camcalibrationcontext.hpp"
+#include "calibrationcontext.hpp"
 
 CalibrationContext::CalibrationContext(size_t numFrames)
-    : m_capture0(0), 
-      m_capture1(1),
-      m_calib(numFrames)
-      
-{
-    m_calib.input(m_capture0.colorImage(), 
-                  m_capture1.colorImage(), 
-                  false, false);
-    
+    : m_calib(numFrames)      
+{    
     m_sink0.input(m_capture0.output());
     m_sink1.input(m_capture1.output());        
 }
@@ -32,10 +25,7 @@ void CalibrationContext::init(tdv::ExceptionReport *errHdl)
 void CalibrationContext::dispose()
 {
     if ( m_procRunner != NULL )
-    {
-        m_capture0.finish();
-        m_capture1.finish();
-    
+    {    
         m_procRunner->join();
         delete m_procRunner;
         delete m_calibProc;

@@ -1,19 +1,16 @@
 #include <QApplication>
-#include <tdvision/thunderlang.hpp>
-#include <tdvision/parserexception.hpp>
-#include "appcontext.hpp"
+#include <tdvision/tdvcontext.hpp>
 #include "mainwindow.hpp"
 
 int main(int argc, char *argv[])
 {
-    QApplication qapp(argc, argv);
-    MainWindow *mainWindow = new MainWindow;
+    QApplication qapp(argc, argv);    
     
-    AppContext appCtx;    
-    appCtx.specFilename("~/.thundervision");
-    appCtx.init();
-    
-    
+    CameraStereoInputSource inputSrc;
+    TDVContext context;
+    appCtx.init("~/.thundervision", inputSrc);
+
+    MainWindow *mainWindow = new MainWindow(appCtx);    
     mainWindow->show();        
     
     return qapp.exec();
