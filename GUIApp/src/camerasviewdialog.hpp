@@ -1,23 +1,26 @@
 #ifndef TDV_CAMERASVIEWDIALOG_HPP
 #define TDV_CAMERASVIEWDIALOG_HPP
 
+#include <tdvision/tdvcontext.hpp>
 #include "ui_camerasviewdialog.h"
 
-class AppContext;
 class VideoWidget;
 
 class CamerasViewDialog: public QDialog, Ui::CamerasView
 {
+    Q_OBJECT;
 public:
-    CamerasViewDialog(AppContext *appCtx);
+    CamerasViewDialog(tdv::TDVContext *ctx);
     
-    void inti();
+    void init();
+    
+    void dispose();
     
 protected:
     void closeEvent(QCloseEvent *event);
     
 private:
-    AppContext *m_appCtx;
+    tdv::TDVContext *m_ctx;
     VideoWidget *m_leftVidWid;
     VideoWidget *m_rightVidWid;
 };

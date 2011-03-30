@@ -85,6 +85,10 @@
          <property name="text">
           <string>Switch Cameras</string>
          </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/imgs/reload.png</normaloff>:/imgs/reload.png</iconset>
+         </property>
         </widget>
        </item>
        <item>
@@ -120,6 +124,25 @@
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>pbClose</sender>
+   <signal>clicked()</signal>
+   <receiver>CamerasView</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>744</x>
+     <y>414</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>653</x>
+     <y>421</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

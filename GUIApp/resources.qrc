@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="imgs">
+    <file>reload.png</file>
     <file>image-x-generic.png</file>
     <file>video.png</file>
     <file>camera-web.png</file>

@@ -1,6 +1,8 @@
 #include <cv.h>
 #include <highgui.h>
 #include <boost/format.hpp>
+#include <boost/system/error_code.hpp>
+#include <tdvbasic/exception.hpp>
 #include "captureproc.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -13,6 +15,12 @@ Capture::Capture()
 void Capture::init(const std::string &filename)
 {
     m_capture = cvCaptureFromFile(filename.c_str());
+    if ( m_capture == NULL )
+    {        
+        boost::system::error_code errcode;
+        throw Exception(boost::format("Can't open file %1%: %2%") 
+                        % filename % errcode.message());
+    }
 }
 
 void Capture::init(int capDevice)
@@ -24,10 +32,11 @@ void Capture::update()
 {
     cvGrabFrame(m_capture);
     IplImage *frame = cvRetrieveFrame(m_capture);
-            
+    
     if ( frame != NULL )
     {
-        m_wpipe.write(frame);                
+        IplImage *cpy = cvCloneImage(frame);
+        m_wpipe.write(cpy);
     }    
 }
 

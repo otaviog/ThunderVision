@@ -36,10 +36,11 @@ void VideoWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
 }
 
 void VideoWidget::init()
-{
-    tdv::Process *procs[] = { this, NULL };
-
-    m_procRunner = new tdv::ProcessRunner(procs, this);
+{    
+    tdv::ArrayProcessGroup grp;
+    grp.addProcess(this);
+    
+    m_procRunner = new tdv::ProcessRunner(grp, this);
     m_procRunner->run();
 }
 
@@ -89,7 +90,7 @@ void VideoWidget::process()
 
     IplImage *image;
     while ( m_framePipe->read(&image) && !m_end )
-    {
+    {        
         QMutexLocker locker(&m_imageMutex);
         if ( m_lastFrame != NULL )
         {

@@ -1,18 +1,18 @@
 #include <tdvbasic/log.hpp>
 #include <QApplication>
-#include <camerawidget.hpp>
+#include <videowidget.hpp>
 #include <tdvision/pipe.hpp>
 #include <tdvision/captureproc.hpp>
 #include <tdvision/imagesink.hpp>
 #include <tdvision/processrunner.hpp>
-#include <tdvision/cudaprocess.hpp>
+#include <tdvision/processgroup.hpp>
 #include <tdvision/workunitprocess.hpp>
 #include <tdvision/exceptionreport.hpp>
 
 class ErrorHandle: public tdv::ExceptionReport
 {
 public:
-    ErrorHandle(CameraWidget *wid0)
+    ErrorHandle(VideoWidget *wid0)
         : w0(wid0)
     {
     }
@@ -24,7 +24,7 @@ public:
     }
     
 private:
-    CameraWidget *w0;
+    VideoWidget *w0;
 };
 
 int main(int argc, char *argv[])
@@ -33,30 +33,28 @@ int main(int argc, char *argv[])
     
     QApplication app(argc, argv);
     
-    tdv::CaptureProc capture0(0);    
-    tdv::ImageSink sink0;
+    tdv::CaptureProc capture;
     
-    CameraWidget *wid0 = new CameraWidget;
+    //capture.init("../../res/cam0.avi");
+    capture.init(0);
+    
+    VideoWidget *wid0 = new VideoWidget;
     ErrorHandle errHdl(wid0);
     
-    wid0->input(capture0.colorImage(), false);
-    wid0->init(&errHdl);
+    wid0->input(capture.output(), true);
+    wid0->init();
     
-    sink0.input(capture0.output());    
-    wid0->show();
+    wid0->show();    
     
-    tdv::WorkUnitProcess sink0proc(sink0);
-    
-    tdv::Process *procs[] = { 
-        &capture0, &sink0proc, NULL
-    };
+    tdv::ArrayProcessGroup procs;
+    procs.addProcess(&capture);        
     
     tdv::ProcessRunner runner(procs, &errHdl);
     runner.run();
     
     int r = app.exec();    
     
-    capture0.finish();    
+    capture.finish();    
     wid0->dispose();
     runner.join();
     

@@ -1,17 +1,25 @@
 #include <QApplication>
 #include <tdvision/tdvcontext.hpp>
+#include <tdvision/capturestereoinputsource.hpp>
 #include "mainwindow.hpp"
 
 int main(int argc, char *argv[])
 {
     QApplication qapp(argc, argv);    
     
-    CameraStereoInputSource inputSrc;
-    TDVContext context;
-    appCtx.init("~/.thundervision", inputSrc);
+    tdv::CaptureStereoInputSource inputSrc;
+    inputSrc.init("../../res/cam0.avi", "../../res/cam1.avi");
+    
+    tdv::TDVContext context;
+    context.start(&inputSrc);
+    //context.loadSpecFrom("~/.thundervision", inputSrc);
 
-    MainWindow *mainWindow = new MainWindow(appCtx);    
+    MainWindow *mainWindow = new MainWindow(&context);    
     mainWindow->show();        
     
-    return qapp.exec();
+    int r = qapp.exec();
+    
+    context.dispose();
+    
+    return r;
 }

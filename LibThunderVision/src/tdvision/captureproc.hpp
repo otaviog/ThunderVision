@@ -46,7 +46,17 @@ class CaptureProc: public Process
 {
 public:    
     CaptureProc();
-        
+    
+    void init(const std::string  &filename)
+    {
+        m_capture.init(filename);
+    }
+    
+    void init(int device)
+    {
+        m_capture.init(device);
+    }
+
     ReadPipe<IplImage*>* output()
     {
         return m_capture.output();

@@ -11,6 +11,11 @@ TDV_NAMESPACE_BEGIN
 class ImageSink: public WorkUnit
 {
 public:    
+    ImageSink()
+    {
+        m_rpipe = NULL;
+    }
+    
     void input(ReadPipe<FloatImage> *rpipe)
     {
         m_rpipe = rpipe;

@@ -1,10 +1,9 @@
-#include "appcontext.hpp"
 #include "videowidget.hpp"
 #include "camerasviewdialog.hpp"
 
-CamerasViewDialog::CamerasViewDialog(AppContext *ctx)
+CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
 {
-    m_appCtx = ctx;    
+    m_ctx = ctx;    
         
     m_leftVidWid = new VideoWidget(this);
     m_rightVidWid = new VideoWidget(this);                
@@ -18,10 +17,12 @@ CamerasViewDialog::CamerasViewDialog(AppContext *ctx)
 
 void CamerasViewDialog::init()
 {
-    ReadPipeTuple<IplImage*> camOutputs(m_appCtx->enableOutput2());
+    tdv::ReadPipe<IplImage*> *lpipe, *rpipe;
     
-    m_leftVidWid->input(camOutputs.p1, false);
-    m_rightVidWid->input(camOutputs.p2, false);
+    m_ctx->dupInputSource(&lpipe, &rpipe);
+    
+    m_leftVidWid->input(lpipe, false);
+    m_rightVidWid->input(rpipe, false);
     
     m_leftVidWid->init();
     m_rightVidWid->init();    
@@ -29,12 +30,12 @@ void CamerasViewDialog::init()
 
 void CamerasViewDialog::dispose()
 {
-    m_appCtx->disableOutput2();
+    m_ctx->undupInputSource();
     m_leftVidWid->dispose();
     m_rightVidWid->dispose();
 }
 
 void CamerasViewDialog::closeEvent(QCloseEvent *event)
 {
-    
+    dispose();
 }

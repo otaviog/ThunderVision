@@ -1,13 +1,15 @@
 #include "camerasviewdialog.hpp"
 #include "mainwindow.hpp"
 
-MainWindow::MainWindow(TDVContext *ctx)
+MainWindow::MainWindow(tdv::TDVContext *ctx)
 {
     m_camsDialog = NULL;
     m_ctx = ctx;
+    m_reconst = NULL;
+    
     setupUi(this);
     connect(pbCamerasView, SIGNAL(clicked()),
-            this, SLOT(showCamerasView));
+            this, SLOT(showCamerasViews()));
 }
 
 MainWindow::~MainWindow()
@@ -15,27 +17,28 @@ MainWindow::~MainWindow()
     
 }
 
-void MainWindow::startReconstruction()
-{
-    if ( m_stereoMatcher != NULL )
-    {
-        m_stereoMatcher = m_appCtx->stereoMatcher();
-    }
-}
-
 void MainWindow::playReconstruction()
 {
-    m_appCtx->play();
+    if ( m_reconst != NULL )
+    {
+        m_reconst->continuous();
+    }
 }
 
 void MainWindow::stepReconstruction()
 {
-    m_appCtx->step();
+    if ( m_reconst != NULL )
+    {
+        m_reconst->step();
+    }
 }
 
 void MainWindow::pauseReconstruction()
 {
-    m_appCtx->pause();
+    if ( m_reconst != NULL )
+    {
+        m_reconst->pause();
+    }
 }
 
 void MainWindow::showCamerasViews()
@@ -43,8 +46,8 @@ void MainWindow::showCamerasViews()
     if ( m_camsDialog == NULL )
     {
         m_camsDialog = new CamerasViewDialog(m_ctx);
-        m_camsDialog->show();
-        pbCamerasView->setEnabled(false);
+        m_camsDialog->init();
+        m_camsDialog->show();        
     }
 }
     

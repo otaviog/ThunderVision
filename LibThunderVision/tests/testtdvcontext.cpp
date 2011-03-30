@@ -46,4 +46,5 @@ TEST(TestTDVContext, ShouldCreateReconstruction)
     reconst->step();
     
     ctx.releaseReconstruction(reconst);
+    ctx.dispose();
 }
