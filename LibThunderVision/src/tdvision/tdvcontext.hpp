@@ -49,7 +49,7 @@ private:
     tdv::ProcessRunner *m_runner, *m_reconstRunner;
     
     StereoInputSource *m_inputSrc;
-    TWorkUnitProcess<TeeWorkUnit<IplImage*> > m_inputTees[2];
+    TWorkUnitProcess<TeeWorkUnit<IplImage*, IplImageSinkPol> > m_inputTees[2];
     
     StereoMatcher *m_matcher;
     

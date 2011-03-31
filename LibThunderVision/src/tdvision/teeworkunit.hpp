@@ -3,12 +3,13 @@
 
 #include <map>
 #include <tdvbasic/common.hpp>
+#include "sink.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-template<typename TeeType>
+template<typename TeeType, typename SinkPolicy = NoSink<TeeType> >
 class TeeWorkUnit: public WorkUnit
 {
     typedef typename std::map<int, ReadWritePipe<TeeType>* > WPipeMap;
@@ -21,21 +22,21 @@ public:
 
     ~TeeWorkUnit();
     
-    void input(ReadPipe<TeeType> *rpipe)
-    {
-        m_rp = rpipe;
-    }
-
     void enable(int wpipeId);
 
     void disable(int wpipeId);
 
+    bool update();
+    
     ReadPipe<TeeType>* output(int wpipeId)
     {
         return m_wpipes[wpipeId];
-    }
+    }    
 
-    bool update();
+    void input(ReadPipe<TeeType> *rpipe)
+    {
+        m_rp = rpipe;
+    }
 
 private:
     ReadPipe<TeeType> *m_rp;
@@ -43,8 +44,8 @@ private:
     std::map<int, bool> m_wpipeEnabled;
 };
 
-template<typename TeeType>
-TeeWorkUnit<TeeType>::~TeeWorkUnit()
+template<typename TeeType, typename SinkPolicy>
+TeeWorkUnit<TeeType, SinkPolicy>::~TeeWorkUnit()
 {                
     for ( typename WPipeMap::iterator mIt = m_wpipes.begin();
           mIt != m_wpipes.end(); mIt++)
@@ -53,32 +54,43 @@ TeeWorkUnit<TeeType>::~TeeWorkUnit()
     }
 }
 
-template<typename TeeType>
-bool TeeWorkUnit<TeeType>::update()
+template<typename TeeType, typename SinkPolicy>
+bool TeeWorkUnit<TeeType, SinkPolicy>::update()
 {
     TeeType data;
     const bool rd = m_rp->read(&data);
-
+    bool needSink = true;
+        
     for ( typename WPipeMap::iterator mIt = m_wpipes.begin();
           mIt != m_wpipes.end(); mIt++)
     {
         int wpId = mIt->first;
-        ReadWritePipe<TeeType>* wpipe = mIt->second;
+        ReadWritePipe<TeeType> *wpipe = mIt->second;
 
         if ( m_wpipeEnabled.count(wpId) && m_wpipeEnabled[wpId] )
         {
             if ( rd )                                 
+            {
                 wpipe->write(data);
+                needSink = false;
+            }
             else
+            {
                 wpipe->finish();                    
-        }
+            }
+        }        
+    }
+    
+    if ( rd && needSink )
+    {
+        SinkPolicy::sink(data);
     }
 
     return rd;
 }
 
-template<typename TeeType>
-void TeeWorkUnit<TeeType>::enable(int wpipeId)
+template<typename TeeType, typename SinkPolicy>
+void TeeWorkUnit<TeeType, SinkPolicy>::enable(int wpipeId)
 {
     ReadWritePipe<TeeType> *pipe =  m_wpipes[wpipeId];
     if ( pipe == NULL )
@@ -86,11 +98,12 @@ void TeeWorkUnit<TeeType>::enable(int wpipeId)
         pipe = new ReadWritePipe<TeeType>;
         m_wpipes[wpipeId] = pipe;
     }
+    
     m_wpipeEnabled[wpipeId] = true;
 }
 
-template<typename TeeType>
-void TeeWorkUnit<TeeType>::disable(int wpipeId)
+template<typename TeeType, typename SinkPolicy>
+void TeeWorkUnit<TeeType, SinkPolicy>::disable(int wpipeId)
 {
     ReadWritePipe<TeeType> *pipe =  m_wpipes[wpipeId];
     if ( pipe != NULL )

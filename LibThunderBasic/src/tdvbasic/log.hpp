@@ -18,7 +18,7 @@ TDV_NAMESPACE_BEGIN
 class LogOutput
 {
 public:
-    virtual void emit(const char *message, size_t size) = 0;
+    virtual void emitLog(const char *message, size_t size) = 0;
 
 private:
 };
@@ -51,7 +51,7 @@ private:
              loIt != m_logoutputList.end(); loIt++)
         {
             LogOutputPtrListType::value_type &lo(*loIt);
-            lo->emit(message, size);
+            lo->emitLog(message, size);
         }
     }
 
@@ -96,7 +96,7 @@ private:
 class MutexLogOutput: public LogOutput
 {
 public:
-    void emit(const char *message, size_t size)
+    void emitLog(const char *message, size_t size)
     {
         boost::unique_lock<boost::mutex> lock(m_queueMutex);
         emitLocked(message, size);

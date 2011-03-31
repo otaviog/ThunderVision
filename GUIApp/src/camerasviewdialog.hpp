@@ -15,6 +15,9 @@ public:
     void init();
     
     void dispose();
+
+private slots:
+    void showCalibrationDlg();
     
 protected:
     void closeEvent(QCloseEvent *event);

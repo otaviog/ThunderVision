@@ -3,10 +3,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include <tdvision/captureproc.hpp>
-#include <tdvision/imagesink.hpp>
 #include <tdvision/calibration.hpp>
-#include <tdvision/rgbconv.hpp>
 #include "videowidget.hpp"
 #include "camerasviewwidget.hpp"
 #include "calibrationwidget.hpp"

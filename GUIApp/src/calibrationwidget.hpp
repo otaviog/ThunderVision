@@ -5,8 +5,8 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <tdvision/exceptionreport.hpp>
+#include <tdvision/calibration.hpp>
 #include "ui_calibrationwidget.h"
-#include "calibrationcontext.hpp"
 
 class VideoWidget;
 

@@ -14,11 +14,10 @@ CUDA_ADD_LIBRARY(tdvision
   dsimem.hpp dsimem.cpp    
   cuerr.hpp cuerr.cpp
   cudaconstraits.hpp cudaconstraits.cu
+  sink.hpp
   imagereader.hpp imagereader.cpp
   imagewriter.hpp imagewriter.cpp  
   imageresize.hpp imageresize.cpp
-  imagesink.hpp imagesink.cpp
-  iplimagesink.hpp iplimagesink.cpp  
   rgbconv.hpp rgbconv.cpp
   floatconv.hpp floatconv.cpp
   cpyimagetocpu.hpp cpyimagetocpu.cpp

@@ -26,6 +26,11 @@ void Capture::init(const std::string &filename)
 void Capture::init(int capDevice)
 {
     m_capture = cvCaptureFromCAM(capDevice);
+    if ( m_capture == NULL )
+    {
+        throw Exception(boost::format("Can't open capture device %1%") 
+                        % capDevice);
+    }
 }
 
 void Capture::update()

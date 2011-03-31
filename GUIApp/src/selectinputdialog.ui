@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>InputSelect</class>
- <widget class="QDialog" name="InputSelect">
+ <class>SelectInput</class>
+ <widget class="QDialog" name="SelectInput">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -29,7 +29,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="pbCameras">
          <property name="text">
           <string>Cameras</string>
          </property>
@@ -46,7 +46,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="pbVideos">
          <property name="text">
           <string>Videos</string>
          </property>
@@ -63,7 +63,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="pbImages">
          <property name="text">
           <string>Images</string>
          </property>

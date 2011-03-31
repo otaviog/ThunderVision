@@ -1,4 +1,5 @@
 #include "videowidget.hpp"
+#include "calibrationdialog.hpp"
 #include "camerasviewdialog.hpp"
 
 CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
@@ -12,8 +13,10 @@ CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
     
     layLeftCam->addWidget(m_leftVidWid, 0, 0);
     layRightCam->addWidget(m_rightVidWid, 0, 0);
+    
+    connect(pbCalibrate, SIGNAL(clicked()),
+            this, SLOT(showCalibrationDlg()));
 }
-
 
 void CamerasViewDialog::init()
 {
@@ -21,8 +24,8 @@ void CamerasViewDialog::init()
     
     m_ctx->dupInputSource(&lpipe, &rpipe);
     
-    m_leftVidWid->input(lpipe, false);
-    m_rightVidWid->input(rpipe, false);
+    m_leftVidWid->input(lpipe, true);
+    m_rightVidWid->input(rpipe, true);
     
     m_leftVidWid->init();
     m_rightVidWid->init();    
@@ -38,4 +41,9 @@ void CamerasViewDialog::dispose()
 void CamerasViewDialog::closeEvent(QCloseEvent *event)
 {
     dispose();
+}
+
+void CamerasViewDialog::showCalibrationDlg()
+{
+    
 }
