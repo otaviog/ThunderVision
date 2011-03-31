@@ -139,10 +139,10 @@ private:
 
 extern Log g_tdvLog;
 
-#define TDV_LOG(wn) g_tdvLog(#wn)
-
 void TdvGlobalLogDefaultOutputs();
 
 TDV_NAMESPACE_END
+
+#define TDV_LOG(wn) tdv::g_tdvLog(#wn)
 
 #endif /* TDV_LOG_HPP */

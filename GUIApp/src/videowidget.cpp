@@ -1,3 +1,4 @@
+#include <tdvbasic/log.hpp>
 #include <QImage>
 #include <QMessageBox>
 #include <QPainter>
@@ -81,6 +82,7 @@ void VideoWidget::paintEvent(QPaintEvent *event)
                m_pixmap->widthStep, QImage::Format_RGB888);
 
     painter.drawImage(QPoint(0, 0), img);
+        
     setFixedSize(img.width(), img.height());
 }
 

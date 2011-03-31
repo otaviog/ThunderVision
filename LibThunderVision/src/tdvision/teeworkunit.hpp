@@ -66,10 +66,12 @@ bool TeeWorkUnit<TeeType>::update()
         ReadWritePipe<TeeType>* wpipe = mIt->second;
 
         if ( m_wpipeEnabled.count(wpId) && m_wpipeEnabled[wpId] )
-            if ( rd ) 
+        {
+            if ( rd )                                 
                 wpipe->write(data);
             else
                 wpipe->finish();                    
+        }
     }
 
     return rd;

@@ -10,8 +10,8 @@ CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
     
     setupUi(this);
     
-    layLeftCam->addWidget(m_leftVidWid);
-    layRightCam->addWidget(m_rightVidWid);
+    layLeftCam->addWidget(m_leftVidWid, 0, 0);
+    layRightCam->addWidget(m_rightVidWid, 0, 0);
 }
 
 
