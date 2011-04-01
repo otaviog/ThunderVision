@@ -1,91 +1,82 @@
 #include <gtest/gtest.h>
-#include <tdvision/medianfiltercpu.hpp>
-#include <tdvision/medianfilterdev.hpp>
-#include <tdvision/imagereader.hpp>
-#include <tdvision/imagewriter.hpp>
-#include <tdvision/cpyimagetocpu.hpp>
-#include <tdvision/processgroup.hpp>
-#include <tdvision/processrunner.hpp>
-#include <tdvision/workunitprocess.hpp>
-#include <tdvision/cudaprocess.hpp>
+#include <tdvision/tdvision.hpp>
 #include <cv.h>
 #include <highgui.h>
 #include "errorhandler.hpp"
 
-TEST(MedianFilterTest, CPU)
-{    
-    tdv::ImageReader reader("../../res/west.png");
-    tdv::MedianFilterDev mfilter;        
-    tdv::ImageWriter writer("../../res/medianfilter_west.png");
+class MedianFilterTest: public ::testing::Test
+{
+protected:
+    MedianFilterTest()
+        : reader("../../res/west.png"),
+          writer("medianfilter_west.png")
+    {
+    }
     
-    mfilter.input(reader.output());    
-    writer.input(mfilter.output());    
+    void SetUp()
+    {                                
+        fconv.input(reader.output());                                    
+        writer.input(rconv.output());    
+    }
+    
+    void TearDown()
+    {
+        
+    }
+    
+    void TestFilter()
+    {
+    }
+    
+    tdv::ImageReader reader;
+    tdv::FloatConv fconv;  
+    tdv::MonoWorkUnit<tdv::FloatImage, tdv::FloatImage> *filter;
+    tdv::RGBConv rconv;
+    tdv::ImageWriter writer;
+};
+
+
+#if 0
+TEST_F(MedianFilterTest, CPU)
+{        
+    filter = new tdv::MedianFilterCPU;
+    
+    filter->input(fconv.output());
+    rconv.input(filter->output());
     
     reader.update();
-    mfilter.update();
+    fconv.update();
+    filter->update();
+    rconv.update();
     writer.update();
-        
-    tdv::FloatImage output;
-    bool read;
-    read = writer.output()->read(&output);
-        
-    EXPECT_TRUE(read);
-        
-    if ( read )
-    {
-        cvShowImage("image", output.cpuMem());
-        cvWaitKey(0);
-        
-        output.dispose();
-    }   
 }
+#endif
 
-TEST(MedianFilterTest, Dev)
+TEST_F(MedianFilterTest, Dev)
 {
-    tdv::ImageReader reader("../../res/west.png");
-    tdv::MedianFilterDev mfilter;        
-    tdv::CpyImageToCPU mconv;
-    tdv::ImageWriter writer("../../res/medianfilter_west.png");
-
-    mfilter.input(reader.output());    
-    mconv.input(mfilter.output());
-    writer.input(mconv.output());
+    filter = new tdv::MedianFilterDev;
     
-    tdv::WorkUnitProcess p0(reader);
-    tdv::WorkUnitProcess p1(writer);
-    tdv::CUDAProcess p2(0);
+    filter->input(fconv.output());
+    rconv.input(filter->output());
     
-    p2.addWork(&mfilter);
-    p2.addWork(&mconv);
-               
-    tdv::Process *s[] = {&p0, &p1, &p2, NULL};
+    tdv::WorkUnitProcess p0(reader);    
+    tdv::CUDAProcess p1(0);
+    tdv::WorkUnitProcess p2(writer);    
+    
+    p1.addWork(&fconv);
+    p1.addWork(filter);
+    p1.addWork(&rconv);
+                   
+    tdv::ArrayProcessGroup procs;    
+    procs.addProcess(&p0);
+    procs.addProcess(&p1);
+    procs.addProcess(&p2);
+    
     ErrorHandler errHdl;
-    tdv::ArrayProcessGroup procs(s);
     tdv::ProcessRunner runner(procs, &errHdl);    
     runner.run();
     runner.join();
     
-    EXPECT_FALSE(runner.errorOcurred());
-    
-    if ( !runner.errorOcurred() )
-    {
-        tdv::FloatImage output;
-        bool read;
-        read = mfilter.output()->read(&output);
-        
-        EXPECT_TRUE(read);
-        
-        if ( read )
-        {
-            cvShowImage("image", output.cpuMem());
-            cvWaitKey(0);
-            
-            output.dispose();
-        }
-    }        
+    EXPECT_FALSE(runner.errorOcurred());    
 }
 
-TEST(MedianFilterTest, CPUDevDevCPU)
-{
-    
-}

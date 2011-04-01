@@ -11,9 +11,9 @@ TDV_NAMESPACE_BEGIN
 class StereoInputSource: public ProcessGroup
 {
 public:
-    virtual ReadPipe<IplImage*> *leftImgOutput() = 0;
+    virtual ReadPipe<CvMat*> *leftImgOutput() = 0;
     
-    virtual ReadPipe<IplImage*> *rightImgOutput() = 0;
+    virtual ReadPipe<CvMat*> *rightImgOutput() = 0;
     
 private:
 };

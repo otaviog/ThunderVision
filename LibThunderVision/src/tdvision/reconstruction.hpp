@@ -18,8 +18,8 @@ class Reconstruction: public ProcessGroup
 {
 public:
     Reconstruction(StereoMatcher *matcher, 
-                   ReadPipe<IplImage*> *leftImgIn,
-                   ReadPipe<IplImage*> *rightImgIn);
+                   ReadPipe<CvMat*> *leftImgIn,
+                   ReadPipe<CvMat*> *rightImgIn);
     
     Process** processes()
     {

@@ -94,9 +94,6 @@ void TDVContext::releaseReconstruction(Reconstruction *reconst)
 {
     if ( m_reconstRunner != NULL )
     {
-        tdv::ReadWritePipe<IplImage*> f;
-        f.finish();
-
         m_inputTees[0].disable(0);
         m_inputTees[1].disable(0);
 
@@ -121,8 +118,8 @@ void TDVContext::errorOcurred(const std::exception &err)
 }
 
 void TDVContext::dupInputSource(
-    ReadPipe<IplImage*> **leftSrc,
-    ReadPipe<IplImage*> **rightSrc)
+    ReadPipe<CvMat*> **leftSrc,
+    ReadPipe<CvMat*> **rightSrc)
 {
     m_inputTees[0].enable(1);
     m_inputTees[1].enable(1);

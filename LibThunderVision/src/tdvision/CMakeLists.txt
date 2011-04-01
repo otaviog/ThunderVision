@@ -5,6 +5,7 @@ CUDA_ADD_LIBRARY(tdvision
   pipe.hpp
   workunit.hpp  
   process.hpp
+  misc.hpp misc.cpp
   workunitprocess.hpp workunitprocess.cpp
   cudaprocess.hpp cudaprocess.cpp
   processgroup.hpp processgroup.cpp
@@ -14,7 +15,7 @@ CUDA_ADD_LIBRARY(tdvision
   dsimem.hpp dsimem.cpp    
   cuerr.hpp cuerr.cpp
   cudaconstraits.hpp cudaconstraits.cu
-  sink.hpp
+  sink.hpp sink.cpp
   imagereader.hpp imagereader.cpp
   imagewriter.hpp imagewriter.cpp  
   imageresize.hpp imageresize.cpp

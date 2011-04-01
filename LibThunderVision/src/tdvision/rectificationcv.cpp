@@ -1,20 +1,13 @@
 #include <highgui.h>
 #include <tdvbasic/log.hpp>
+#include "misc.hpp"
 #include "rectificationcv.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-static IplImage* convert32FTo8U(const IplImage *img)
-{
-    IplImage *convImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-    cvConvertScale(img, convImg, 255.0);
-
-    return convImg;
-}
-
-void RectificationCV::findCorners(const IplImage *img, CvPoint2D32f *corners,
-                                  int *cornerCount, IplImage *eigImage,
-                                  IplImage *tmpImage)
+void RectificationCV::findCorners(const CvMat *img, CvPoint2D32f *corners,
+                                  int *cornerCount, CvMat *eigImage,
+                                  CvMat *tmpImage)
 {
     static const size_t CORNER_SEARCH_WIN_DIM = 9;
 
@@ -32,17 +25,17 @@ void RectificationCV::findCorners(const IplImage *img, CvPoint2D32f *corners,
     cvReleaseImage(&tmpSPImg);
 }
 
-size_t RectificationCV::findCornersPoints(const IplImage *limg_c, const IplImage *rimg_c,
+size_t RectificationCV::findCornersPoints(const CvMat *limg_c, const CvMat *rimg_c,
                                           const CvSize &imgSize, CvMat **leftPointsR,
                                           CvMat **rightPointsR)
 {
     static const size_t MAX_CORNERS = 15;
 
-    IplImage *limg8bit_c = convert32FTo8U(limg_c);
-    IplImage *rimg8bit_c = convert32FTo8U(rimg_c);
+    CvMat *limg8bit_c = misc::create8UGray(limg_c);
+    CvMat *rimg8bit_c = misc::create8UGray(rimg_c);
 
-    IplImage *eigImage = cvCreateImage(cvSize(imgSize.width + 8, imgSize.height), IPL_DEPTH_32F, 1);
-    IplImage *tmpImage = cvCreateImage(cvSize(imgSize.width + 8, imgSize.height), IPL_DEPTH_32F, 1);
+    CvMat *eigImage = cvCreateMat(imgSize.height, imgSize.width + 8, CV_32F);
+    CvMat *tmpImage = cvCreateMat(imgSize.height, imgSize.width + 8, CV_32F);
 
     CvPoint2D32f leftCorners[MAX_CORNERS], rightCorners[MAX_CORNERS];
     int leftCornerCount = MAX_CORNERS, rightCornerCount = MAX_CORNERS;
@@ -61,8 +54,8 @@ size_t RectificationCV::findCornersPoints(const IplImage *limg_c, const IplImage
                            cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03),
                            CV_LKFLOW_INITIAL_GUESSES);
 
-    cvReleaseImage(&eigImage);
-    cvReleaseImage(&tmpImage);
+    cvReleaseMat(&eigImage);
+    cvReleaseMat(&tmpImage);
 
     CvMat *leftPoints = cvCreateMat(1, minCornersFound, CV_64FC2);
     CvMat *rightPoints = cvCreateMat(1, minCornersFound, CV_64FC2);
@@ -152,7 +145,7 @@ bool RectificationCV::update()
 {
     WriteGuard<ReadWritePipe<FloatImage> > lwg(m_wlpipe), rwg(m_wrpipe);
 
-    IplImage *limg_c, *rimg_c;
+    CvMat *limg_c, *rimg_c;
 
     if ( !m_rlpipe->read(&limg_c)  )
     {
@@ -232,8 +225,8 @@ bool RectificationCV::update()
     FloatImage limout = FloatImage::CreateCPU(imgDim);
     FloatImage rimout = FloatImage::CreateCPU(imgDim);
 
-    IplImage *limout_c = limout.cpuMem();
-    IplImage *rimout_c = rimout.cpuMem();
+    CvMat *limout_c = limout.cpuMem();
+    CvMat *rimout_c = rimout.cpuMem();
 
     cvShowImage("OL", limg_c);
     cvShowImage("OR", rimg_c);

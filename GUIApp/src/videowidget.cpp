@@ -14,7 +14,6 @@ VideoWidget::VideoWidget(QWidget *parent)
     m_lastFrame = NULL;
     m_end = false;
     m_framePipe = NULL;
-    m_sink = true;
     m_pixmap = NULL;
 }
 
@@ -29,11 +28,10 @@ VideoWidget::~VideoWidget()
     }
 }
 
-void VideoWidget::input(tdv::ReadPipe<IplImage*> *framePipe, bool sink)
+void VideoWidget::input(tdv::ReadPipe<CvMat*> *framePipe)
 {
     QMutexLocker locker(&m_imageMutex);
     m_framePipe = framePipe;
-    m_sink = sink;
 }
 
 void VideoWidget::init()
@@ -53,30 +51,28 @@ void VideoWidget::dispose()
 void VideoWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
+    QMutexLocker locker(&m_imageMutex);
+    
     if ( m_lastFrame == NULL )
     {
         setMinimumSize(256, 128);
         painter.drawText(20, height()/2, tr("No image from camera"));
         return ;
-    }
+    }    
 
+    if ( m_pixmap == NULL )
     {
-        QMutexLocker locker(&m_imageMutex);
-
-        if ( m_pixmap == NULL )
-        {
-            m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
-        }
-        else if ( m_pixmap->width != m_lastFrame->width
-                  || m_pixmap->height != m_lastFrame->height )
-        {
-            cvReleaseImage(&m_pixmap);
-            m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
-        }
-        
-        cvConvertImage(m_lastFrame, m_pixmap, CV_CVTIMG_SWAP_RB);
+        m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
     }
-
+    else if ( m_pixmap->width != m_lastFrame->width
+              || m_pixmap->height != m_lastFrame->height )
+    {
+        cvReleaseImage(&m_pixmap);
+        m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
+    }
+            
+    cvConvertImage(m_lastFrame, m_pixmap);    
+    
     QImage img(reinterpret_cast<const uchar*>(m_pixmap->imageData),
                m_pixmap->width, m_pixmap->height,
                m_pixmap->widthStep, QImage::Format_RGB888);
@@ -90,16 +86,13 @@ void VideoWidget::process()
 {
     assert(m_framePipe != NULL);
 
-    IplImage *image;
+    CvMat *image;
     while ( m_framePipe->read(&image) && !m_end )
     {        
         QMutexLocker locker(&m_imageMutex);
         if ( m_lastFrame != NULL )
         {
-            if ( m_sink )
-            {
-                cvReleaseImage(&m_lastFrame);
-            }
+            tdv::CvMatSinkPol::sink(m_lastFrame);
         }
 
         m_lastFrame = image;
@@ -118,14 +111,14 @@ void VideoWidget::processError(QString msg)
                           msg);
 }
 
-IplImage* VideoWidget::lastFrame()
+CvMat* VideoWidget::lastFrame()
 {
-    IplImage *lfCopy = NULL;
+    CvMat *lfCopy = NULL;
 
     QMutexLocker locker(&m_imageMutex);
     if ( m_lastFrame != NULL )
     {
-        lfCopy = cvCloneImage(m_lastFrame);
+        lfCopy = cvCloneMat(m_lastFrame);
     }
 
     return lfCopy;

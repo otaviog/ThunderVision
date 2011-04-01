@@ -19,12 +19,12 @@ bool StereoCorrespondenceCV::update()
     
     if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
     {
-        IplImage *limg_c = limg.cpuMem();
-        IplImage *rimg_c = rimg.cpuMem();
+        CvMat *limg_c = limg.cpuMem();
+        CvMat *rimg_c = rimg.cpuMem();
         
         FloatImage output = FloatImage::CreateCPU(
             Dim::minDim(limg.dim(), rimg.dim()));
-        IplImage *out_c = output.cpuMem();
+        CvMat *out_c = output.cpuMem();
         
         cvFindStereoCorrespondenceBM(limg_c, rimg_c, out_c, m_bmState);
     }

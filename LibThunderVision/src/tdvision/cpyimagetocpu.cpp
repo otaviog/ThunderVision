@@ -2,18 +2,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-bool CpyImageToCPU::update()
+FloatImage CpyImageToCPU::updateImpl(FloatImage input)
 {
-    WriteGuard<WritePipe<FloatImage> > guard(m_wpipe);
-    
-    FloatImage input;
-    if ( m_rpipe->read(&input) )
-    {
-        IplImage *img = input.cpuMem();
-        guard.write(input);
-    }
-    
-    return guard.wasWrite();
+    input.cpuMem();
+    return input;
 }
 
 TDV_NAMESPACE_END

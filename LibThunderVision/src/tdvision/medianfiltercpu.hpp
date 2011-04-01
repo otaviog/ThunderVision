@@ -2,13 +2,13 @@
 #define TDV_MEDIANFILTERCPU_HPP
 
 #include <tdvbasic/common.hpp>
-#include "workunit.hpp"
+#include "workunitutil.hpp"
 #include "pipe.hpp"
 #include "floatimage.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class MedianFilterCPU: public WorkUnit
+class MedianFilterCPU: public MonoWorkUnit<FloatImage, FloatImage>
 {
 public:    
     MedianFilterCPU()
@@ -16,21 +16,8 @@ public:
         workName("Median filter on CPU");
     }
         
-    void input(ReadPipe<FloatImage> *rpipe)
-    {
-        m_rpipe = rpipe;
-    }
-
-    ReadPipe<FloatImage>* output()
-    {
-        return &m_wpipe;
-    }
-
-    bool update();
-    
-private:
-    ReadPipe<FloatImage> *m_rpipe;
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+protected:
+    FloatImage updateImpl(FloatImage image);    
 };
 
 TDV_NAMESPACE_END

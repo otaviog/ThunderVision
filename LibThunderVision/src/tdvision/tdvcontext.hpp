@@ -33,8 +33,8 @@ public:
     
     Calibration* runCalibration();
 
-    void dupInputSource(ReadPipe<IplImage*> **leftSrc, 
-                        ReadPipe<IplImage*> **rightSrc);
+    void dupInputSource(ReadPipe<CvMat*> **leftSrc, 
+                        ReadPipe<CvMat*> **rightSrc);
     
     void undupInputSource();
     
@@ -49,7 +49,7 @@ private:
     tdv::ProcessRunner *m_runner, *m_reconstRunner;
     
     StereoInputSource *m_inputSrc;
-    TWorkUnitProcess<TeeWorkUnit<IplImage*, IplImageSinkPol> > m_inputTees[2];
+    TWorkUnitProcess<TeeWorkUnit<CvMat*, CvMatSinkPol> > m_inputTees[2];
     
     StereoMatcher *m_matcher;
     

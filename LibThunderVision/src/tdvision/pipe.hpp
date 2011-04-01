@@ -134,32 +134,6 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
     return !hasEmpty;
 }
 
-class WriteFinishGuard
-{
-public:
-    WriteFinishGuard(BaseWritePipe *pipe)
-    {
-        assert(pipe != NULL);
-        m_pipe = pipe;
-        m_finishIt = true;
-    }
-    
-    ~WriteFinishGuard()
-    {
-        if ( m_finishIt )
-            m_pipe->finish();
-    }
-    
-    void finishNotNeed()
-    {
-        m_finishIt = false;
-    }
-    
-private:
-    BaseWritePipe *m_pipe;
-    bool m_finishIt;
-};
-
 template<typename WritePipeType>
 class WriteGuard: public  WritePipe<typename WritePipeType::WriteValueType>
 {
@@ -202,5 +176,3 @@ private:
 TDV_NAMESPACE_END
 
 #endif /* TDV_PIPE_HPP */
-
-

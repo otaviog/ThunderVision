@@ -1,8 +1,5 @@
 #include <gtest/gtest.h>
-#include <tdvision/rectificationcv.hpp>
-#include <tdvision/imagereader.hpp>
-#include <tdvision/imagewriter.hpp>
-#include <tdvision/thunderlang.hpp>
+#include <tdvision/tdvision.hpp>
 
 class TestRectification : public ::testing::Test
 {
@@ -37,10 +34,13 @@ TEST_F(TestRectification, UncalibratedRect)
 {
     tdv::ImageReader readerL("../../res/rect-left.png");
     tdv::ImageReader readerR("../../res/rect-right.png");
+    tdv::FloatConv fconvL, fconvR;
+    tdv::RectificationCV rectCV; 
+    tdv::RGBConv rconvL, rconvR;
     tdv::ImageWriter writerL("rect-left-done.png");
     tdv::ImageWriter writerR("rect-right-done.png");
-
-    tdv::RectificationCV rectCV;            
+    
+    //fconv
     rectCV.leftImgInput(readerL.output());
     rectCV.rightImgInput(readerR.output());
     

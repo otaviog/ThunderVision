@@ -12,12 +12,12 @@ TDV_NAMESPACE_BEGIN
 class RectificationCV: public WorkUnit
 {
 public:
-    void leftImgInput(ReadPipe<IplImage*> *rlpipe)
+    void leftImgInput(ReadPipe<CvMat*> *rlpipe)
     {
         m_rlpipe = rlpipe;
     }
     
-    void rightImgInput(ReadPipe<IplImage*> *rrpipe)
+    void rightImgInput(ReadPipe<CvMat*> *rrpipe)
     {
         m_rrpipe = rrpipe;
     }
@@ -46,10 +46,10 @@ public:
     bool update();
     
 private:
-    void findCorners(const IplImage *img, CvPoint2D32f *leftCorners, int *cornerCount,
-                     IplImage *eigImage, IplImage *tmpImage);
+    void findCorners(const CvMat *img, CvPoint2D32f *leftCorners, int *cornerCount,
+                     CvMat *eigImage, CvMat *tmpImage);
     
-    size_t findCornersPoints(const IplImage *limg_c, const IplImage *rimg_c, 
+    size_t findCornersPoints(const CvMat *limg_c, const CvMat *rimg_c, 
                              const CvSize &imgSize,
                              CvMat **leftPointsR, CvMat **rightPointsR);
 
@@ -68,7 +68,7 @@ private:
                             CvMat *mxLeft, CvMat *myLeft,
                             CvMat *mxRight, CvMat *myRight);
 
-    ReadPipe<IplImage*> *m_rlpipe, *m_rrpipe;
+    ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wlpipe, m_wrpipe;
     CamerasDesc m_camsDesc;
 };

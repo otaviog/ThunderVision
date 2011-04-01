@@ -17,22 +17,15 @@ public:
         workName("Image Writer");
     }
     
-    void input(ReadPipe<FloatImage> *rpipe)
+    void input(ReadPipe<CvMat*> *rpipe)
     { 
         m_rpipe = rpipe;
     }
     
-    ReadPipe<FloatImage>* output()
-    { 
-        return &m_wpipe;
-    }
-
     bool update();
         
 private:
-    ReadPipe<FloatImage> *m_rpipe;
-    ReadWritePipe<FloatImage> m_wpipe;
-    
+    ReadPipe<CvMat*> *m_rpipe;    
     std::string m_filename;
 };
 

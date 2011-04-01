@@ -3,29 +3,18 @@
 
 TDV_NAMESPACE_BEGIN
 
-bool MedianFilterCPU::update()
+FloatImage MedianFilterCPU::updateImpl(FloatImage input)
 {
-    FloatImage input;
-    WriteFinishGuard wg(&m_wpipe);
-    
-    if ( m_rpipe->read(&input) )
-    {        
-        const Dim dim = input.dim();
+    const Dim dim = input.dim();
 
-        IplImage *image = input.cpuMem();
+    CvMat *image = input.cpuMem();
         
-        FloatImage output = FloatImage::CreateCPU(dim);
-        IplImage *img_output = output.cpuMem();
+    FloatImage output = FloatImage::CreateCPU(dim);
+    CvMat *img_output = output.cpuMem();
         
-        cvSmooth(image, img_output, CV_MEDIAN);
+    cvSmooth(image, img_output, CV_MEDIAN);
         
-        m_wpipe.write(output);
-        
-        wg.finishNotNeed();
-        return true;
-    }    
-    
-    return false;
+    return output;
 }
 
 TDV_NAMESPACE_END

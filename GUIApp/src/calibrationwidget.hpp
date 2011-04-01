@@ -20,7 +20,7 @@ class CalibrationWidget:
 public:
     CalibrationWidget();
     
-    void init(tdv::ReadPipe<IplImage*> *patternDetect, bool sink);
+    void init(tdv::ReadPipe<CvMat*> *patternDetect);
     
     void dispose();    
     

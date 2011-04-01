@@ -13,18 +13,18 @@ class CtrlProcess: public Process
 public:
     CtrlProcess();
     
-    void inputs(ReadPipe<IplImage*> *lrpipe, ReadPipe<IplImage*> *rrpipe)
+    void inputs(ReadPipe<CvMat*> *lrpipe, ReadPipe<CvMat*> *rrpipe)
     {
         m_lrpipe = lrpipe;
         m_rrpipe = rrpipe;
     }
     
-    ReadPipe<IplImage*>* leftImgOutput() 
+    ReadPipe<CvMat*>* leftImgOutput() 
     {
         return &m_lwpipe;
     }
     
-    ReadPipe<IplImage*>* rightImgOutput() 
+    ReadPipe<CvMat*>* rightImgOutput() 
     {
         return &m_rwpipe;
     }
@@ -54,8 +54,8 @@ private:
         Continuous, Step
     };
     
-    ReadPipe<IplImage*> *m_lrpipe, *m_rrpipe;
-    ReadWritePipe<IplImage*> m_lwpipe, m_rwpipe;
+    ReadPipe<CvMat*> *m_lrpipe, *m_rrpipe;
+    ReadWritePipe<CvMat*> m_lwpipe, m_rwpipe;
     bool m_step;
     Mode m_mode;
 };

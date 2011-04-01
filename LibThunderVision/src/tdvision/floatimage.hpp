@@ -37,7 +37,7 @@ public:
 
     float* devMem();
 
-    IplImage* cpuMem();
+    CvMat* cpuMem();
 
     const Dim &dim() const
     {
@@ -70,7 +70,7 @@ private:
     float *createDevMem();    
     
     DevMemMap m_devmap;
-    IplImage *m_cpuMem;
+    CvMat *m_cpuMem;
     CudaDevId m_syncDev;
     Dim m_dim;
 };
@@ -109,7 +109,7 @@ public:
         return m_impl->devMem();
     }
 
-    IplImage* cpuMem()
+    CvMat* cpuMem()
     {
         return m_impl->cpuMem();
     }

@@ -7,32 +7,20 @@ RGBConv::RGBConv()
     workName("RGB converter");
 }
 
-bool RGBConv::update()
+CvMat* RGBConv::updateImpl(FloatImage image)
 {
-    WriteFinishGuard wguard(&m_wpipe);
-    
-    FloatImage image;
-    if ( m_rpipe->read(&image) )
-    {
-        IplImage *img = image.cpuMem();
-        IplImage *scaleImg = cvCreateImage(cvGetSize(img), 
-                                           IPL_DEPTH_8U, 1);
-        IplImage *imgRGB = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+    CvMat *img = image.cpuMem();
+    CvMat *scaleImg = cvCreateMat(img->height, img->width, CV_8U);
+    CvMat *imgRGB = cvCreateMat(img->height, img->width, CV_8UC3);
         
-        cvConvertScale(img, scaleImg, 255.0);
+    cvConvertScale(img, scaleImg, 255.0);
 
-        cvCvtColor(scaleImg, imgRGB, CV_GRAY2RGB);
-        cvReleaseImage(&scaleImg);
+    cvCvtColor(scaleImg, imgRGB, CV_GRAY2RGB);
+    cvReleaseMat(&scaleImg);
         
-        image.dispose();
-        
-        m_wpipe.write(imgRGB);
-        
-        wguard.finishNotNeed();
-        return true;
-    }    
+    image.dispose();
     
-    return false;
+    return imgRGB;        
 }
 
 TDV_NAMESPACE_END

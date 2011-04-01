@@ -17,7 +17,7 @@ public:
         workName("Image Reader");
     }
         
-    ReadPipe<FloatImage>* output()
+    ReadPipe<CvMat*>* output()
     {
         return &m_wpipe;
     }
@@ -25,7 +25,7 @@ public:
     bool update();
 
 private:
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+    ReadWritePipe<CvMat*> m_wpipe;
     std::string m_filename;
 };
 

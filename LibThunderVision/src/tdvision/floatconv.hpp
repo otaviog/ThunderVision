@@ -7,10 +7,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-class FloatConv: public MonoWorkUnit<IplImage*, FloatImage>
+class FloatConv: public MonoWorkUnit<CvMat*, FloatImage>
 {        
 protected:
-    FloatImage updateImpl(IplImage *img);
+    FloatImage updateImpl(CvMat *img);
 };
 
 TDV_NAMESPACE_END

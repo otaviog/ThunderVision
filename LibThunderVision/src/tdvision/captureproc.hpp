@@ -18,26 +18,18 @@ public:
     void init(const std::string  &filename);
     
     void init(int device);
+        
+    void update();
     
-    ReadPipe<IplImage*>* output()
+    void dispose();
+    
+    ReadPipe<CvMat*>* output()
     {
         return &m_wpipe;
     }
-    
-    void update();
-    
-    void dispose()
-    {
-        if ( m_capture != NULL )
-        {
-            cvReleaseCapture(&m_capture);
-            m_capture = NULL;
-            m_wpipe.finish();
-        } 
-    }
-    
+
 private:
-    ReadWritePipe<IplImage*> m_wpipe;
+    ReadWritePipe<CvMat*> m_wpipe;
     CvCapture *m_capture;    
 };
 
@@ -57,7 +49,7 @@ public:
         m_capture.init(device);
     }
 
-    ReadPipe<IplImage*>* output()
+    ReadPipe<CvMat*>* output()
     {
         return m_capture.output();
     }

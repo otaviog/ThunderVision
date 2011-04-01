@@ -1,5 +1,6 @@
 #include "cuerr.hpp"
 #include "floatimage.hpp"
+#include "misc.hpp"
 #include <cv.h>
 #include <tdvbasic/log.hpp>
 
@@ -18,14 +19,11 @@ FloatImageImpl::FloatImageImpl(CvArr *img)
     CvSize size(cvGetSize(img));
     m_dim = Dim(size.width, size.height);
     
-    IplImage *grayTmp = cvCreateImage(size,
-                                      IPL_DEPTH_8U, 1);
-    cvCvtColor(img, grayTmp, CV_RGB2GRAY);
-    m_cpuMem = cvCreateImage(size,
-                             IPL_DEPTH_32F, 1);
+    CvMat *grayTmp = misc::create8UGray(img);
+    
+    m_cpuMem = cvCreateMat(size.height, size.width, CV_32F);
     cvConvertScale(grayTmp, m_cpuMem, 1.0/255.0);
-
-    cvReleaseImage(&grayTmp);
+    cvReleaseMat(&grayTmp);
 
     m_syncDev = -1;
 }
@@ -56,8 +54,7 @@ void FloatImageImpl::initDev(const Dim &dim)
 void FloatImageImpl::initCPU(const Dim &dim)
 {
     m_dim = dim;
-    m_cpuMem = cvCreateImage(cvSize(dim.width(), dim.height()),
-                             IPL_DEPTH_32F, 1);
+    m_cpuMem = cvCreateMat(dim.height(), dim.width(), CV_32F);
 }
 
 float* FloatImageImpl::devMem()
@@ -93,7 +90,7 @@ float* FloatImageImpl::devMem()
             for (int row=0; row<m_cpuMem->height; row++)
             {
                 cuerr << cudaMemcpy(devMem + row*m_cpuMem->width, 
-                                    m_cpuMem->imageData + row*m_cpuMem->widthStep,
+                                    m_cpuMem->data.ptr + row*m_cpuMem->step,
                                     m_cpuMem->width*sizeof(float),
                                     cudaMemcpyHostToDevice);
             }            
@@ -109,7 +106,7 @@ float* FloatImageImpl::devMem()
     return devMem;
 }
 
-IplImage* FloatImageImpl::cpuMem()
+CvMat* FloatImageImpl::cpuMem()
 {
     CUerrExp cuerr;
         
@@ -120,13 +117,12 @@ IplImage* FloatImageImpl::cpuMem()
         
         if ( m_cpuMem == NULL )
         {
-            m_cpuMem = cvCreateImage(cvSize(m_dim.width(), m_dim.height()),
-                                     IPL_DEPTH_32F, 1);
+            m_cpuMem = cvCreateMat(m_dim.height(), m_dim.width(), CV_32F);
         }
         
         for (size_t row=0; row<m_dim.height(); row++)
         {
-            cudaMemcpy(m_cpuMem->imageData + row*m_cpuMem->widthStep, 
+            cudaMemcpy(m_cpuMem->data.ptr + row*m_cpuMem->step, 
                        devMem + row*m_dim.width(),
                        m_dim.width()*sizeof(float),
                        cudaMemcpyDeviceToHost);
@@ -142,7 +138,7 @@ void FloatImageImpl::dispose()
 {    
     if ( m_cpuMem != NULL )
     {
-        cvReleaseImage(&m_cpuMem);
+        cvReleaseMat(&m_cpuMem);
         m_cpuMem = NULL;
     }
 

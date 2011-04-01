@@ -8,34 +8,23 @@ TDV_NAMESPACE_BEGIN
 
 void DevMedianFilterRun(const Dim &dim, float *input_d, float *output_d);
 
-bool MedianFilterDev::update()
+FloatImage MedianFilterDev::updateImpl(FloatImage inimg)
 {
   CUerrExp cuerr;    
-  FloatImage inimg;
-  WriteFinishGuard wguard(&m_wpipe);
-      
-  if ( m_rpipe->read(&inimg) )
-  {
-      const Dim dim = inimg.dim();
-      float *input_d = inimg.devMem();
 
-      FloatImage outimg = FloatImage::CreateDev(dim);
-      float *output_d = outimg.devMem();
+  const Dim dim = inimg.dim();
+  float *input_d = inimg.devMem();
 
-      CudaBenchmarker marker;
-      
-      marker.begin();
-      DevMedianFilterRun(dim, input_d, output_d);
-      marker.end();
-      
-      m_wpipe.write(outimg);
+  FloatImage outimg = FloatImage::CreateDev(dim);
+  float *output_d = outimg.devMem();
 
-      wguard.finishNotNeed();
+  CudaBenchmarker marker;
       
-      return true;
-  }
-
-  return false;
+  marker.begin();
+  DevMedianFilterRun(dim, input_d, output_d);
+  marker.end();
+  
+  return outimg;
 }
 
 TDV_NAMESPACE_END

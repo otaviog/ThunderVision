@@ -35,14 +35,37 @@ void Capture::init(int capDevice)
 
 void Capture::update()
 {
-    cvGrabFrame(m_capture);
-    IplImage *frame = cvRetrieveFrame(m_capture);
+    int frameCount = static_cast<int>(
+        cvGetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_COUNT));
     
+    int nxtFrame = static_cast<int>(
+        cvGetCaptureProperty(m_capture, CV_CAP_PROP_POS_FRAMES));
+    
+    if ( nxtFrame >= frameCount )
+    {
+        m_wpipe.finish();
+        return ;
+    }
+    
+    cvGrabFrame(m_capture);        
+    IplImage *frame = cvRetrieveFrame(m_capture);
+        
     if ( frame != NULL )
     {
-        IplImage *cpy = cvCloneImage(frame);
-        m_wpipe.write(cpy);
+        CvMat *mat = cvCreateMat(frame->height, frame->width, CV_8UC3);
+        cvConvertImage(frame, mat, CV_CVTIMG_SWAP_RB);
+        m_wpipe.write(mat);
     }    
+}
+
+void Capture::dispose()
+{
+    if ( m_capture != NULL )
+    {
+        cvReleaseCapture(&m_capture);
+        m_capture = NULL;
+        m_wpipe.finish();
+    } 
 }
 
 CaptureProc::CaptureProc()

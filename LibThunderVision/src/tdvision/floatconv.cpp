@@ -2,7 +2,7 @@
 
 TDV_NAMESPACE_BEGIN
 
-FloatImage FloatConv::updateImpl(IplImage *img)
+FloatImage FloatConv::updateImpl(CvMat *img)
 {
     return FloatImage(img);
 }

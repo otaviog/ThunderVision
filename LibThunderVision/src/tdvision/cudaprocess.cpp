@@ -19,7 +19,7 @@ void CUDAProcess::process()
         cont = false;
         for (size_t i=0; i<m_units.size(); i++)
         {
-            //if ( endArray[i] )
+            if ( endArray[i] )
                 endArray[i] = m_units[i]->update();
             
             cont = cont || endArray[i];

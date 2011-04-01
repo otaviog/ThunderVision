@@ -3,7 +3,6 @@
 #include <videowidget.hpp>
 #include <tdvision/pipe.hpp>
 #include <tdvision/captureproc.hpp>
-#include <tdvision/imagesink.hpp>
 #include <tdvision/processrunner.hpp>
 #include <tdvision/processgroup.hpp>
 #include <tdvision/workunitprocess.hpp>
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
     VideoWidget *wid0 = new VideoWidget;
     ErrorHandle errHdl(wid0);
     
-    wid0->input(capture.output(), true);
+    wid0->input(capture.output());
     wid0->init();
     
     wid0->show();    

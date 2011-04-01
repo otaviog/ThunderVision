@@ -16,9 +16,9 @@ CalibrationWidget::CalibrationWidget()
     lyCamWid->addWidget(m_videoWid);
 }
 
-void CalibrationWidget::init(tdv::ReadPipe<IplImage*> *patternDetect, bool sink)
+void CalibrationWidget::init(tdv::ReadPipe<CvMat*> *patternDetect)
 {
-    m_videoWid->input(patternDetect, sink);
+    m_videoWid->input(patternDetect);
     m_videoWid->init();
 }
 

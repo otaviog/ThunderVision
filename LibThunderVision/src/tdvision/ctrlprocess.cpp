@@ -10,7 +10,7 @@ CtrlProcess::CtrlProcess()
 
 void CtrlProcess::process()
 {
-    IplImage *limg, *rimg;
+    CvMat *limg, *rimg;
     
     while ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
     {
@@ -22,8 +22,13 @@ void CtrlProcess::process()
             if ( m_mode == Step )
                 m_step = false;
         }
-    }
-    
+        else
+        {
+            cvDecRefData(limg);
+            cvDecRefData(rimg);
+        }
+    }    
+
     m_lwpipe.finish();
     m_rwpipe.finish();
 }

@@ -1,0 +1,6 @@
+#ifndef _SEQUENCEPROCESS_H_
+#define _SEQUENCEPROCESS_H_
+
+
+
+#endif /* _SEQUENCEPROCESS_H_ */

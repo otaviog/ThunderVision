@@ -20,12 +20,12 @@ CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
 
 void CamerasViewDialog::init()
 {
-    tdv::ReadPipe<IplImage*> *lpipe, *rpipe;
+    tdv::ReadPipe<CvMat*> *lpipe, *rpipe;
     
     m_ctx->dupInputSource(&lpipe, &rpipe);
     
-    m_leftVidWid->input(lpipe, true);
-    m_rightVidWid->input(rpipe, true);
+    m_leftVidWid->input(lpipe);
+    m_rightVidWid->input(rpipe);
     
     m_leftVidWid->init();
     m_rightVidWid->init();    

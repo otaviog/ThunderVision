@@ -4,8 +4,8 @@
 TDV_NAMESPACE_BEGIN
 
 Reconstruction::Reconstruction(StereoMatcher *matcher, 
-                               ReadPipe<IplImage*> *leftImgIn,
-                               ReadPipe<IplImage*> *rightImgIn)
+                               ReadPipe<CvMat*> *leftImgIn,
+                               ReadPipe<CvMat*> *rightImgIn)
 {
     m_matcher = matcher;
     

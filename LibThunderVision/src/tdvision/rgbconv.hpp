@@ -3,32 +3,19 @@
 
 #include <tdvbasic/common.hpp>
 #include <cv.h>
-#include "workunit.hpp"
+#include "workunitutil.hpp"
 #include "pipe.hpp"
 #include "floatimage.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class RGBConv: public WorkUnit
+class RGBConv: public MonoWorkUnit<FloatImage, CvMat*>
 {
 public:
     RGBConv();
 
-    void input(ReadPipe<FloatImage> *rpipe)
-    {
-        m_rpipe = rpipe;
-    }
-    
-    ReadPipe<IplImage*>* output()
-    {
-        return &m_wpipe;
-    }
-    
-    bool update();
-
-private:
-    ReadPipe<FloatImage> *m_rpipe;
-    ReadWritePipe<IplImage*, IplImage*> m_wpipe;
+protected:
+    CvMat* updateImpl(FloatImage image);
 };
 
 TDV_NAMESPACE_END

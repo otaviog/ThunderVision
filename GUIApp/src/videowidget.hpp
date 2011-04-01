@@ -5,6 +5,7 @@
 #include <tdvision/process.hpp>
 #include <tdvision/floatimage.hpp>
 #include <tdvision/exceptionreport.hpp>
+#include <tdvision/sink.hpp>
 #include <cv.h>
 #include <QWidget>
 #include <QThread>
@@ -25,13 +26,13 @@ public:
 
     ~VideoWidget();
 
-    void input(tdv::ReadPipe<IplImage*> *framePipe, bool sink);
+    void input(tdv::ReadPipe<CvMat*> *framePipe);
 
     void init();
 
     void dispose();
 
-    IplImage* lastFrame();
+    CvMat* lastFrame();
 
     void process();
     
@@ -44,11 +45,12 @@ protected:
     virtual void paintEvent(QPaintEvent *event);
 
 private:
-    tdv::ReadPipe<IplImage*> *m_framePipe;
+    tdv::ReadPipe<CvMat*> *m_framePipe;
     tdv::ProcessRunner *m_procRunner;
     
-    IplImage *m_lastFrame, *m_pixmap;
-    bool m_end, m_sink;
+    IplImage *m_pixmap;
+    CvMat *m_lastFrame;
+    bool m_end;
 
     QMutex m_imageMutex;
 };

@@ -27,7 +27,7 @@ public:
     
     void chessPattern(const ChessboardPattern &cbpattern);
     
-    void input(ReadPipe<IplImage*> *rlpipe, ReadPipe<IplImage*> *rrpipe,
+    void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe,
                bool sinkLeft, bool sinkRight)
     {
         m_rlpipe = rlpipe;
@@ -36,7 +36,7 @@ public:
         m_sinkRight = sinkRight;
     }
     
-    ReadPipe<IplImage*>* detectionImage()
+    ReadPipe<CvMat*>* detectionImage()
     {
         return &m_dipipe;
     }
@@ -65,16 +65,16 @@ public:
     
 private:
 
-    IplImage* updateChessboardCorners(const IplImage *limg, 
-                                      const IplImage *rimg);
+    CvMat* updateChessboardCorners(const CvMat *limg, 
+                                   const CvMat *rimg);
     
     void updateCalibration(const CvSize &imgSize);
     
     ChessboardPattern m_cbpattern;
     
-    ReadPipe<IplImage*> *m_rlpipe, *m_rrpipe;
+    ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
     bool m_sinkLeft, m_sinkRight;    
-    ReadWritePipe<IplImage*> m_dipipe;
+    ReadWritePipe<CvMat*> m_dipipe;
     
     CamerasDesc m_camDesc;
     

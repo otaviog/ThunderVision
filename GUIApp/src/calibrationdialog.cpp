@@ -25,7 +25,7 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx)
 
 void CalibrationDialog::init()
 {
-    m_calibWid->init(m_calib->detectionImage(), true);    
+    m_calibWid->init(m_calib->detectionImage());    
     m_calib->observer(m_calibWid);
 }
 

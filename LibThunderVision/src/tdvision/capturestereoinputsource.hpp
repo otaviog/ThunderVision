@@ -18,12 +18,12 @@ public:
 
     void init(const std::string &filename1, const std::string &filename2);    
         
-    ReadPipe<IplImage*> *leftImgOutput()
+    ReadPipe<CvMat*> *leftImgOutput()
     {
         return m_capture1.output();
     }
     
-    ReadPipe<IplImage*> *rightImgOutput()
+    ReadPipe<CvMat*> *rightImgOutput()
     {
         return m_capture2.output();
     }

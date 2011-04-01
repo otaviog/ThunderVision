@@ -14,6 +14,10 @@ struct NoSink
 {
     static void sink(Type tp) 
     { /*Do nothing*/ }
+
+    static void incrRef(Type tp)
+    {
+    }
 };
 
 template<typename Type, typename SinkPolicy>
@@ -25,7 +29,7 @@ public:
         m_rpipe = NULL;
     }
     
-    void input(ReadPipe<FloatImage> *rpipe)
+    void input(ReadPipe<Type> *rpipe)
     {
         m_rpipe = rpipe;
     }
@@ -65,8 +69,16 @@ struct IplImageSinkPol
     }
 };
 
+struct CvMatSinkPol
+{    
+    static void incrRef(CvMat *mat);
+    
+    static void sink(CvMat *mat);
+};
+
 typedef Sink<FloatImage, FloatImageSinkPol> FloatImageSink;
 typedef Sink<IplImage*, IplImageSinkPol> IplImageSink;
+typedef Sink<CvMat*, CvMatSinkPol> CvMatSink;
 
 TDV_NAMESPACE_END
 

@@ -9,7 +9,7 @@ TDV_NAMESPACE_BEGIN
 bool ImageResize::update()
 {
     FloatImage inimg;
-    WriteFinishGuard wg(&m_wpipe);
+    WriteGuard<ReadWritePipe<FloatImage> > wg(m_wpipe);
     
     if ( m_rpipe->read(&inimg) )
     {
@@ -37,13 +37,10 @@ bool ImageResize::update()
         FloatImage outimg = FloatImage::CreateCPU(ndim);        
         cvResize(inimg.cpuMem(), outimg.cpuMem(), CV_INTER_CUBIC);
         
-        m_wpipe.write(outimg);
-        wg.finishNotNeed();
-        
-        return true;
+        wg.write(outimg);                
     }    
 
-    return false;
+    return wg.wasWrite();
 }
 
 TDV_NAMESPACE_END

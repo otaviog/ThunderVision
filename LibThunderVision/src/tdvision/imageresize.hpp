@@ -60,7 +60,7 @@ public:
     
 private:
     ReadPipe<FloatImage> *m_rpipe;
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+    ReadWritePipe<FloatImage> m_wpipe;
     
     Mode m_mode;
     const Dim &m_newDim;
