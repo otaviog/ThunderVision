@@ -1,3 +1,4 @@
+#include "sink.hpp"
 #include "rgbconv.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -17,8 +18,8 @@ CvMat* RGBConv::updateImpl(FloatImage image)
 
     cvCvtColor(scaleImg, imgRGB, CV_GRAY2RGB);
     cvReleaseMat(&scaleImg);
-        
-    image.dispose();
+    
+    FloatImageSinkPol::sink(image);
     
     return imgRGB;        
 }

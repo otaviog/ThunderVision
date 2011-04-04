@@ -15,10 +15,10 @@ TEST(TestTDVContext, CameraView)
         
     ctx.start(&inputSrc);
     
-    ReadPipe<IplImage*> *lftImgP, *rgtImgP;
+    ReadPipe<CvMat*> *lftImgP, *rgtImgP;
     ctx.dupInputSource(&lftImgP, &rgtImgP);        
     
-    IplImage *lftImg, *rgtImg;
+    CvMat *lftImg, *rgtImg;
     EXPECT_TRUE(lftImgP->read(&lftImg));
     EXPECT_TRUE(rgtImgP->read(&rgtImg));
     

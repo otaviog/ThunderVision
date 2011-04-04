@@ -1,3 +1,4 @@
+#include "sink.hpp"
 #include "stereocorrespondencecv.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -14,6 +15,7 @@ StereoCorrespondenceCV::~StereoCorrespondenceCV()
 
 bool StereoCorrespondenceCV::update()
 {
+#if 0 
     WriteGuard<ReadWritePipe<FloatImage> > wguard(m_wpipe);
     FloatImage limg, rimg;
     
@@ -27,9 +29,24 @@ bool StereoCorrespondenceCV::update()
         CvMat *out_c = output.cpuMem();
         
         cvFindStereoCorrespondenceBM(limg_c, rimg_c, out_c, m_bmState);
+        
+        FloatImageSinkPol::sink(limg);
+        FloatImageSinkPol::sink(rimg);
     }
     
     return wguard.wasWrite();
+#else
+    FloatImage limg, rimg;
+    if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
+    {
+        FloatImageSinkPol::sink(limg);
+        FloatImageSinkPol::sink(rimg);
+
+        return true;
+    }
+    
+    return false;
+#endif
 }
 
 TDV_NAMESPACE_END

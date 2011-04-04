@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
     sink0.input(capture0.output());
     sink1.input(capture1.output());
     
-    CamerasViewWidget *wid = new CamerasViewWidget(capture0.colorImage(), capture1.colorImage());
+    CamerasViewWidget *wid = 
+        new CamerasViewWidget(capture0.colorImage(), capture1.colorImage());
     
     QPushButton *pb = new QPushButton("Photochar");
     pb->show();

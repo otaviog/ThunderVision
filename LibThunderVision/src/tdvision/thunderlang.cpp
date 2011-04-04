@@ -20,9 +20,7 @@ static void antlDisplayRecongnitionError(pANTLR3_BASE_RECOGNIZER recognizer,
     pANTLR3_STRING			ttext;
     pANTLR3_STRING			ftext;
     pANTLR3_EXCEPTION       ex;
-    pANTLR3_COMMON_TOKEN    theToken;
-    pANTLR3_BASE_TREE       theBaseTree;
-    pANTLR3_COMMON_TREE     theCommonTree;
+    pANTLR3_COMMON_TOKEN    theToken;        
 
     assert(recognizer->type == ANTLR3_TYPE_PARSER);
     parser      = (pANTLR3_PARSER) (recognizer->super);
@@ -139,6 +137,11 @@ void ThunderLangParser::parseFile(const std::string &filename)
     tstream->free(tstream);
     lexer->free(lexer);
     input->close(input);
+    
+    if ( !m_errors.empty() )
+    {
+        throw ParserException(boost::format("Errors while parsing file %1%") % filename);
+    }
 }
 
 static void printMatrix33(std::ostream &stream, const double matrix[9])

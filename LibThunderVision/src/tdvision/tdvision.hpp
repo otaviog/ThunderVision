@@ -34,7 +34,6 @@
 #include "pipe.hpp"
 #include "processgroup.hpp"
 #include "process.hpp"
-#include "processrunner_flymake.hpp"
 #include "processrunner.hpp"
 #include "reconstructionfactory.hpp"
 #include "reconstruction.hpp"

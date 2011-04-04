@@ -19,12 +19,7 @@ FloatImageImpl::FloatImageImpl(CvArr *img)
     CvSize size(cvGetSize(img));
     m_dim = Dim(size.width, size.height);
     
-    CvMat *grayTmp = misc::create8UGray(img);
-    
-    m_cpuMem = cvCreateMat(size.height, size.width, CV_32F);
-    cvConvertScale(grayTmp, m_cpuMem, 1.0/255.0);
-    cvReleaseMat(&grayTmp);
-
+    m_cpuMem = misc::create32FGray(img);    
     m_syncDev = -1;
 }
 

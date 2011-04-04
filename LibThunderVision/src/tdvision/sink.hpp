@@ -80,6 +80,30 @@ typedef Sink<FloatImage, FloatImageSinkPol> FloatImageSink;
 typedef Sink<IplImage*, IplImageSinkPol> IplImageSink;
 typedef Sink<CvMat*, CvMatSinkPol> CvMatSink;
 
+template<typename Type>
+struct SinkTraits
+{    
+
+};
+
+template<>
+struct SinkTraits<FloatImage>
+{
+    typedef FloatImageSinkPol Sinker;
+};
+
+template<>
+struct SinkTraits<IplImage*>
+{
+    typedef IplImageSinkPol Sinker;
+};
+
+template<>
+struct SinkTraits<CvMat*>
+{
+    typedef CvMatSinkPol Sinker;
+};
+
 TDV_NAMESPACE_END
 
 #endif /* TDV_SINK_HPP */

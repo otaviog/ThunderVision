@@ -45,7 +45,7 @@ void Calibration::chessPattern(const ChessboardPattern &cbpattern)
 CvMat* Calibration::updateChessboardCorners(
     const CvMat *limg, const CvMat *rimg)
 {
-    const size_t totalCorners = m_cbpattern.totalCorners();
+    const int totalCorners = m_cbpattern.totalCorners();
     boost::scoped_array<CvPoint2D32f> leftPoints(
         new CvPoint2D32f[totalCorners]);
 

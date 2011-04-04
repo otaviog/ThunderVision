@@ -59,7 +59,7 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
 {
     Reconstruction *reconst = NULL;
 
-    if ( m_reconstRunner == NULL )
+    if ( m_reconstRunner != NULL )
     {
         return reconst;
     }
@@ -83,7 +83,7 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(0),
                                  m_inputTees[1].output(0));
-
+    
     m_reconstRunner = new ProcessRunner(*reconst, this);
     m_reconstRunner->run();
 

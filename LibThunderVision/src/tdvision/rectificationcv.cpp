@@ -1,81 +1,85 @@
 #include <highgui.h>
 #include <tdvbasic/log.hpp>
 #include "misc.hpp"
+#include "sink.hpp"
 #include "rectificationcv.hpp"
+
+#ifdef SHOW_DEB_IMGS
+#define showImage(S, I) cvShowImage(S, I)
+#define waitKey(V) cvWaitKey(V)
+#else
+#define showImage(S, I) 
+#define waitKey(V) 
+#endif
 
 TDV_NAMESPACE_BEGIN
 
-void RectificationCV::findCorners(const CvMat *img, CvPoint2D32f *corners,
-                                  int *cornerCount, CvMat *eigImage,
-                                  CvMat *tmpImage)
+ConjugateCorners::ConjugateCorners()
+    : m_eigImage(CV_8U),
+      m_tmpImage(CV_8U)      
+{
+}
+
+void ConjugateCorners::findCorners(const CvMat *img, CvPoint2D32f *corners,
+                                   int *cornerCount, 
+                                   CvMat *eigImage, CvMat *tmpImage)
 {
     static const size_t CORNER_SEARCH_WIN_DIM = 9;
-
-    cvGoodFeaturesToTrack(img, eigImage, tmpImage, corners, cornerCount,
+    
+    cvGoodFeaturesToTrack(img, eigImage, tmpImage, 
+                          corners, cornerCount,
                           0.05, 5.0);
-
-    IplImage *tmpSPImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-    cvConvertScale(img, tmpSPImg, 255.0);
-
-    cvFindCornerSubPix(tmpSPImg, corners, *cornerCount,
+    
+    cvFindCornerSubPix(img, corners, *cornerCount,
                        cvSize(CORNER_SEARCH_WIN_DIM, CORNER_SEARCH_WIN_DIM),
                        cvSize(-1, -1),
                        cvTermCriteria(
-                           CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
-    cvReleaseImage(&tmpSPImg);
+                           CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));        
 }
 
-size_t RectificationCV::findCornersPoints(const CvMat *limg_c, const CvMat *rimg_c,
-                                          const CvSize &imgSize, CvMat **leftPointsR,
-                                          CvMat **rightPointsR)
+void ConjugateCorners::updateConjugates(const CvMat *leftImg, const CvMat *rightImg)
 {
-    static const size_t MAX_CORNERS = 15;
-
-    CvMat *limg8bit_c = misc::create8UGray(limg_c);
-    CvMat *rimg8bit_c = misc::create8UGray(rimg_c);
-
-    CvMat *eigImage = cvCreateMat(imgSize.height, imgSize.width + 8, CV_32F);
-    CvMat *tmpImage = cvCreateMat(imgSize.height, imgSize.width + 8, CV_32F);
-
+    static const size_t MAX_CORNERS = 15;    
     CvPoint2D32f leftCorners[MAX_CORNERS], rightCorners[MAX_CORNERS];
     int leftCornerCount = MAX_CORNERS, rightCornerCount = MAX_CORNERS;
 
-    findCorners(limg_c, leftCorners, &leftCornerCount,
+    CvMat *eigImage = m_eigImage.getImage(getEigSize(leftImg, rightImg));
+    CvMat *tmpImage = m_tmpImage.getImage(getTmpSize(leftImg, rightImg));
+    
+    findCorners(leftImg, leftCorners, &leftCornerCount, 
                 eigImage, tmpImage);
-    findCorners(rimg_c, rightCorners, &rightCornerCount,
+    findCorners(rightImg, rightCorners, &rightCornerCount, 
                 eigImage, tmpImage);
 
     int minCornersFound = std::min(leftCornerCount, rightCornerCount);
     char status[minCornersFound];
 
-    cvCalcOpticalFlowPyrLK(limg8bit_c, rimg8bit_c, eigImage, tmpImage,
+    cvCalcOpticalFlowPyrLK(leftImg, rightImg, eigImage, tmpImage,
                            leftCorners, rightCorners, minCornersFound,
-                           cvSize(15, 15), 1, status, NULL,
-                           cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03),
+                           cvSize(9, 9), 1, status, NULL,
+                           cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 
+                                          20, 0.03),
                            CV_LKFLOW_INITIAL_GUESSES);
-
-    cvReleaseMat(&eigImage);
-    cvReleaseMat(&tmpImage);
-
-    CvMat *leftPoints = cvCreateMat(1, minCornersFound, CV_64FC2);
-    CvMat *rightPoints = cvCreateMat(1, minCornersFound, CV_64FC2);
-
+    
+    
+    m_lPoints.resize(minCornersFound);
+    m_rPoints.resize(minCornersFound);        
+    
     for (int i=0; i<minCornersFound; i++)
-    {
-        const size_t xidx = i*2;
-        const size_t yidx = xidx + 1;
+    {        
+        m_lPoints[i].x = leftCorners[i].x;
+        m_lPoints[i].y = leftCorners[i].y;
 
-        leftPoints->data.db[xidx] = leftCorners[i].x;
-        leftPoints->data.db[yidx] = leftCorners[i].y;
+        m_rPoints[i].x = rightCorners[i].x;
+        m_rPoints[i].y = rightCorners[i].y;
+    }    
+}
 
-        rightPoints->data.db[xidx] = rightCorners[i].x;
-        rightPoints->data.db[yidx] = rightCorners[i].y;
-    }
-
-    *leftPointsR = leftPoints;
-    *rightPointsR = rightPoints;
-
-    return minCornersFound;
+RectificationCV::RectificationCV()
+    : m_limg32f(CV_32F), m_rimg32f(CV_32F), 
+      m_limg8u(CV_8U), m_rimg8u(CV_8U)
+{
+    
 }
 
 void RectificationCV::calibratedRectify(const CvMat *lM, const CvMat *rM,
@@ -123,7 +127,10 @@ void RectificationCV::uncalibrateRectify(
     CvMat v_R1 = cvMat(3, 3, CV_64F, c_R1);
     CvMat v_R2 = cvMat(3, 3, CV_64F, c_R2);
     CvMat v_TR = cvMat(3, 3, CV_64F, c_TR);
-
+    
+    cvSetIdentity(&v_lH);
+    cvSetIdentity(&v_rH);
+    
     cvStereoRectifyUncalibrated(leftPoints, rightPoints, F,
                                 imgDim, &v_lH, &v_rH);
     cvInvert(lM, &v_iM);
@@ -136,7 +143,6 @@ void RectificationCV::uncalibrateRectify(
 
     cvInitUndistortRectifyMap(lM, lD, &v_R1,
                               lM, mxLeft, myLeft);
-
     cvInitUndistortRectifyMap(rM, rD, &v_R2,
                               rM, mxRight, myRight);
 }
@@ -148,30 +154,51 @@ bool RectificationCV::update()
     CvMat *limg_c, *rimg_c;
 
     if ( !m_rlpipe->read(&limg_c)  )
-    {
+    {        
         return false;
     }
 
     if ( !m_rrpipe->read(&rimg_c) )
-    {
-        //limg.dispose();
-        return false;
+    {    
+         CvMatSinkPol::sink(limg_c);
+         return false;
     }
 
     CvSize imgSz = cvSize(std::max(limg_c->width, rimg_c->width),
-                        std::max(limg_c->height, rimg_c->height));
-    CvSize calibPatternDim = cvSize(8, 7);
+                        std::max(limg_c->height, rimg_c->height));    
+    
+    CvMat *limg32f = m_limg32f.getImage(cvGetSize(limg_c));
+    CvMat *rimg32f = m_rimg32f.getImage(cvGetSize(rimg_c));        
+    CvMat *limg8u = m_limg8u.getImage(cvGetSize(limg_c));
+    CvMat *rimg8u = m_rimg8u.getImage(cvGetSize(rimg_c));
+        
+    misc::convert8UC3To32FC1Gray(limg_c, limg32f, limg8u);
+    misc::convert8UC3To32FC1Gray(rimg_c, rimg32f, rimg8u);        
+    
+    showImage("OL", limg_c);
+    showImage("OR", rimg_c);
 
-    CvMat *leftPoints, *rightPoints;
-    findCornersPoints(limg_c, rimg_c, imgSz, &leftPoints, &rightPoints);
+    CvMatSinkPol::sink(limg_c);
+    CvMatSinkPol::sink(rimg_c);
+    
+    showImage("GL", limg8u);
+    showImage("GR", rimg8u);
 
+    CvMat leftPoints, rightPoints;
+    
     double c_F[9];
     CvMat v_F = cvMat(3, 3, CV_64F, c_F);
 
-    if ( m_camsDesc.hasFundamentalMatrix() )
-    {
+    if ( !m_camsDesc.hasFundamentalMatrix() )
+    {             
+        m_conjCorners.updateConjugates(limg8u, rimg8u);
+        leftPoints = m_conjCorners.leftPoints();
+        rightPoints = m_conjCorners.rightPoints();
+        
+        cvSetIdentity(&v_F);
+        
         const int fmCount = cvFindFundamentalMat(
-            leftPoints, rightPoints, &v_F);
+            &leftPoints, &rightPoints, &v_F);
         TDV_LOG(deb).printf("Fundamental matrices found = %d", fmCount);
     }
     else
@@ -194,10 +221,11 @@ bool RectificationCV::update()
     memcpy(c_lD, lParms.distortion(), sizeof(double)*5);
     memcpy(c_rD, rParms.distortion(), sizeof(double)*5);
 
-    CvMat *mxLeft = cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1),
-        *myLeft = cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1),
-        *mxRight = cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1),
-        *myRight = cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1);
+    misc::ScopedMat 
+        mxLeft(cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1)),
+        myLeft(cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1)),
+        mxRight(cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1)),
+        myRight(cvCreateMat(imgSz.height,  imgSz.width, CV_32FC1));
 
     if ( m_camsDesc.hasExtrinsics() )
     {
@@ -209,34 +237,38 @@ bool RectificationCV::update()
 
         calibratedRectify(
             &v_lM, &v_rM, &v_lD, &v_rD, &v_R, &v_T,
-            &v_F, imgSz, mxLeft, myLeft, mxRight, myRight);
+            &v_F, imgSz, 
+            mxLeft.get(), myLeft.get(), mxRight.get(), myRight.get());
     }
     else
     {
+        if ( m_camsDesc.hasFundamentalMatrix() )
+        {     
+            m_conjCorners.updateConjugates(limg8u, rimg8u);
+            leftPoints = m_conjCorners.leftPoints();
+            rightPoints = m_conjCorners.rightPoints();
+        }
+
         uncalibrateRectify(
-            leftPoints, rightPoints,
-            imgSz,
-            &v_lM, &v_rM, &v_lD, &v_rD, &v_F,
-            mxLeft, myLeft, mxRight, myRight);
+            &leftPoints, &rightPoints,
+            imgSz, &v_lM, &v_rM, &v_lD, &v_rD, &v_F,
+            mxLeft.get(), myLeft.get(), mxRight.get(), myRight.get());
     }
 
     const Dim imgDim(imgSz.width, imgSz.height);
-    // Precompute map for cvRemap()
+
     FloatImage limout = FloatImage::CreateCPU(imgDim);
     FloatImage rimout = FloatImage::CreateCPU(imgDim);
 
     CvMat *limout_c = limout.cpuMem();
     CvMat *rimout_c = rimout.cpuMem();
 
-    cvShowImage("OL", limg_c);
-    cvShowImage("OR", rimg_c);
+    cvRemap(limg32f, limout_c, mxLeft.get(), myLeft.get());
+    cvRemap(rimg32f, rimout_c, mxRight.get(), myRight.get());
 
-    cvRemap(limg_c, limout_c, mxLeft, myLeft);
-    cvRemap(rimg_c, rimout_c, mxRight, myRight);
-
-    cvShowImage("L", limout_c);
-    cvShowImage("R", rimout_c);
-    cvWaitKey(0);
+    showImage("L", limout_c);
+    showImage("R", rimout_c);
+    waitKey(0);
 
     lwg.write(limout);
     rwg.write(rimout);

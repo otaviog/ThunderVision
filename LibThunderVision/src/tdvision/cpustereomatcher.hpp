@@ -3,6 +3,7 @@
 
 #include <tdvbasic/common.hpp>
 #include "workunitprocess.hpp"
+#include "processgroup.hpp"
 #include "stereomatcher.hpp"
 #include "stereocorrespondencecv.hpp"
 
@@ -26,12 +27,12 @@ public:
 
     Process** processes()
     {
-        return m_procs;
+        return m_procs.processes();
     }
     
 private:
     TWorkUnitProcess<StereoCorrespondenceCV> m_corresp;
-    Process* m_procs[2];
+    ArrayProcessGroup m_procs;
 };
 
 TDV_NAMESPACE_END

@@ -8,36 +8,129 @@
 #include <highgui.h>
 #include "videowidget.hpp"
 
-VideoWidget::VideoWidget(QWidget *parent)
-    : QWidget(parent)
+template<typename Type, typename MatAdapter>
+class VideoProcess: public tdv::Process
 {
+public:
+    VideoProcess(VideoWidget *widget, QMutex *imageMutex, CvMat **frame)
+    {        
+        m_pipe = NULL;
+        m_widget = widget;
+        m_end = false;
+        m_imgMutex = imageMutex;
+        m_frame = frame;
+    }
+        
+    void process();    
+
+    void input(tdv::ReadPipe<Type> *pipe)
+    {
+        m_pipe = pipe;
+    }
+
+    void finish()
+    {
+        m_end = true;
+    }
+    
+private:
+    tdv::ReadPipe<Type> *m_pipe;
+    Type m_lastFrame;
+    VideoWidget *m_widget;
+    bool m_end;
+    
+    QMutex *m_imgMutex;
+    CvMat **m_frame;
+};
+
+template<typename Type, typename MatAdapter>
+void VideoProcess<Type, MatAdapter>::process()
+{
+    assert(m_pipe != NULL);
+    
+    bool firstFrame = true;    
+    Type image;
+    while ( m_pipe->read(&image) && !m_end )
+    {        
+        QMutexLocker locker(m_imgMutex);
+        if ( !firstFrame )
+        {
+            tdv::SinkTraits<Type>::Sinker::sink(m_lastFrame);            
+        }
+        
+        firstFrame = false;
+        m_lastFrame = image;
+        
+        *m_frame = MatAdapter::adapt(m_lastFrame);
+        m_widget->update();
+    }
+}
+
+
+VideoWidget::VideoWidget(QWidget *parent)
+    : QWidget(parent), m_pixmap(CV_8UC3)
+{
+    m_matFramePipe = NULL;
+    m_floatFramePipe = NULL;
+    m_vidProc = NULL;
     m_lastFrame = NULL;
-    m_end = false;
-    m_framePipe = NULL;
-    m_pixmap = NULL;
 }
 
 VideoWidget::~VideoWidget()
-{
-    m_end = true;
-
-    if ( m_pixmap != NULL )
-    {
-        cvReleaseImage(&m_pixmap);
-        m_pixmap = NULL;
-    }
-}
+{ }
 
 void VideoWidget::input(tdv::ReadPipe<CvMat*> *framePipe)
 {
     QMutexLocker locker(&m_imageMutex);
-    m_framePipe = framePipe;
+    m_matFramePipe = framePipe;
+    m_floatFramePipe = NULL;
 }
+
+void VideoWidget::input(tdv::ReadPipe<tdv::FloatImage> *framePipe)
+{
+    QMutexLocker locker(&m_imageMutex);
+    m_floatFramePipe = framePipe;
+    m_matFramePipe = NULL;
+}
+
+struct FloatAdapt
+{
+    static CvMat* adapt(tdv::FloatImage img)
+    {
+        return img.cpuMem();
+    }
+};
+
+struct MatAdapt
+{
+    static CvMat* adapt(CvMat *img)
+    {
+        return img;
+    }
+};
 
 void VideoWidget::init()
 {    
+    if ( m_matFramePipe )
+    {
+        VideoProcess<CvMat*, MatAdapt> *proc = 
+            new VideoProcess<CvMat*, MatAdapt>(
+                this, &m_imageMutex, &m_lastFrame);
+        proc->input(m_matFramePipe);
+        m_vidProc = proc;
+    }
+    else if ( m_floatFramePipe )
+    {
+        VideoProcess<tdv::FloatImage, FloatAdapt> *proc = 
+            new VideoProcess<tdv::FloatImage, FloatAdapt>(
+                this, &m_imageMutex, &m_lastFrame);
+        
+        proc->input(m_floatFramePipe);
+        m_vidProc = proc;
+    }
+    
     tdv::ArrayProcessGroup grp;
-    grp.addProcess(this);
+    grp.addProcess(m_vidProc);
     
     m_procRunner = new tdv::ProcessRunner(grp, this);
     m_procRunner->run();
@@ -45,7 +138,14 @@ void VideoWidget::init()
 
 void VideoWidget::dispose()
 {
-    m_procRunner->join();
+    if ( m_vidProc != NULL )
+    {
+        m_vidProc->finish();
+        m_procRunner->join();
+    
+        delete m_vidProc;
+        m_vidProc = NULL;
+    }
 }
 
 void VideoWidget::paintEvent(QPaintEvent *event)
@@ -60,44 +160,16 @@ void VideoWidget::paintEvent(QPaintEvent *event)
         return ;
     }    
 
-    if ( m_pixmap == NULL )
-    {
-        m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
-    }
-    else if ( m_pixmap->width != m_lastFrame->width
-              || m_pixmap->height != m_lastFrame->height )
-    {
-        cvReleaseImage(&m_pixmap);
-        m_pixmap = cvCreateImage(cvGetSize(m_lastFrame), IPL_DEPTH_8U, 3);
-    }
-            
-    cvConvertImage(m_lastFrame, m_pixmap);    
+    CvMat *pixmap = m_pixmap.getImage(cvGetSize(m_lastFrame));            
+    cvConvertImage(m_lastFrame, pixmap);    
     
-    QImage img(reinterpret_cast<const uchar*>(m_pixmap->imageData),
-               m_pixmap->width, m_pixmap->height,
-               m_pixmap->widthStep, QImage::Format_RGB888);
+    QImage img(reinterpret_cast<const uchar*>(pixmap->data.ptr),
+               pixmap->cols, pixmap->rows,
+               pixmap->step, QImage::Format_RGB888);
 
     painter.drawImage(QPoint(0, 0), img);
         
     setFixedSize(img.width(), img.height());
-}
-
-void VideoWidget::process()
-{
-    assert(m_framePipe != NULL);
-
-    CvMat *image;
-    while ( m_framePipe->read(&image) && !m_end )
-    {        
-        QMutexLocker locker(&m_imageMutex);
-        if ( m_lastFrame != NULL )
-        {
-            tdv::CvMatSinkPol::sink(m_lastFrame);
-        }
-
-        m_lastFrame = image;
-        update();
-    }
 }
 
 void VideoWidget::errorOcurred(const std::exception &err)

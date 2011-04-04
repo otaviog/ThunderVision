@@ -58,7 +58,7 @@ TEST_F(MedianFilterTest, Dev)
     
     filter->input(fconv.output());
     rconv.input(filter->output());
-    
+
     tdv::WorkUnitProcess p0(reader);    
     tdv::CUDAProcess p1(0);
     tdv::WorkUnitProcess p2(writer);    

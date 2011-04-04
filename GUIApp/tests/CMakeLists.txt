@@ -6,8 +6,5 @@ TARGET_LINK_LIBRARIES(${output}
   GUILib ${QT_LIBRARIES} ${ThunderVision_LIBRARIES})
 ENDMACRO(ADD_QTEST)
 
-ADD_QTEST(testcamerawidget testcamerawidget.cpp)
-
-ADD_QTEST(testcamerawidgetsimple testcamerawidgetsimple.cpp)
-
-#ADD_QTEST(testcamerasviewwidget testcamerasviewwidget.cpp)
+ADD_QTEST(testsimplevideowidget testsimplevideowidget.cpp)
+ADD_QTEST(testvideofilter testvideofilter.cpp)

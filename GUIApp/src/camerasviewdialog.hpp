@@ -12,9 +12,7 @@ class CamerasViewDialog: public QDialog, Ui::CamerasView
 public:
     CamerasViewDialog(tdv::TDVContext *ctx);
     
-    void init();
-    
-    void dispose();
+    void init();    
 
 private slots:
     void showCalibrationDlg();
@@ -22,6 +20,7 @@ private slots:
 protected:
     void closeEvent(QCloseEvent *event);
     
+    void dispose();
 private:
     tdv::TDVContext *m_ctx;
     VideoWidget *m_leftVidWid;

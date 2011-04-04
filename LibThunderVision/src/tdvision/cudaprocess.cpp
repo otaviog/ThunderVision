@@ -12,6 +12,8 @@ void CUDAProcess::process()
     err << cudaSetDevice(m_deviceId);
     
     boost::scoped_array<bool> endArray(new bool[m_units.size()]);
+    for (size_t i=0; i<m_units.size(); i++)
+        endArray[i] = true;
     
     bool cont = true;
     while ( cont )

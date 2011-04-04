@@ -6,8 +6,10 @@
 #include <tdvision/reconstruction.hpp>
 #include <tdvision/stereoinputsource.hpp>
 #include "ui_mainwindow.h"
-#include "camerasviewdialog.hpp"
 #include "videowidget.hpp"
+
+class CamerasViewDialog;
+class RectificationViewDialog;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -35,13 +37,22 @@ public slots:
       
     void pauseReconstruction();
 
+protected:
+    void closeEvent(QCloseEvent *event);
+    
+    void dispose();
+    
+    void initReconstruction();              
+
 private slots:
-    void camerasViewsDone();
+    void camerasViewsDone();    
     
 private:
     tdv::TDVContext *m_ctx;
     tdv::Reconstruction *m_reconst;
-    CamerasViewDialog *m_camsDialog;    
+    
+    CamerasViewDialog *m_camsDialog;
+    RectificationViewDialog *m_rectDialog;
 };
 
 #endif /* TDV_MAINWINDOW_HPP */

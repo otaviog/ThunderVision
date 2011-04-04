@@ -26,7 +26,7 @@ public:
     
     double secs() const
     {
-        m_secs / double(m_timeCount);
+        return m_secs / double(m_timeCount);
     }
     
     Benchmark& operator += (TimeDbl tm)

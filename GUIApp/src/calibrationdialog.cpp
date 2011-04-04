@@ -8,30 +8,30 @@
 CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx)
 {
     setupUi(this);
-    
+
     assert(calibCtx != NULL);
-    
+
     m_calib = calibCtx;
-    
-    m_calibWid = new CalibrationWidget;        
-    
+
+    m_calibWid = new CalibrationWidget;
+
     lyCalibWid->addWidget(m_calibWid);
-    
+
     connect(&m_errHandle, SIGNAL(informError(QString)),
             this, SLOT(informCriticalError(QString)));
     connect(pbSave, SIGNAL(clicked()),
-            this, SLOT(save()));        
+            this, SLOT(save()));
 }
 
 void CalibrationDialog::init()
 {
-    m_calibWid->init(m_calib->detectionImage());    
+    m_calibWid->init(m_calib->detectionImage());
     m_calib->observer(m_calibWid);
 }
 
 void CalibrationDialog::dispose()
 {
-    m_calibWid->dispose();               
+    m_calibWid->dispose();
 }
 
 void CalibrationDialog::closeEvent(QCloseEvent *ev)
@@ -45,11 +45,11 @@ void CalibrationDialog::informCriticalError(QString message)
 }
 
 void CalibrationDialog::save()
-{    
+{
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Calibration"), QString(),
         tr("ThunderLang (*.tl)"));
-    
+
     if ( !filename.isEmpty() )
     {
         try
@@ -62,5 +62,5 @@ void CalibrationDialog::save()
         catch (const tdv::WriteException &ex)
         {
         }
-    }        
+    }
 }

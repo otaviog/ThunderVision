@@ -35,18 +35,19 @@ void Capture::init(int capDevice)
 
 void Capture::update()
 {
+#if 0
     int frameCount = static_cast<int>(
         cvGetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_COUNT));
     
     int nxtFrame = static_cast<int>(
         cvGetCaptureProperty(m_capture, CV_CAP_PROP_POS_FRAMES));
-    
+
     if ( nxtFrame >= frameCount )
     {
         m_wpipe.finish();
         return ;
     }
-    
+#endif
     cvGrabFrame(m_capture);        
     IplImage *frame = cvRetrieveFrame(m_capture);
         

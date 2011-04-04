@@ -30,52 +30,55 @@ protected:
 tdv::CamerasDesc TestRectification::extCalib;
 tdv::CamerasDesc TestRectification::insCalib;
 
-TEST_F(TestRectification, UncalibratedRect)
+static void runTest(
+    const std::string &lftInput, const std::string &rgtInput, 
+    const std::string &lftOutput, const std::string &rgtOutput, 
+    tdv::RectificationCV &rect)
 {
-    tdv::ImageReader readerL("../../res/rect-left.png");
-    tdv::ImageReader readerR("../../res/rect-right.png");
-    tdv::FloatConv fconvL, fconvR;
-    tdv::RectificationCV rectCV; 
+    tdv::ImageReader readerL(lftInput);
+    tdv::ImageReader readerR(rgtInput);    
     tdv::RGBConv rconvL, rconvR;
-    tdv::ImageWriter writerL("rect-left-done.png");
-    tdv::ImageWriter writerR("rect-right-done.png");
+    tdv::ImageWriter writerL(lftOutput);
+    tdv::ImageWriter writerR(rgtOutput);
+        
+    rect.leftImgInput(readerL.output());
+    rect.rightImgInput(readerR.output());
     
-    //fconv
-    rectCV.leftImgInput(readerL.output());
-    rectCV.rightImgInput(readerR.output());
+    rconvL.input(rect.leftImgOutput());
+    rconvR.input(rect.rightImgOutput());
     
-    writerL.input(rectCV.leftImgOutput());
-    writerR.input(rectCV.rightImgOutput());
+    writerL.input(rconvL.output());
+    writerR.input(rconvR.output());
     
     readerL.update();
     readerR.update();
-    rectCV.update();
-
+    rect.update();
+    rconvL.update();
+    rconvR.update();
     writerL.update();
     writerR.update();
+}
+
+TEST_F(TestRectification, UncalibratedRect)
+{
+    tdv::RectificationCV rectCV; 
+    
+    runTest("../../res/rect-left.png",
+            "../../res/rect-right.png",
+            "rect-left-done.png",
+            "rect-right-done.png",
+        rectCV);
 }
     
 TEST_F(TestRectification, InstrinsicRect)
 {
-    tdv::ImageReader readerL("../../res/rect-calib-left.png");
-    tdv::ImageReader readerR("../../res/rect-calib-right.png");
-    tdv::ImageWriter writerL("rect-left-done.png");
-    tdv::ImageWriter writerR("rect-right-done.png");
-
     tdv::RectificationCV rectCV;            
     rectCV.camerasDesc(insCalib);
-    rectCV.leftImgInput(readerL.output());
-    rectCV.rightImgInput(readerR.output());
-    
-    writerL.input(rectCV.leftImgOutput());
-    writerR.input(rectCV.rightImgOutput());
-    
-    readerL.update();
-    readerR.update();
-    rectCV.update();
-
-    writerL.update();
-    writerR.update();
+    runTest("../../res/rect-calib-left.png",
+            "../../res/rect-calib-right.png",
+            "rect-icalib-left-done.png",
+            "rect-icalib-right-done.png",
+        rectCV);
 }
 
 TEST_F(TestRectification, ExtrinsicRect)
@@ -87,16 +90,11 @@ TEST_F(TestRectification, ExtrinsicRect)
 
     tdv::RectificationCV rectCV;         
     rectCV.camerasDesc(extCalib);    
-    rectCV.leftImgInput(readerL.output());
-    rectCV.rightImgInput(readerR.output());
-    
-    writerL.input(rectCV.leftImgOutput());
-    writerR.input(rectCV.rightImgOutput());
-    
-    readerL.update();
-    readerR.update();
-    rectCV.update();
 
-    writerL.update();
-    writerR.update();
+    runTest("../../res/rect-calib-left.png",
+            "../../res/rect-calib-right.png",
+            "rect-ecalib-left-done.png",
+            "rect-ecalib-right-done.png",
+        rectCV);
+
 }

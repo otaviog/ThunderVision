@@ -5,7 +5,8 @@
 #include <tdvision/ssddev.hpp>
 #include <tdvision/wtadev.hpp>
 #include <tdvision/medianfilterdev.hpp>
-
+#include <tdvision/floatconv.hpp>
+#include <tdvision/rgbconv.hpp>
 #include <cv.h>
 #include <highgui.h>
 
@@ -13,14 +14,20 @@ TEST(TestSSD, Dev)
 {
     tdv::ImageReader readerL("../../res/tsukuba_L.png");
     tdv::ImageReader readerR("../../res/tsukuba_R.png");
+    tdv::FloatConv fconvl, fconvr;
+    tdv::RGBConv rconvl, rconvr;
     
     tdv::SSDDev ssd(155, 1024*1024*128);
     
-    ssd.leftImageInput(readerL.output());
-    ssd.rightImageInput(readerR.output());    
+    fconvl.input(readerL.output());
+    fconvr.input(readerR.output());
+    
+    ssd.inputs(fconvl.output(), fconvr.output());    
     
     readerL.update();
     readerR.update();
+    fconvl.update();
+    fconvr.update();
     ssd.update();
     
     tdv::DSIMem dsi;
@@ -35,58 +42,61 @@ TEST(TestSSD, WithWTA)
 {
     tdv::ImageReader readerL("../../res/tsukuba512_L.png");
     tdv::ImageReader readerR("../../res/tsukuba512_R.png");
+    tdv::FloatConv fconvl, fconvr;
+    tdv::RGBConv rconv;
     
     tdv::SSDDev ssd(155, 1024*1024*128);
     tdv::WTADev wta;
     
     tdv::ImageWriter writer("tsukuba_ssdwta.png");
     
-    ssd.leftImageInput(readerL.output());
-    ssd.rightImageInput(readerR.output());    
-    wta.input(ssd.output());
-    writer.input(wta.output());
+    fconvl.input(readerL.output());
+    fconvr.input(readerR.output());
+    ssd.inputs(fconvl.output(), fconvr.output());    
+    wta.input(ssd.output());    
+    rconv.input(wta.output());
+    writer.input(rconv.output());
     
     readerL.update();
     readerR.update();
+    fconvl.update();
+    fconvr.update();
     ssd.update();
     wta.update();
-    writer.update();
-    
-    tdv::FloatImage dispimg;
-    ASSERT_TRUE(writer.output()->read(&dispimg));    
-
-    dispimg.dispose();
+    rconv.update();
+    writer.update();    
 }
 
 TEST(TestSSD, WithMedianWTA)
 {
     tdv::ImageReader readerL("../../res/tsukuba512_L.png");
     tdv::ImageReader readerR("../../res/tsukuba512_R.png");
-    tdv::MedianFilterDev mfL, mfR;
-    
+    tdv::FloatConv fconvl, fconvr;
+    tdv::MedianFilterDev mfL, mfR;    
     tdv::SSDDev ssd(155, 1024*1024*128);
     tdv::WTADev wta;
+    tdv::RGBConv rconv;    
     
     tdv::ImageWriter writer("tsukuba_medianssdwta.png");
-    
-    mfL.input(readerL.output());
-    mfR.input(readerR.output());
-    ssd.leftImageInput(mfL.output());
-    ssd.rightImageInput(mfR.output());    
+
+    fconvl.input(readerL.output());
+    fconvr.input(readerR.output());    
+    mfL.input(fconvl.output());
+    mfR.input(fconvr.output());
+    ssd.inputs(mfL.output(), mfR.output());    
     wta.input(ssd.output());
-    writer.input(wta.output());
+    rconv.input(wta.output());
+    writer.input(rconv.output());
     
     readerL.update();
     readerR.update();
+    fconvl.update();
+    fconvr.update();
     mfL.update();
     mfR.update();
     ssd.update();
     wta.update();
-    writer.update();
-    
-    tdv::FloatImage dispimg;
-    ASSERT_TRUE(writer.output()->read(&dispimg));    
-    
-    dispimg.dispose();
+    rconv.update();
+    writer.update();    
 }
 

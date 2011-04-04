@@ -6,6 +6,7 @@ CUDA_ADD_LIBRARY(tdvision
   workunit.hpp  
   process.hpp
   misc.hpp misc.cpp
+  tmpbufferimage.hpp tmpbufferimage.cpp
   workunitprocess.hpp workunitprocess.cpp
   cudaprocess.hpp cudaprocess.cpp
   processgroup.hpp processgroup.cpp

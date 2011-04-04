@@ -5,14 +5,17 @@ QT4_WRAP_CPP(QT_WRAPS
   calibrationwidget.hpp 
   calibrationdialog.hpp
   selectinputdialog.hpp
-  errorreport.hpp)
+  errorreport.hpp
+  rectificationviewdialog.hpp)
 
 QT4_WRAP_UI(QT_UICS 
   calibrationwidget.ui 
   calibrationdialog.ui 
   mainwindow.ui 
   camerasviewdialog.ui
-  selectinputdialog.ui)
+  selectinputdialog.ui
+  rectificationviewdialog.ui
+  )
  
 QT4_ADD_RESOURCES(QT_RECS ${CMAKE_CURRENT_SOURCE_DIR}/../resources.qrc)
 
@@ -25,6 +28,7 @@ ADD_LIBRARY(GUILib
   calibrationdialog.hpp calibrationdialog.cpp
   camerasviewdialog.hpp camerasviewdialog.cpp
   selectinputdialog.hpp selectinputdialog.cpp
+  rectificationviewdialog.hpp rectificationviewdialog.cpp
   ${QT_WRAPS} ${QT_UICS} ${QT_RECS})
 
 ADD_EXECUTABLE(GUIApp

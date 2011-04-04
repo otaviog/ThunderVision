@@ -123,6 +123,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pbRectification">
+        <property name="text">
+         <string>Rectification View</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QComboBox" name="comboBox"/>
       </item>
       <item>
