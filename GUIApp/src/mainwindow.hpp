@@ -36,7 +36,7 @@ public slots:
     void stepReconstruction();
       
     void pauseReconstruction();
-
+    
 protected:
     void closeEvent(QCloseEvent *event);
     
@@ -45,7 +45,8 @@ protected:
     void initReconstruction();              
 
 private slots:
-    void camerasViewsDone();    
+    
+    void doneCamerasViews();
     
 private:
     tdv::TDVContext *m_ctx;

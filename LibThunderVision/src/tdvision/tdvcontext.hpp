@@ -32,6 +32,8 @@ public:
     void releaseReconstruction(Reconstruction *reconst);
     
     Calibration* runCalibration();
+    
+    void releaseCalibration(Calibration *calib);
 
     void dupInputSource(ReadPipe<CvMat*> **leftSrc, 
                         ReadPipe<CvMat*> **rightSrc);
@@ -46,7 +48,9 @@ public:
     }
     
 private:
-    tdv::ProcessRunner *m_runner, *m_reconstRunner;
+    tdv::ProcessRunner *m_inputRunner, 
+        *m_reconstRunner,
+        *m_calibRunner;
     
     StereoInputSource *m_inputSrc;
     TWorkUnitProcess<TeeWorkUnit<CvMat*, CvMatSinkPol> > m_inputTees[2];

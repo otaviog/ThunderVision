@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 {
     tdv::TdvGlobalLogDefaultOutputs();
     QApplication qapp(argc, argv);        
+    Q_INIT_RESOURCE(resources);
     
     tdv::StereoInputSource *inputSrc = NULL;
     try

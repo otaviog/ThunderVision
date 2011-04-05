@@ -1,19 +1,12 @@
 #include <iostream>
 #include <boost/scoped_array.hpp>
+#include "sink.hpp"
 #include "calibration.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-static CvMat* convertTo8UGray(CvMat *img)
-{
-    CvMat *grayImg = cvCreateMat(img->height, img->width, CV_8U);
-
-    cvCvtColor(img, grayImg, CV_RGB2GRAY);
-    return grayImg;
-}
-
-
 Calibration::Calibration(size_t numFrames)
+    : m_limg(CV_8U), m_rimg(CV_8U)
 {
     m_numFrames = numFrames;
     chessPattern(ChessboardPattern());
@@ -147,27 +140,28 @@ bool Calibration::update()
 
     if ( !m_rlpipe->read(&limgOrigin) || !m_rrpipe->read(&rimgOrigin) )
         return false;
-
-    cvDecRefData(limgOrigin);
-    cvDecRefData(rimgOrigin);
     
-    CvMat *limg = convertTo8UGray(limgOrigin),
-        *rimg = convertTo8UGray(rimgOrigin);
-
+    CvMat *limg = m_limg.getImage(cvGetSize(limgOrigin));
+    CvMat *rimg = m_rimg.getImage(cvGetSize(rimgOrigin));
+    
+    cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
+    cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
+        
+    CvMatSinkPol::sink(limgOrigin);
+    CvMatSinkPol::sink(rimgOrigin);
+    
     const CvSize imgSz = cvGetSize(limg);
 
     CvMat *patternDetectPrg = updateChessboardCorners(
         limg, rimg);
-
-    cvDecRefData(rimg);
-
+    
+    cvReleaseMat(&rimg);
     if ( patternDetectPrg == NULL )
     {
         wg.write(limg);
         return true;
-    }
-
-    cvDecRefData(limg);    
+    }    
+    cvReleaseMat(&limg);
 
     m_currFrame = (m_currFrame + 1) % m_numFrames;
     m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);

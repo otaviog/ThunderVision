@@ -7,6 +7,8 @@
 #include "camerasdesc.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
+#include "tmpbufferimage.hpp"
+#include "process.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -27,13 +29,10 @@ public:
     
     void chessPattern(const ChessboardPattern &cbpattern);
     
-    void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe,
-               bool sinkLeft, bool sinkRight)
+    void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe)               
     {
         m_rlpipe = rlpipe;
         m_rrpipe = rrpipe;
-        m_sinkLeft = sinkLeft;
-        m_sinkRight = sinkRight;
     }
     
     ReadPipe<CvMat*>* detectionImage()
@@ -73,8 +72,9 @@ private:
     ChessboardPattern m_cbpattern;
     
     ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
-    bool m_sinkLeft, m_sinkRight;    
     ReadWritePipe<CvMat*> m_dipipe;
+    
+    TmpBufferImage m_limg, m_rimg;
     
     CamerasDesc m_camDesc;
     
@@ -83,8 +83,24 @@ private:
     
     size_t m_numFrames, m_avalFrames, m_currFrame;
 
-    CalibrationObserver *m_observer;
+    CalibrationObserver *m_observer;        
 };
+
+class CalibrationProc: public Process, public Calibration
+{
+public:
+    CalibrationProc(size_t maxFrames)
+        : Calibration(maxFrames)
+    {
+    }
+    
+    void process()
+    {
+        while ( update() )
+        { }
+    }
+};
+
 TDV_NAMESPACE_END
 
 #endif /* TDV_CALIBRATION_HPP */

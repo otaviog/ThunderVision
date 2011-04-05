@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>ThunderVision - Input Select</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/imgs/thunder.png</normaloff>:/imgs/thunder.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>

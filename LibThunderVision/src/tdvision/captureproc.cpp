@@ -31,6 +31,7 @@ void Capture::init(int capDevice)
         throw Exception(boost::format("Can't open capture device %1%") 
                         % capDevice);
     }
+    
 }
 
 void Capture::update()
@@ -48,6 +49,9 @@ void Capture::update()
         return ;
     }
 #endif
+    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, 188);
+    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, 155);
+
     cvGrabFrame(m_capture);        
     IplImage *frame = cvRetrieveFrame(m_capture);
         

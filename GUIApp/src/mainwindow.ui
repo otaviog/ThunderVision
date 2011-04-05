@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../resources.qrc">
-    <normaloff>:/imgs/thunder.ico</normaloff>:/imgs/thunder.ico</iconset>
+    <normaloff>:/imgs/thunder.png</normaloff>:/imgs/thunder.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -47,12 +47,32 @@
             <property name="text">
              <string>Reconstruct Frame</string>
             </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/imgs/step.png</normaloff>:/imgs/step.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pbReconstStream">
             <property name="text">
              <string>Reconstruct Stream</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/imgs/play.png</normaloff>:/imgs/play.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -74,6 +94,16 @@
             <property name="text">
              <string>Export</string>
             </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/imgs/save.png</normaloff>:/imgs/save.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
            </widget>
           </item>
           <item>
@@ -83,6 +113,16 @@
             </property>
             <property name="text">
              <string>Fullscreen</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/imgs/fullscreen.png</normaloff>:/imgs/fullscreen.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
             </property>
            </widget>
           </item>

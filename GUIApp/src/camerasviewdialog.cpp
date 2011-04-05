@@ -1,8 +1,10 @@
+#include <iostream>
 #include "videowidget.hpp"
 #include "calibrationdialog.hpp"
 #include "camerasviewdialog.hpp"
 
-CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx)
+CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx, QWidget *parent)
+    : QDialog(parent)
 {
     m_ctx = ctx;    
         
@@ -32,18 +34,37 @@ void CamerasViewDialog::init()
 }
 
 void CamerasViewDialog::dispose()
-{
+{    
     m_ctx->undupInputSource();
     m_leftVidWid->dispose();
     m_rightVidWid->dispose();
 }
 
 void CamerasViewDialog::closeEvent(QCloseEvent *event)
-{
-    dispose();
+{    
+    emit finished(QDialog::Accepted);
 }
 
 void CamerasViewDialog::showCalibrationDlg()
 {
+    tdv::Calibration *calib = m_ctx->runCalibration();
     
+    if ( calib != NULL )
+    {
+        m_calibDlg = new CalibrationDialog(calib);
+        m_calibDlg->show();
+        pbCalibrate->setEnabled(false);
+        connect(m_calibDlg, SIGNAL(finished(int)),
+                this, SLOT(doneCalibrationDlg()));
+    }
+}
+
+void CamerasViewDialog::doneCalibrationDlg()
+{
+    if ( m_calibDlg != NULL )
+    {
+        m_calibDlg->dispose();
+        m_calibDlg = NULL;
+        m_calibDlg->setEnabled(true);
+    }
 }

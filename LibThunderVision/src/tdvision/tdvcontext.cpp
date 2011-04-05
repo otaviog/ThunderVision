@@ -1,10 +1,12 @@
 #include "stereoinputsource.hpp"
 #include "thunderlang.hpp"
 #include "reconstruction.hpp"
+#include "calibration.hpp"
 #include "devstereomatcher.hpp"
 #include "cpustereomatcher.hpp"
 #include "ssddev.hpp"
 #include "wtadev.hpp"
+#include "processgroup.hpp"
 #include "tdvcontext.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -12,7 +14,7 @@ TDV_NAMESPACE_BEGIN
 TDVContext::TDVContext()
 {
     m_inputSrc = NULL;
-    m_runner = NULL;
+    m_inputRunner = NULL;
     m_errHandler = NULL;
     m_matcher = NULL;
 }
@@ -26,7 +28,7 @@ void TDVContext::loadSpecFromFile(const std::string &specfilename)
 
 void TDVContext::start(StereoInputSource *inputSrc)
 {
-    if ( m_runner == NULL )
+    if ( m_inputRunner == NULL )
     {
         assert(inputSrc != NULL);
         m_inputSrc = inputSrc;
@@ -39,19 +41,19 @@ void TDVContext::start(StereoInputSource *inputSrc)
         pgrp.addProcess(&m_inputTees[0]);
         pgrp.addProcess(&m_inputTees[1]);
 
-        m_runner = new ProcessRunner(pgrp, this);
-        m_runner->run();
+        m_inputRunner = new ProcessRunner(pgrp, this);
+        m_inputRunner->run();
     }
 }
 
 void TDVContext::dispose()
 {
-    if ( m_runner != NULL )
+    if ( m_inputRunner != NULL )
     {
-        m_runner->finishAll();
-        m_runner->join();
-        delete m_runner;
-        m_runner = NULL;
+        m_inputRunner->finishAll();
+        m_inputRunner->join();
+        delete m_inputRunner;
+        m_inputRunner = NULL;
     }
 }
 
@@ -96,17 +98,49 @@ void TDVContext::releaseReconstruction(Reconstruction *reconst)
     {
         m_inputTees[0].disable(0);
         m_inputTees[1].disable(0);
-
+    
         m_reconstRunner->join();
 
         delete m_reconstRunner;
-        delete reconst;
+        m_reconstRunner = NULL;
+        delete reconst;        
     }
 }
 
 Calibration* TDVContext::runCalibration()
 {
-    return NULL;
+    CalibrationProc *calib = NULL;
+    if ( m_calibRunner != NULL )
+    {                
+        calib = new CalibrationProc(10);
+        
+        m_inputTees[0].enable(2);
+        m_inputTees[1].enable(2);
+        
+        calib->input(m_inputTees[0].output(2),
+                     m_inputTees[1].output(2));
+        
+        ArrayProcessGroup grp;
+        grp.addProcess(calib);
+        m_calibRunner = new ProcessRunner(grp, this);
+        m_calibRunner->run();                
+    }
+    
+    return calib;
+}
+
+void TDVContext::releaseCalibration(Calibration *calib)
+{
+    if ( m_calibRunner != NULL )
+    {        
+        m_inputTees[0].disable(0);
+        m_inputTees[1].disable(0);
+        
+        m_calibRunner->join();
+        delete calib;
+        
+        m_calibRunner = NULL;
+    }
 }
 
 void TDVContext::errorOcurred(const std::exception &err)

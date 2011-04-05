@@ -14,11 +14,10 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
 
     m_camsDialog = NULL;
     m_rectDialog = NULL;
-    
+
     setupUi(this);
     connect(pbCamerasView, SIGNAL(clicked()),
-            this, SLOT(showCamerasViews()));    
-
+            this, SLOT(showCamerasViews()));
     connect(pbReconstFrame, SIGNAL(clicked()),
             this, SLOT(stepReconstruction()));
     connect(pbReconstStream, SIGNAL(clicked()),
@@ -31,7 +30,7 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
 
 MainWindow::~MainWindow()
 {
-    
+
 }
 
 void MainWindow::start(tdv::StereoInputSource *inputSrc)
@@ -41,35 +40,39 @@ void MainWindow::start(tdv::StereoInputSource *inputSrc)
         SelectInputDialog inputDlg;
         if ( inputDlg.exec() == QDialog::Accepted )
         {
-            QProgressDialog loadDlg("Loading", "", 0, 0, 
+            QProgressDialog loadDlg("Loading", "", 0, 0,
                                     NULL, Qt::FramelessWindowHint);
             loadDlg.show();
             try
             {
-                
+
                 inputSrc = inputDlg.createInputSource();
             }
             catch (const tdv::Exception &ex)
             {
-                QMessageBox::critical(this, 
+                QMessageBox::critical(this,
                                       tr("Error while creating input sources"),
                                       tr(ex.what()));
             }
-            
+
             loadDlg.close();
         }
+        else
+        {
+            close();
+        }
     }
-    
+
     if ( inputSrc != NULL )
     {
-        m_ctx->start(inputSrc);        
+        m_ctx->start(inputSrc);
     }
 }
 
 void MainWindow::playReconstruction()
 {
     initReconstruction();
-    
+
     if ( m_reconst != NULL )
     {
         m_reconst->continuous();
@@ -79,7 +82,7 @@ void MainWindow::playReconstruction()
 void MainWindow::stepReconstruction()
 {
     initReconstruction();
-    std::cout<<"Step Rec"<<std::endl;
+
     if ( m_reconst != NULL )
     {
         m_reconst->step();
@@ -99,27 +102,28 @@ void MainWindow::showCamerasViews()
 {
     if ( m_camsDialog == NULL )
     {
-        m_camsDialog = new CamerasViewDialog(m_ctx);
+        m_camsDialog = new CamerasViewDialog(m_ctx, this);
         m_camsDialog->init();
-        m_camsDialog->show();        
+        m_camsDialog->show();
         connect(m_camsDialog, SIGNAL(finished(int)),
-                this, SLOT(camerasViewsDone()));
+                this, SLOT(doneCamerasViews()));
         pbCamerasView->setEnabled(false);
     }
 }
 
-void MainWindow::camerasViewsDone()
+void MainWindow::doneCamerasViews()
 {
     if( m_camsDialog != NULL )
     {
+        m_camsDialog->dispose();
         m_camsDialog = NULL;
         pbCamerasView->setEnabled(true);
     }
 }
-    
+
 void MainWindow::showDisparityMap()
 {
-    
+
 }
 
 void MainWindow::showReconstructionConfig()
@@ -139,9 +143,9 @@ void MainWindow::showRectification()
 void MainWindow::initReconstruction()
 {
     if ( m_reconst == NULL )
-    {        
-        m_reconst = m_ctx->runReconstruction("CPU");       
-    }        
+    {
+        m_reconst = m_ctx->runReconstruction("CPU");
+    }
 }
 
 void MainWindow::dispose()
