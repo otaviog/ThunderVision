@@ -37,7 +37,7 @@ ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
 
 FLOAT
     :  ('+'|'-')? (
-    	('0'..'9')+ ('.' ('0'..'9')* )? 
+    	('0'..'9')+ ( ('.'|',') ('0'..'9')* )? 
       	| '.' ('0'..'9')+ 
       	) EXPONENT?
     ;
@@ -90,9 +90,9 @@ UNICODE_ESC
 thunderLang [void *ctxobj]
 	:	(camerasDesc[ctxobj] | stereo[ctxobj]) * ;
 
-camerasInput [void *ctxobj]
-	:	'CamerasInput' id=ID '=' 'dev' INT ',' 'dev' INT
-	;
+//camerasInput [void *ctxobj]
+//	:	'CamerasInput' id=ID '=' 'dev' INT ',' 'dev' INT
+//	;
 	
 camerasDesc [void *ctxobj]
 	: 'CamerasDesc' id=ID '{' camerasDescOpts[ctxobj, MY_TXT_C(id)]* '}' 

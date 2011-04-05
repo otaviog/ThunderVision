@@ -15,15 +15,16 @@ class StereoInputSource;
 class StereoMatcher;
 class Reconstruction;
 class Calibration;
+class ThunderSpec;
 
 class TDVContext: public ExceptionReport
 {
 public:    
     TDVContext();
     
-    void start(StereoInputSource *inputSrc);
-    
-    void loadSpecFromFile(const std::string &filename);
+    void spec(tdv::ThunderSpec *spec);
+
+    void start(StereoInputSource *inputSrc);    
     
     void dispose();
     
@@ -45,12 +46,14 @@ public:
     void errorHandler(ExceptionReport *handler)
     {
         m_errHandler = handler;
-    }
+    }    
     
 private:
     tdv::ProcessRunner *m_inputRunner, 
         *m_reconstRunner,
         *m_calibRunner;
+
+    void specChanged();    
     
     StereoInputSource *m_inputSrc;
     TWorkUnitProcess<TeeWorkUnit<CvMat*, CvMatSinkPol> > m_inputTees[2];
@@ -58,6 +61,8 @@ private:
     StereoMatcher *m_matcher;
     
     ExceptionReport *m_errHandler;
+        
+    ThunderSpec *m_spec;
 };
 
 TDV_NAMESPACE_END

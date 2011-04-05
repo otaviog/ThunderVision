@@ -14,7 +14,9 @@ CMDLine::CMDLine(int argc, char **argv)
             ("right-img,r", po::value<std::string>(), "Right image input.")
             ("left-vid,j", po::value<std::string>(), "Left video file input.")
             ("right-vid,k", po::value<std::string>(), "Right video file input.")
-            ("cameras,c", "Use cameras.");
+            ("cameras,c", "Use cameras.")
+            ("spec,s", po::value<std::string>(), 
+             "Spec filename describing the system preferences, in ThunderLang Language :D.");
     
         po::store(po::parse_command_line(argc, argv, desc), m_vm);
         po::notify(m_vm);
@@ -49,4 +51,25 @@ tdv::StereoInputSource* CMDLine::createInputSource()
     }
 
     return inputSrc;
+}
+
+tdv::ThunderSpec* CMDLine::createSpec()
+{
+    tdv::ThunderSpec *spec = NULL;
+    if ( m_vm.count("spec") )
+    {
+        spec = new tdv::ThunderSpec;
+        tdv::ThunderLangParser parser(*spec);
+        try
+        {
+            parser.parseFile(m_vm["spec"].as<std::string>());
+        }
+        catch (const std::exception &ex)
+        {
+            delete spec;
+            throw ex;
+        }        
+    }
+    
+    return spec;
 }

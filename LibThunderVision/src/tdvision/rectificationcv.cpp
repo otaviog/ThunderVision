@@ -199,7 +199,7 @@ bool RectificationCV::update()
         
         const int fmCount = cvFindFundamentalMat(
             &leftPoints, &rightPoints, &v_F);
-        TDV_LOG(deb).printf("Fundamental matrices found = %d", fmCount);
+        TDV_LOG(deb).printf("Fundamental matrices found = %d\n", fmCount);
     }
     else
     {

@@ -84,7 +84,7 @@ void CalibrationDialog::printPattern()
     QPainter painter;
     painter.begin(&printer);
 
-    QImage img(QString(":/imgs/chesspattern.png"));
+    QImage img(QString(":/imgs/chessboard.png"));
     
     painter.drawImage(QPoint(0, 0), img);
     

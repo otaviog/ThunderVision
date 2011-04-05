@@ -28,7 +28,7 @@ public:
         
     ~FloatImageImpl()
     {
-        //dispose();
+        dispose();
     }
         
     void initDev(const Dim &dim);

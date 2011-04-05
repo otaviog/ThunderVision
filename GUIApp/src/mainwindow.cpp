@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include <QProgressDialog>
 #include <QMessageBox>
 #include "camerasviewdialog.hpp"

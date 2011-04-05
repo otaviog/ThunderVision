@@ -86,7 +86,6 @@ public:
         m_camsDesc = desc;
     }
     
-
     bool update();
     
 private:

@@ -21,6 +21,8 @@ void Capture::init(const std::string &filename)
         throw Exception(boost::format("Can't open file %1%: %2%") 
                         % filename % errcode.message());
     }
+    
+    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FPS, 20);
 }
 
 void Capture::init(int capDevice)
@@ -31,7 +33,7 @@ void Capture::init(int capDevice)
         throw Exception(boost::format("Can't open capture device %1%") 
                         % capDevice);
     }
-    
+        
 }
 
 void Capture::update()
@@ -48,9 +50,10 @@ void Capture::update()
         m_wpipe.finish();
         return ;
     }
+    
+    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, 128);
+    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, 128);    
 #endif
-    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, 188);
-    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, 155);
 
     cvGrabFrame(m_capture);        
     IplImage *frame = cvRetrieveFrame(m_capture);
