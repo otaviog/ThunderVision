@@ -55,9 +55,9 @@ bool Sink<Type, SinkPolicy>::update()
 
 struct FloatImageSinkPol
 {
-    static void sink(FloatImage img) 
+    static void sink(FloatImage img)
     { 
-        img.dispose();
+        //img.dispose();
     }    
 };
 

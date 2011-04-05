@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include <boost/system/error_code.hpp>
 #include "parserexception.hpp"
 #include "writeexception.hpp"
@@ -140,8 +141,21 @@ void ThunderLangParser::parseFile(const std::string &filename)
     
     if ( !m_errors.empty() )
     {
-        throw ParserException(boost::format("Errors while parsing file %1%") % filename);
+        std::stringstream stream;
+        for (ErrorList::const_iterator cIt = m_errors.begin();
+             cIt != m_errors.end(); cIt++)
+        {
+            stream <<  cIt->toString() << std::endl;                        
+        }
+        
+        throw ParserException(boost::format("Errors while parsing file %1%:\n%2%") % filename % stream.str());
     }
+}
+
+std::string ThunderLangParser::Error::toString() const
+{
+    return (boost::format("%1%:%2%:%3% %4%") % filename 
+            % linenum % column % description).str();
 }
 
 static void printMatrix33(std::ostream &stream, const double matrix[9])
@@ -177,7 +191,8 @@ static void printCameraParms(std::ostream &out, const CameraParameters &parms)
     printArray(out, 5, parms.distortion());
 }
 
-void ThunderLangWriter::write(const std::string &filename, const ThunderSpec &spec)
+void ThunderLangWriter::write(const std::string &filename, 
+                              const ThunderSpec &spec)
 {    
     std::ofstream out(filename.c_str());
         
@@ -214,10 +229,12 @@ void ThunderLangWriter::write(const std::string &filename, const ThunderSpec &sp
             out << "extrinsics = [";
             printMatrix33(out, desc.extrinsicsR());
             printArray(out, 3, desc.extrinsicsT());            
+            out << ']' << std::endl;
         }              
         
         out << "}";
     }    
 }
+
 
 TDV_NAMESPACE_END

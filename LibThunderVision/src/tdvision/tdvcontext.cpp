@@ -9,19 +9,27 @@
 
 TDV_NAMESPACE_BEGIN
 
+static ThunderSpec g_defaultSpec;
+
 TDVContext::TDVContext()
 {
     m_inputSrc = NULL;
     m_runner = NULL;
+    m_reconstRunner = NULL;
     m_errHandler = NULL;
     m_matcher = NULL;
+    spec(NULL);
 }
 
-void TDVContext::loadSpecFromFile(const std::string &specfilename)
+void TDVContext::spec(tdv::ThunderSpec *spec)
 {
-
-    ThunderSpec spec;
-    ThunderLangParser(spec).parseFile(specfilename);
+    if ( spec == NULL )
+    {
+        m_spec = &g_defaultSpec;
+        return ;
+    }
+    
+    m_spec = spec;
 }
 
 void TDVContext::start(StereoInputSource *inputSrc)
@@ -84,6 +92,7 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
                                  m_inputTees[0].output(0),
                                  m_inputTees[1].output(0));
     
+    reconst->camerasDesc(m_spec->camerasDesc("default"));
     m_reconstRunner = new ProcessRunner(*reconst, this);
     m_reconstRunner->run();
 

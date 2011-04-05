@@ -44,6 +44,8 @@ public:
         char filename[MAXFILENAME];
         char description[MAXDESCRIPTION];
         int linenum, column;
+        
+        std::string toString() const;
     };
     
     typedef std::list<Error> ErrorList;

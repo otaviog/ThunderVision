@@ -47,6 +47,11 @@ public:
                         ReadPipe<FloatImage> **rightRectOut);
 
     void undupRectification();
+        
+    void camerasDesc(const CamerasDesc &desc)
+    {
+        m_rectify.camerasDesc(desc);
+    }
     
 private:
     CtrlProcess m_ctrlProc;

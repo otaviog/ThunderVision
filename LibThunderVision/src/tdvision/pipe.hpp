@@ -77,9 +77,10 @@ template<typename ReadType, typename WriteType = ReadType,
 class ReadWritePipe: public WritePipe<WriteType>, public ReadPipe<ReadType>
 {
 public:
-    ReadWritePipe()
+    ReadWritePipe(size_t maxSize = 100)
     {
         m_end = false;
+        m_maxSize = maxSize;
     }
     
     void write(WriteType value);    
@@ -102,17 +103,25 @@ public:
 private:
     std::queue<ReadType> m_queue;
     boost::mutex m_queueMutex;
-    boost::condition_variable m_queueCond;
+    boost::condition_variable m_queueCond, m_enqueueCond;
     bool m_end;
+    size_t m_maxSize;
 };
 
 template<typename ReadType, typename WriteType, typename Adapter>
 void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
 {
     boost::mutex::scoped_lock lock(m_queueMutex);
-    m_queue.push(Adapter::adapt(value));
+    while (m_queue.size() >= m_maxSize && !m_end )
+    {
+        m_enqueueCond.wait(lock);
+    }
     
-    m_queueCond.notify_one();    
+    if ( !m_end )
+    {
+        m_queue.push(Adapter::adapt(value));    
+        m_queueCond.notify_one();    
+    }    
 }
 
 template<typename ReadType, typename WriteType, typename Adapter>
@@ -130,6 +139,8 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
         *outread = m_queue.front();
         m_queue.pop();
     }
+    
+    m_enqueueCond.notify_one();        
     
     return !hasEmpty;
 }
