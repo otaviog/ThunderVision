@@ -94,6 +94,11 @@ public:
         m_queueCond.notify_one();
     }
     
+    void reset()
+    {
+        m_end = false;
+    }
+    
     void waitRead()
     {
         ReadType tp;
@@ -111,7 +116,10 @@ private:
 template<typename ReadType, typename WriteType, typename Adapter>
 void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
 {
+#if 0
     boost::mutex::scoped_lock lock(m_queueMutex);
+    m_end = false;
+    
     while (m_queue.size() >= m_maxSize && !m_end )
     {
         m_enqueueCond.wait(lock);
@@ -119,9 +127,13 @@ void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
     
     if ( !m_end )
     {
-        m_queue.push(Adapter::adapt(value));    
+        m_queue.push(Adapter::adapt(value));
         m_queueCond.notify_one();    
     }    
+#else
+    m_queue.push(Adapter::adapt(value));
+    m_queueCond.notify_one();    
+#endif
 }
 
 template<typename ReadType, typename WriteType, typename Adapter>

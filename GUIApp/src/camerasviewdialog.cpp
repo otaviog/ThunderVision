@@ -65,6 +65,6 @@ void CamerasViewDialog::doneCalibrationDlg()
     {
         m_calibDlg->dispose();
         m_calibDlg = NULL;
-        m_calibDlg->setEnabled(true);
+        pbCalibrate->setEnabled(true);
     }
 }

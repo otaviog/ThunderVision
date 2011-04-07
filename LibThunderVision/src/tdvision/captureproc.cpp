@@ -62,7 +62,8 @@ void Capture::update()
     {
         CvMat *mat = cvCreateMat(frame->height, frame->width, CV_8UC3);
         cvConvertImage(frame, mat, CV_CVTIMG_SWAP_RB);
-        m_wpipe.write(mat);
+        //cvIncRefData(mat);
+        m_wpipe.write(mat);        
     }    
 }
 

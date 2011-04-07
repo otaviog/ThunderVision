@@ -24,6 +24,10 @@ public:
         {            
             m_runner->reportError(ex);
         }
+        catch (...)
+        {
+            assert(false);
+        }
     }
     
 private:

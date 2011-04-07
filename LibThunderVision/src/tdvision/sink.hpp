@@ -55,10 +55,9 @@ bool Sink<Type, SinkPolicy>::update()
 
 struct FloatImageSinkPol
 {
-    static void sink(FloatImage img)
-    { 
-        //img.dispose();
-    }    
+    static void incrRef(FloatImage img);
+    
+    static void sink(FloatImage img);
 };
 
 struct IplImageSinkPol

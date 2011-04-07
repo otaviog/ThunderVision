@@ -53,11 +53,12 @@ void VideoProcess<Type, MatAdapter>::process()
     while ( m_pipe->read(&image) && !m_end )
     {        
         QMutexLocker locker(m_imgMutex);
+#if 1
         if ( !firstFrame )
         {
-            tdv::SinkTraits<Type>::Sinker::sink(m_lastFrame);            
+            tdv::SinkTraits<Type>::Sinker::sink(m_lastFrame);
         }
-        
+#endif
         firstFrame = false;
         m_lastFrame = image;
         
@@ -160,16 +161,23 @@ void VideoWidget::paintEvent(QPaintEvent *event)
         return ;
     }    
 
-    CvMat *pixmap = m_pixmap.getImage(cvGetSize(m_lastFrame));            
-    cvConvertImage(m_lastFrame, pixmap);    
+    try
+    {
+        CvMat *pixmap = m_pixmap.getImage(cvGetSize(m_lastFrame));            
+        cvConvertImage(m_lastFrame, pixmap);    
     
-    QImage img(reinterpret_cast<const uchar*>(pixmap->data.ptr),
-               pixmap->cols, pixmap->rows,
-               pixmap->step, QImage::Format_RGB888);
+        QImage img(reinterpret_cast<const uchar*>(pixmap->data.ptr),
+                   pixmap->cols, pixmap->rows,
+                   pixmap->step, QImage::Format_RGB888);
 
-    painter.drawImage(QPoint(0, 0), img);
-        
-    setFixedSize(img.width(), img.height());
+        painter.drawImage(QPoint(0, 0), img);
+        setFixedSize(img.width(), img.height());
+    }
+    catch (...)
+    {
+        assert(false);
+    }
+            
 }
 
 void VideoWidget::errorOcurred(const std::exception &err)

@@ -28,4 +28,13 @@ bool ImageReader::update()
     return false;
 }
 
+void ImageReader::loadImages()
+{
+    if ( m_mode == Directory )
+    {
+        for (path::iterator it(p.begin()), it_end(p.end()); it != it_end; ++it)
+            cout << "  " << *it << '\n';
+    }
+}
+
 TDV_NAMESPACE_END

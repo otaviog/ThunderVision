@@ -58,8 +58,7 @@ template<typename TeeType, typename SinkPolicy>
 bool TeeWorkUnit<TeeType, SinkPolicy>::update()
 {
     TeeType data;
-    const bool rd = m_rp->read(&data);
-    bool needSink = true;        
+    const bool rd = m_rp->read(&data);    
 
     for ( typename WPipeMap::iterator mIt = m_wpipes.begin();
           mIt != m_wpipes.end(); mIt++)
@@ -71,10 +70,8 @@ bool TeeWorkUnit<TeeType, SinkPolicy>::update()
         {
             if ( rd )                                 
             {
-                wpipe->write(data);
-                needSink = false;
-                
                 SinkPolicy::incrRef(data);
+                wpipe->write(data);                                
             }
             else
             {
@@ -83,7 +80,7 @@ bool TeeWorkUnit<TeeType, SinkPolicy>::update()
         }        
     }
     
-    if ( rd && needSink )
+    if ( rd )
     {
         SinkPolicy::sink(data);
     }
@@ -100,7 +97,7 @@ void TeeWorkUnit<TeeType, SinkPolicy>::enable(int wpipeId)
         pipe = new ReadWritePipe<TeeType>;
         m_wpipes[wpipeId] = pipe;
     }
-    
+    pipe->reset();
     m_wpipeEnabled[wpipeId] = true;
 }
 

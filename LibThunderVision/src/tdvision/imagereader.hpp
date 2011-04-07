@@ -11,10 +11,17 @@ TDV_NAMESPACE_BEGIN
 class ImageReader: public WorkUnit
 {
 public:    
-    ImageReader(const std::string &filename)
+    enum Mode
+    {
+        Directory,
+        File
+    };
+        
+    ImageReader(const std::string &filename, Mode mode = File)
         : m_filename(filename)
     {
         workName("Image Reader");
+        m_mode = mode;
     }
         
     ReadPipe<CvMat*>* output()
@@ -25,8 +32,12 @@ public:
     bool update();
 
 private:
+    void loadImages();
+    
+    
     ReadWritePipe<CvMat*> m_wpipe;
     std::string m_filename;
+    Mode m_mode;
 };
 
 TDV_NAMESPACE_END
