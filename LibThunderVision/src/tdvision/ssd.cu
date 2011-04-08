@@ -32,7 +32,8 @@ __global__ void ssdKern(const int maxDisparity, const dim3 dim, float *dsiMem)
       float ssdValue = ssdAtDisp(x, y, disp);
 
       const int volOffset = (dim.x*dim.y)*disp + y*dim.x + x;
-        dsiMem[volOffset] = ssdValue;
+      // volOffset =  disp + dim.z*x + (dim.z*dim.x)*y;
+      dsiMem[volOffset] = ssdValue;
     }    
     
   }
