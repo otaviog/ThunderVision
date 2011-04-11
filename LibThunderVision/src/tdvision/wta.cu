@@ -23,6 +23,7 @@ __global__ void wtaKernel(float *dsi, dim3 dsiDim,
         wonDisparity = d;
       }
     }
+    
     //wonDisparity = 100;
     outimg[offset] = float(wonDisparity)/float(dsiDim.z);
   }

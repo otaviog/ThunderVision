@@ -2,6 +2,8 @@
 #define TDV_IMAGEREADER_HPP
 
 #include <tdvbasic/common.hpp>
+#include <string>
+#include <vector>
 #include "floatimage.hpp"
 #include "pipe.hpp"
 #include "workunit.hpp"
@@ -18,10 +20,12 @@ public:
     };
         
     ImageReader(const std::string &filename, Mode mode = File)
-        : m_filename(filename)
+        : m_infilename(filename)
     {
         workName("Image Reader");
         m_mode = mode;
+        m_cImg = 0;
+        loadImages();
     }
         
     ReadPipe<CvMat*>* output()
@@ -29,14 +33,21 @@ public:
         return &m_wpipe;
     }
     
+    void reset()
+    {
+        m_cImg = 0;
+        m_wpipe.reset();
+    }
+    
     bool update();
 
 private:
     void loadImages();
-    
-    
+        
     ReadWritePipe<CvMat*> m_wpipe;
-    std::string m_filename;
+    std::string m_infilename;
+    std::vector<std::string> m_filenames;
+    size_t m_cImg;
     Mode m_mode;
 };
 

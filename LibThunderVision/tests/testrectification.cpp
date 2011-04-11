@@ -83,11 +83,6 @@ TEST_F(TestRectification, InstrinsicRect)
 
 TEST_F(TestRectification, ExtrinsicRect)
 {
-    tdv::ImageReader readerL("../../res/rect-calib-left.png");
-    tdv::ImageReader readerR("../../res/rect-calib-right.png");
-    tdv::ImageWriter writerL("rect-calib-left-done.png");
-    tdv::ImageWriter writerR("rect-calib-right-done.png");
-
     tdv::RectificationCV rectCV;         
     rectCV.camerasDesc(extCalib);    
 

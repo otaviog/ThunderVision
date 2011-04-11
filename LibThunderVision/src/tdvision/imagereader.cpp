@@ -1,6 +1,8 @@
 #include <cv.h>
 #include <highgui.h>
 #include <tdvbasic/exception.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include "imagereader.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -8,32 +10,57 @@ TDV_NAMESPACE_BEGIN
 bool ImageReader::update()
 {
     WriteGuard<ReadWritePipe<CvMat*> > wg(m_wpipe);
-        
-    IplImage *limg = cvLoadImage(m_filename.c_str());
     
-    if ( limg != NULL )
-    {   
-        CvMat *mat = cvCreateMat(limg->height, limg->width, CV_8UC3);
-        mat = cvGetMat(limg, mat);
-        
-        wg.write(mat);        
-    }
-    else
+    if ( m_cImg < m_filenames.size() )
     {
-        throw Exception(boost::format("can't open image: %1%")
-                        % m_filename.c_str());
-    }
+        const std::string &filename(m_filenames[m_cImg++]);
+        IplImage *img = cvLoadImage(filename.c_str());
     
-    m_wpipe.finish();
-    return false;
+        if ( img != NULL )
+        {   
+#if 0
+            CvMat *mat = cvCreateMatHeader(img->height, img->width, CV_8UC3);
+            mat = cvGetMat(img, mat);        
+#else
+            CvMat *mat = cvCreateMat(img->height, img->width, CV_8UC3);
+            cvConvertImage(img, mat, CV_CVTIMG_SWAP_RB);
+            cvReleaseImage(&img);
+#endif
+            wg.write(mat);
+        }
+        else
+        {
+            throw Exception(boost::format("can't open image: %1%")
+                            % filename);
+        }                    
+    }
+
+    return wg.wasWrite();
 }
 
 void ImageReader::loadImages()
 {
-    if ( m_mode == Directory )
+    namespace fs = boost::filesystem;
+        
+    fs::path inpath(m_infilename);
+    
+    if ( fs::exists(inpath) && fs::is_directory(inpath) )
+    {        
+        for (fs::directory_iterator it(inpath); it != fs::directory_iterator();
+             it++)
+        {
+            fs::path p(*it);
+            if ( fs::exists(p) && fs::is_regular_file(p) )
+            {
+                m_filenames.push_back(p.string());
+            }
+        }
+        
+        std::sort(m_filenames.begin(), m_filenames.end());
+    }
+    else
     {
-        for (path::iterator it(p.begin()), it_end(p.end()); it != it_end; ++it)
-            cout << "  " << *it << '\n';
+        m_filenames.push_back(m_infilename);
     }
 }
 
