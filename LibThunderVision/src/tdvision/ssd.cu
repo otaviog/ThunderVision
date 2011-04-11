@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include "cuerr.hpp"
 #include "cudaconstraits.hpp"
+#include "dsimemutil.h"
 
 texture<float, 2> texLeftImg;
 texture<float, 2> texRightImg;
@@ -30,10 +31,7 @@ __global__ void ssdKern(const int maxDisparity, const dim3 dim, float *dsiMem)
   if ( x < dim.x && y < dim.y ) {    
     for (int disp=0; (disp < maxDisparity) && (x + disp) < dim.x; disp++) {   
       float ssdValue = ssdAtDisp(x, y, disp);
-
-      const int volOffset = (dim.x*dim.y)*disp + y*dim.x + x;
-      // volOffset =  disp + dim.z*x + (dim.z*dim.x)*y;
-      dsiMem[volOffset] = ssdValue;
+      dsiSetIntensity(x, y, disp, ssdValue, dsiMem);
     }    
     
   }
@@ -64,10 +62,11 @@ void DevSSDRun(int maxDisparity,
     
   CudaConstraits constraits;  
   WorkSize ws = constraits.imageWorkSize(dsiDim);
+  dim3 dsiDim_c(dsiDim.width(), dsiDim.height(),
+                dsiDim.depth());
   
-  ssdKern<<<ws.blocks, ws.threads>>>(maxDisparity, 
-                                     dim3(dsiDim.width(), dsiDim.height(),
-                                          dsiDim.depth()),
+  dsiSetInfo(dsiDim_c, dsiDim.size());
+  ssdKern<<<ws.blocks, ws.threads>>>(maxDisparity, dsiDim_c,
                                      dsiMem); 
 }
 

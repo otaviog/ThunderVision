@@ -28,6 +28,7 @@ bool ImageReader::update()
     return false;
 }
 
+#if 0
 void ImageReader::loadImages()
 {
     if ( m_mode == Directory )
@@ -36,5 +37,6 @@ void ImageReader::loadImages()
             cout << "  " << *it << '\n';
     }
 }
+#endif
 
 TDV_NAMESPACE_END
