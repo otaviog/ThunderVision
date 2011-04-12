@@ -7,7 +7,7 @@
 texture<float, 2> texLeftImg;
 texture<float, 2> texRightImg;
 
-__device__ float ssdAtDisp(int x, int y, int disp)
+__device__ float mutualInfoAtDisp(int x, int y, int disp)
 {
   float sum = 0.0f;
   
@@ -23,7 +23,7 @@ __device__ float ssdAtDisp(int x, int y, int disp)
   return sum;
 }
 
-__global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, float *dsiMem)
+__global__ void mutualInformation(const DSIDim dsiDim, const int maxDisparity, float *dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
@@ -39,9 +39,9 @@ __global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, float *dsiM
 
 TDV_NAMESPACE_BEGIN
 
-void DevSSDRun(int maxDisparity,
-               Dim dsiDim, float *leftImg_d, float *rightImg_d,
-               float *dsiMem)
+void DevMutualInformationRun(int maxDisparity,
+                             Dim dsiDim, float *leftImg_d, float *rightImg_d,
+                             float *dsiMem)
 {
   CUerrExp err;
     

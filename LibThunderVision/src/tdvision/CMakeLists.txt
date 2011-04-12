@@ -29,7 +29,7 @@ CUDA_ADD_LIBRARY(tdvision
   medianfilterdev.hpp medianfilterdev.cpp medianfilter.cu
   matchingcost.hpp
   ssddev.hpp ssddev.cpp ssd.cu
-  optimizer.hpp
+  optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
   benchmark.hpp benchmark.cpp  

@@ -2,18 +2,16 @@
 #define TDV_DYNAMICPROGDEV_HPP
 
 #include <tdvbasic/common.hpp>
-#include "workunit.hpp"
-#include "pipe.hpp"
+#include "optimizer.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class DynamicProgDev: public WorkUnit
+class DynamicProgDev: public AbstractOptimizer
 {
 public:
-    bool update();
 
-private:
-    
+protected:
+    void updateImpl(DSIMem dsi, FloatImage outimg);
 };
     
 TDV_NAMESPACE_END

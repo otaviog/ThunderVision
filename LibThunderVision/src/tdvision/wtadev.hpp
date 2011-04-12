@@ -6,32 +6,15 @@
 
 TDV_NAMESPACE_BEGIN
 
-class WTADev: public Optimizer
+class WTADev: public AbstractOptimizer
 {
-public:
-    WTADev()
-    {
-    }
-    
+public:    
     virtual ~WTADev()
     {
     }
 
-    void input(ReadPipe<DSIMem> *rpipe)
-    {
-        m_rpipe = rpipe;
-    }
-
-    ReadPipe<FloatImage>* output()
-    {
-        return &m_wpipe;
-    }
-    
-    bool update();
-    
-private:
-    ReadPipe<DSIMem> *m_rpipe;
-    ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+protected:
+    void updateImpl(DSIMem mem, FloatImage img);
 };
 
 TDV_NAMESPACE_END

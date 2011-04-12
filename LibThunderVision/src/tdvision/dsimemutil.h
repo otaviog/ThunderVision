@@ -1,48 +1,54 @@
 #ifndef TDV_DSIUTIL_H
 #define TDV_DSIUTIL_H
 
-#define DSI_HIGHDSI_VALUE 999999.0
-
+#include "dim.hpp"
 #include "cuerr.hpp"
 
-inline __host__ __device__ uint dsiOffset(
-    uint x, uint y, uint z)
+struct DSIDim
 {
-    return z + g_dsiDim.z*x + g_dsiDim.x*g_dsiDim.z*y;
+    uint x, y, z;
+    uint maxOffset;
+};
+
+#define DSI_HIGHDSI_VALUE 999999.0
+
+inline __host__ __device__ uint dsiOffset(
+    const DSIDim &dim, uint x, uint y, uint z)
+{
+    return z + dim.z*x + dim.x*dim.z*y;
 }
 
 inline __host__ __device__ float dsiIntensityClamped(
-    uint x, uint y, uint z, const float *dsi)
+    const DSIDim &dim, uint x, uint y, uint z, const float *dsi)
 {    
-    const uint offset = dsiOffset(x, y, z);   
-    return offset < g_dsiDim.maxOffset ? dsi[offset] : DSI_HIGHDSI_VALUE; 
+    const uint offset = dsiOffset(dim, x, y, z);   
+    return offset < dim.maxOffset ? dsi[offset] : DSI_HIGHDSI_VALUE; 
 }
 
 inline __host__ __device__ float dsiIntensity(
-    uint x, uint y, uint z, const float *dsi)
+    const DSIDim &dim, uint x, uint y, uint z, const float *dsi)
 {    
-    return dsi[dsiOffset(x, y, z)];
+    return dsi[dsiOffset(dim, x, y, z)];
 }
 
 inline __host__ __device__ void dsiSetIntensity(
-    uint x, uint y, uint z, float value, float *dsi)
+    const DSIDim &dim, uint x, uint y, uint z, float value, 
+    float *dsi)
 {
-    dsi[dsiOffset(x, y, z)] = value;
+    dsi[dsiOffset(dim, x, y, z)] = value;
 }
 
-inline __host__ void dsiSetInfo(dim3 dsiDim, uint maxOffset)
+inline DSIDim DSIDimCreate(const tdv::Dim &dim)
 {
   tdv::CUerrExp err;
   
-  DSIDim dim;
-  dim.x = dsiDim.x;
-  dim.y = dsiDim.y;
-  dim.z = dsiDim.z;
-  dim.maxOffset = maxOffset;
-
-  err << cudaMemcpyToSymbol(g_dsiDim, &dim, sizeof(DSIDim));
+  DSIDim ddim;
+  ddim.x = dim.width();
+  ddim.y = dim.height();
+  ddim.z = dim.depth();
+  ddim.maxOffset = dim.size();
   
-//  err << cudaMemcpyToSymbol(g_dsiDim, &dim, sizeof(DSIDim));
+  return ddim;
 }
 
 #endif /* TDV_DSIUTIL_H */

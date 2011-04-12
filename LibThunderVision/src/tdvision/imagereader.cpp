@@ -38,7 +38,6 @@ bool ImageReader::update()
     return wg.wasWrite();
 }
 
-#if 0
 void ImageReader::loadImages()
 {
     namespace fs = boost::filesystem;
@@ -64,6 +63,5 @@ void ImageReader::loadImages()
         m_filenames.push_back(m_infilename);
     }
 }
-#endif
 
 TDV_NAMESPACE_END
