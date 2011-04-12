@@ -49,10 +49,14 @@ CvMat* Calibration::updateChessboardCorners(
     leftPointsCount = rightPointsCount = totalCorners;
 
     cvFindChessboardCorners(limg, m_cbpattern.dim(), leftPoints.get(),
-                            &leftPointsCount);
+                            &leftPointsCount,
+                            CV_CALIB_CB_ADAPTIVE_THRESH |
+                            CV_CALIB_CB_NORMALIZE_IMAGE);
 
     cvFindChessboardCorners(rimg, m_cbpattern.dim(), rightPoints.get(),
-                            &rightPointsCount);
+                            &rightPointsCount,
+                            CV_CALIB_CB_ADAPTIVE_THRESH |
+                            CV_CALIB_CB_NORMALIZE_IMAGE);
 
     if ( leftPointsCount < totalCorners
          && rightPointsCount < totalCorners )
@@ -60,9 +64,19 @@ CvMat* Calibration::updateChessboardCorners(
         std::cout<<"No points: "
                  <<leftPointsCount<<' '
                  <<rightPointsCount<<std::endl;
+
         return NULL;
     }
-
+    
+    cvFindCornerSubPix(limg, leftPoints.get(), leftPointsCount, cvSize(11, 11),
+                       cvSize(-1, -1), cvTermCriteria(
+                           CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
+                           30, 0.01));
+    cvFindCornerSubPix(limg, rightPoints.get(), rightPointsCount, cvSize(11, 11),
+                       cvSize(-1, -1), cvTermCriteria(
+                           CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
+                           30, 0.01));
+    
     std::copy(leftPoints.get(), leftPoints.get() + totalCorners,
               m_lPoints.begin() + totalCorners*m_currFrame);
 
@@ -117,10 +131,10 @@ void Calibration::updateCalibration(const CvSize &imgSize)
         &v_rightM, &v_rightD,
         imgSize,
         &v_R, &v_T, NULL, &v_F,
-        cvTermCriteria(CV_TERMCRIT_ITER+
-                       CV_TERMCRIT_EPS, 100, 1e-5),
+        cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
         CV_CALIB_FIX_ASPECT_RATIO 
-        + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH);
+        + CV_CALIB_ZERO_TANGENT_DIST 
+        + CV_CALIB_SAME_FOCAL_LENGTH);
     
     m_camDesc.leftCamera().intrinsics(c_lM);
     m_camDesc.leftCamera().distortion(c_lD[0], c_lD[1], c_lD[2], c_lD[3], c_lD[4]);
@@ -146,22 +160,20 @@ bool Calibration::update()
     
     cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
-        
+       
     CvMatSinkPol::sink(limgOrigin);
     CvMatSinkPol::sink(rimgOrigin);
-    
+
     const CvSize imgSz = cvGetSize(limg);
 
     CvMat *patternDetectPrg = updateChessboardCorners(
         limg, rimg);
     
-    cvReleaseMat(&rimg);
     if ( patternDetectPrg == NULL )
     {
         wg.write(limg);
         return true;
-    }    
-    cvReleaseMat(&limg);
+    }        
 
     m_currFrame = (m_currFrame + 1) % m_numFrames;
     m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);

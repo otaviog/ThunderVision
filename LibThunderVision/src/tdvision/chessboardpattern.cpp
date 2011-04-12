@@ -2,9 +2,10 @@
 
 TDV_NAMESPACE_BEGIN
 
-ChessboardPattern::ChessboardPattern()
+ChessboardPattern::ChessboardPattern(const Dim &dim)
 {
-    m_dim = cvSize(7, 6);
+    //m_dim = cvSize(7, 6);
+    m_dim = cvSize(dim.width(), dim.height());
     m_squareSize = 1.0f;        
 }
 

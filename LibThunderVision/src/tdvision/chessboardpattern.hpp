@@ -3,13 +3,14 @@
 
 #include <tdvbasic/common.hpp>
 #include <cv.h>
+#include "dim.hpp"
 
 TDV_NAMESPACE_BEGIN
 
 class ChessboardPattern
 {
 public:
-    ChessboardPattern();
+    ChessboardPattern(const Dim &dim = Dim(7, 6));
         
     CvSize dim()
     {
