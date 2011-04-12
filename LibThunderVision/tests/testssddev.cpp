@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <tdvbasic/log.hpp>
 #include <tdvision/imagereader.hpp>
 #include <tdvision/imagewriter.hpp>
 #include <tdvision/cpyimagetocpu.hpp>
@@ -12,6 +13,8 @@
 
 TEST(TestSSD, Dev)
 {
+    tdv::TdvGlobalLogDefaultOutputs();
+    
     tdv::ImageReader readerL("../../res/tsukuba_L.png");
     tdv::ImageReader readerR("../../res/tsukuba_R.png");
     tdv::FloatConv fconvl, fconvr;
@@ -67,6 +70,7 @@ TEST(TestSSD, WithWTA)
     writer.update();    
 }
 
+#if 0
 TEST(TestSSD, WithMedianWTA)
 {
     tdv::ImageReader readerL("../../res/tsukuba512_L.png");
@@ -99,4 +103,4 @@ TEST(TestSSD, WithMedianWTA)
     rconv.update();
     writer.update();    
 }
-
+#endif

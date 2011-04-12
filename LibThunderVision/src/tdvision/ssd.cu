@@ -2,6 +2,17 @@
 #include <cuda.h>
 #include "cuerr.hpp"
 #include "cudaconstraits.hpp"
+
+#define g_dsiDim g_ssdDsiDim
+
+struct DSIDim
+{
+    uint x, y, z;
+    uint maxOffset;
+};
+
+__constant__ DSIDim g_dsiDim;
+
 #include "dsimemutil.h"
 
 texture<float, 2> texLeftImg;
@@ -30,7 +41,7 @@ __global__ void ssdKern(const int maxDisparity, const dim3 dim, float *dsiMem)
 
   if ( x < dim.x && y < dim.y ) {    
     for (int disp=0; (disp < maxDisparity) && (x + disp) < dim.x; disp++) {   
-      float ssdValue = ssdAtDisp(x, y, disp);
+      float ssdValue = ssdAtDisp(x, y, disp);      
       dsiSetIntensity(x, y, disp, ssdValue, dsiMem);
     }    
     

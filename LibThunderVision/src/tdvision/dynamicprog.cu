@@ -1,4 +1,14 @@
 #include "dim.hpp"
+#define g_dsiDim g_dpDsiDim
+
+struct DSIDim
+{
+    uint x, y, z;
+    uint maxOffset;
+};
+
+__constant__ DSIDim g_dsiDim;
+
 #include "dsimemutil.h"
 
 __device__ void dynamicprogSlice(uint y, uint z, const float *costDSI,
@@ -58,7 +68,7 @@ __global__ void reduceImage(const float *sumCostDSI, const char *pathDSI,
     const uint offset = dsiOffset(x, y, lastMinZ);
     const uint nz = lastMinZ + pathDSI[offset];
     
-    if ( nz < g_dsiMaxOffset )
+    if ( nz < g_dsiDim.maxOffset )
       lastMinZ = nz;
     
     imgOffset = y*g_dsiDim.x + x;
@@ -79,6 +89,4 @@ void runDynamicProg(float *dsi, const tdv::Dim &dsiDim)
   dim3 cuda_dsiDim(dsiDim.width(), dsiDim.height(), dsiDim.depth());
   uint maxOffset = dsiDim.size();
   
-  cudaMemcpyToSymbol(&g_dsiDim, &cuda_dsiDim, sizeof(dim3));
-  cudaMemcpyToSymbol(&g_dsiMaxOffset, &maxOffset, sizeof(uint));    
 }

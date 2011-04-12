@@ -13,6 +13,7 @@ CUDA_ADD_LIBRARY(tdvision
   exceptionreport.hpp
   processrunner.hpp processrunner.cpp
   floatimage.hpp floatimage.cpp
+  dsimemutil.h
   dsimem.hpp dsimem.cpp    
   cuerr.hpp cuerr.cpp
   cudaconstraits.hpp cudaconstraits.cu
