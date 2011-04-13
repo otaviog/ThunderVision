@@ -1,19 +1,24 @@
 #include "dim.hpp"
 #include "dsimem.hpp"
 #include "dsimemutil.h"
+#include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
 __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
                             float *sumCostDSI, int *pathDSI)
 {
-  uint z = threadIdx.x + blockIdx.x*blockDim.x;
-  uint y = threadIdx.y + blockIdx.y*blockDim.y;
-  if ( dim.z <= z || dim.y <= y )
+  //uint z = threadIdx.x + blockIdx.x*blockDim.x;
+  //uint y = threadIdx.y + blockIdx.y*blockDim.y;
+  const uint z = threadIdx.x;
+  const uint y = blockIdx.y;
+  
+  if ( z >= dim.z || y >= dim.y  )
     return ;
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
   sumCostDSI[initialOff] = costDSI[initialOff];
-  
+  pathDSI[initialOff] = 0;
+
   __syncthreads();
 
   for (uint x=1; x<dim.x; x++) {    
@@ -30,20 +35,20 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     const float c3 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI);      
       
     float m;      
-    char p;  
+    int p;  
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
-      p = 1;
+      p = -1;
     } else if ( c2 < c3 ) {
       m = c2;
-      p = 0;
+      p = -1;
     } else {
       m = c3;
       p = -1;
     }
       
     sumCostDSI[c0Offset] = c0 + m;
-    pathDSI[c0Offset] = p;
+    pathDSI[c0Offset] = -1;
     
     __syncthreads();
   }
@@ -52,12 +57,12 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
 __global__ void reduceImage(const DSIDim dim, const float *sumCostDSI, 
                             const int *pathDSI, float *dispImg)
 {
-  const uint y = threadIdx.x + blockIdx.x*blockDim.x; // slice
-
+  //const uint y = threadIdx.x + blockIdx.x*blockDim.x; // slice
+  const uint y = blockIdx.x;
   if ( y >= dim.y )
     return ;
   
-  uint lastMinZ = 0;
+  int lastMinZ = 0;
   float min = dsiIntensityClamped(dim, dim.x - 1, y, 0, sumCostDSI);
   
   for (uint z=1; z < dim.z; z++) {
@@ -68,10 +73,12 @@ __global__ void reduceImage(const DSIDim dim, const float *sumCostDSI,
     }          
   }
   
-  uint imgOffset = y*dim.x + dim.x - 1;
+  lastMinZ = dim.z;
+  uint imgOffset = y*dim.x + (dim.x - 1);
   dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
-    
-  for (int x=dim.x - 2; x >= 0; x--) {
+      
+  for (uint _x=0; _x < dim.x - 1; _x++) {
+    const uint x = dim.x - 2 - _x;
     const uint offset = dsiOffset(dim, x, y, lastMinZ);
     const uint nz = lastMinZ + pathDSI[offset];
     
@@ -96,9 +103,14 @@ void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
   tdv::CudaConstraits constraits;  
   tdv::WorkSize ws = constraits.imageWorkSize(tdv::Dim(tdv_dsiDim.depth(), 
                                                        tdv_dsiDim.width()));  
+  tdv::CudaBenchmarker bm;
+  bm.begin();
+
+  dynamicprog<<<tdv_dsiDim.height(), tdv_dsiDim.depth()>>>(dsiDim, dsi, sumCostDSI.mem(), pathDSI);  
+  bm.end();
+  cuerr << cudaThreadSynchronize();
   
-  dynamicprog<<<tdv_dsiDim.height(), 512>>>(dsiDim, dsi, sumCostDSI.mem(), pathDSI);  
   reduceImage<<<tdv_dsiDim.height(), 1>>>(dsiDim, sumCostDSI.mem(), pathDSI, dispImg);
   
-  cudaFree(pathDSI);  
+  cuerr << cudaFree(pathDSI);  
 }
