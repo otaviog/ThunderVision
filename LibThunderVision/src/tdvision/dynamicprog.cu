@@ -10,7 +10,7 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   //uint z = threadIdx.x + blockIdx.x*blockDim.x;
   //uint y = threadIdx.y + blockIdx.y*blockDim.y;
   const uint z = threadIdx.x;
-  const uint y = blockIdx.y;
+  const uint y = blockIdx.x;
   
   if ( z >= dim.z || y >= dim.y  )
     return ;
@@ -38,17 +38,17 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     int p;  
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
-      p = -1;
+      p = 1;
     } else if ( c2 < c3 ) {
       m = c2;
-      p = -1;
+      p = 0;
     } else {
       m = c3;
       p = -1;
     }
       
     sumCostDSI[c0Offset] = c0 + m;
-    pathDSI[c0Offset] = -1;
+    pathDSI[c0Offset] = p;
     
     __syncthreads();
   }
@@ -73,7 +73,7 @@ __global__ void reduceImage(const DSIDim dim, const float *sumCostDSI,
     }          
   }
   
-  lastMinZ = dim.z;
+  //  lastMinZ = dim.z;
   uint imgOffset = y*dim.x + (dim.x - 1);
   dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
       
