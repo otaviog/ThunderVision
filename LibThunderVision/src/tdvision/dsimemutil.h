@@ -10,7 +10,7 @@ struct DSIDim
     uint maxOffset;
 };
 
-#define DSI_HIGHDSI_VALUE 999999.0
+#define DSI_HIGHDSI_VALUE 99999999999999.0f
 
 inline __host__ __device__ uint dsiOffset(
     const DSIDim &dim, uint x, uint y, uint z)
