@@ -7,6 +7,11 @@
 
 TDV_NAMESPACE_BEGIN
 
+/**
+ * Base interface for a pipe with read job.
+ * 
+ * @author Otavio Gomes <otaviolmiro@gmail.com>
+ */
 class BaseReadPipe
 {
 public:
@@ -14,9 +19,18 @@ public:
     {
     }
     
+    /**
+     * Waits a read and discards the received data.
+     */
     virtual void waitRead() = 0;    
 };
 
+/**
+ * Typed interface for read pipes. This interface is
+ * the one to be used to specify a abstract 
+ * communication between another work unit.
+ * @author Otavio Gomes <otaviolmiro@gmail.com>
+ */
 template<typename ReadType>
 class ReadPipe: public BaseReadPipe
 {
@@ -24,9 +38,20 @@ public:
     virtual ~ReadPipe()
     { }
     
+    /**
+     * Wait until read a new element.
+     * @param outvalue returns the read element.
+     * @return true if a element was read; false if this
+     * pipe has no more elements, and the process reading 
+     * may exit.
+     */
     virtual bool read(ReadType *outvalue) = 0;
 };
 
+/**
+ * Base interface for write pipe, contains basic controll mechanism.
+ * @author Otavio Gomes <otaviolmiro@gmail.com>
+ */
 class BaseWritePipe
 {
 public:
@@ -34,9 +59,16 @@ public:
     {
     }
 
+    /**
+     * Writes that no more data will be writren.
+     */
     virtual void finish() = 0;
 };
 
+/**
+ * Typed interface for write pipe. Gives a common way to write
+ * elements.
+ */
 template<typename WriteType>
 class WritePipe: public BaseWritePipe
 {
@@ -46,9 +78,16 @@ public:
     virtual ~WritePipe()
     { }
     
+    /**
+     * Writes to the pipe.
+     * @param packet element to write.
+     */
     virtual void write(WriteType packet) = 0;    
 };
 
+/**
+ * @decrepted
+ */
 template<typename Type>
 class PasstruPipeAdapter
 {
@@ -60,6 +99,9 @@ public:
 private:
 };
 
+/**
+ * @decrepted
+ */
 template<typename In, typename Out>
 class CastPipeAdapter
 {
@@ -72,21 +114,50 @@ public:
 private:
 };
 
+/**
+ * All other pipe classes are abstract. This one is the glue
+ * between them. This class combines the read and write
+ * pipes to form the common pipe type in thundervision, 
+ * it's use the bounded-buffer logic.
+ * @author Otavio Gomes <otaviolmiro@gmail.com>
+ */
 template<typename ReadType, typename WriteType = ReadType, 
          typename Adapter = PasstruPipeAdapter<ReadType> >
 class ReadWritePipe: public WritePipe<WriteType>, public ReadPipe<ReadType>
 {
 public:
+
+
+    /**
+     * Constructor.
+     * @param maxSize maximum size for the buffer queue.
+     * When the queue reach this size, then the next writes
+     * will wait, according to the bounded-buffer logic.
+     */
     ReadWritePipe(size_t maxSize = 100)
     {
         m_end = false;
         m_maxSize = maxSize;
     }
     
+    /**
+     * Enqueues a value for futher read.
+     */ 
     void write(WriteType value);    
 
+    /**
+     * Wait until read a new element.
+     * @param outvalue returns the read element.
+     * @return true if a element was read; false if this
+     * pipe has no more elements, and the process reading 
+     * may exit.
+     */
     bool read(ReadType *outvalue);
         
+    /**
+     * Sets in next empty read to return false, indicating
+     * the end of data in this pipe.
+     */
     void finish()
     {
         boost::mutex::scoped_lock lock(m_queueMutex);
@@ -94,11 +165,17 @@ public:
         m_queueCond.notify_one();
     }
     
+    /**
+     * Unsets the end of data in this pipe.
+     */
     void reset()
     {
         m_end = false;
     }
     
+    /**
+     * Discards a read.
+     */
     void waitRead()
     {
         ReadType tp;
@@ -116,7 +193,7 @@ private:
 template<typename ReadType, typename WriteType, typename Adapter>
 void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
 {
-#if 0
+#if 1
     boost::mutex::scoped_lock lock(m_queueMutex);
     m_end = false;
     
@@ -157,6 +234,10 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
     return !hasEmpty;
 }
 
+/**
+ * Works like a scope guard to prevent writing process to
+ * forget the finish command on a write pipe.
+ */
 template<typename WritePipeType>
 class WriteGuard: public  WritePipe<typename WritePipeType::WriteValueType>
 {

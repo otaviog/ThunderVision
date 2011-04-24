@@ -17,7 +17,7 @@ CMDLine::CMDLine(int argc, char **argv)
             ("cameras,c", "Use cameras.")
             ("spec,s", po::value<std::string>(), 
              "Spec filename describing the system preferences, in ThunderLang Language :D.");
-    
+                
         po::store(po::parse_command_line(argc, argv, desc), m_vm);
         po::notify(m_vm);
     }
@@ -38,14 +38,16 @@ tdv::StereoInputSource* CMDLine::createInputSource()
     }
     else if ( m_vm.count("left-vid") && m_vm.count("right-vid") )
     {
-        tdv::CaptureStereoInputSource *cisrc = new tdv::CaptureStereoInputSource;
+        tdv::CaptureStereoInputSource *cisrc = 
+            new tdv::CaptureStereoInputSource;
         cisrc->init(m_vm["left-vid"].as<std::string>(),
                        m_vm["right-vid"].as<std::string>());
         inputSrc = cisrc;        
     }
     else if ( m_vm.count("cameras") )
     {
-        tdv::CaptureStereoInputSource *cisrc = new tdv::CaptureStereoInputSource;
+        tdv::CaptureStereoInputSource *cisrc = 
+            new tdv::CaptureStereoInputSource;
         cisrc->init();
         inputSrc = cisrc;
     }

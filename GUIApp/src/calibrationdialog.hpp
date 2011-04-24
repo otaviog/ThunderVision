@@ -5,9 +5,10 @@
 #include "errorreport.hpp"
 #include "ui_calibrationdialog.h"
 
-class CalibrationWidget;
+class VideoWidget;
 
 class CalibrationDialog: public QDialog,
+                         public tdv::CalibrationObserver,
                          protected Ui::CalibrationDialog
 {
     Q_OBJECT;
@@ -19,6 +20,8 @@ public:
 
     void dispose();
 
+    void calibrationUpdate(const tdv::Calibration &calib);
+    
 protected:
     virtual void closeEvent(QCloseEvent *ev);                                            
                                             
@@ -31,7 +34,7 @@ private slots:
     
 private:
     tdv::Calibration *m_calib;
-    CalibrationWidget *m_calibWid;    
+    VideoWidget *m_videoWid;
     ErrorReport m_errHandle;
 };
 

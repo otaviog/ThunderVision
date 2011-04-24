@@ -7,18 +7,26 @@ static inline double dbl(double v)
     return v*v;
 }
 
-Report MeanCompMetric::compare(FloatImage truthImg, FloatImage resultImg)
+IMatcherCompMetric::Report MeanCompMetric::compare(
+    FloatImage truthImg, FloatImage resultImg)
 {
-    float *timg = truthImg.cpuMem();
-    float *rimg = resultImg.cpuMem();
+    float * const timg = truthImg.cpuMem()->data.fl;
+    float * const rimg = resultImg.cpuMem()->data.fl;
     
+
     size_t minSize = std::min(truthImg.dim().size(), resultImg.dim().size());
     Report report;
     
+    long double errorMean = 0.0;
+    
     for (size_t i=0; i<minSize; i++)
     {
-        double ssd = dbl(timg[i] - rimg);        
+        double sad = std::abs(timg[i] - rimg[i]);
+        errorMean += sad;
     }
+    
+    errorMean /= double(truthImg.dim().size());
+    report.error = errorMean;
     
     return report;
 }

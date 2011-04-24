@@ -106,6 +106,21 @@ namespace util
 
         return v;
     }
+
+    size_t previousPowerOf2(size_t v)
+    {
+        return nextPowerOf2(v>>1);
+    }
+    
+    size_t nearestPowerOf2(size_t v)
+    {
+        const size_t n = nextPowerOf2(v);
+        const size_t p = previousPowerOf2(v);
+        if ( n - v < v - p )
+            return n;
+        else 
+            return p;
+    }
 }
 
 TDV_NAMESPACE_END

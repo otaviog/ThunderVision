@@ -10,7 +10,7 @@ class MeanCompMetric: public IMatcherCompMetric
 {
 public:
     Report compare(FloatImage truthImg, FloatImage resultImg);    
-}
+};
 
 TDV_NAMESPACE_END
 

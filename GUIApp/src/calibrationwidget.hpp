@@ -28,8 +28,6 @@ public:
                                                     
 private:
     VideoWidget *m_videoWid;
-    QLabel *m_lbStatus;
-    QProgressBar *m_pbProgress;
 };
 
 #endif /* TDV_CALIBRATION_HPP */

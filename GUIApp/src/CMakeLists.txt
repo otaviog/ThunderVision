@@ -34,11 +34,12 @@ ADD_LIBRARY(GUILib
 ADD_EXECUTABLE(GUIApp
   main.cpp)
 
-#ADD_EXECUTABLE(CalibrationApp
-#  calibrationapp.cpp)
+ADD_EXECUTABLE(CalibrationApp
+  calibrationapp.cpp)
 
 TARGET_LINK_LIBRARIES(GUIApp GUILib ${QT_LIBRARIES} ${ThunderVision_LIBRARIES})
-#TARGET_LINK_LIBRARIES(CalibrationApp GUILib ${QT_LIBRARIES} ${ThunderVision_LIBRARIES})
+TARGET_LINK_LIBRARIES(CalibrationApp GUILib ${QT_LIBRARIES} 
+  ${ThunderVision_LIBRARIES})
   
   
   

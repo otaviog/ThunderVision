@@ -48,6 +48,8 @@ CUDA_ADD_LIBRARY(tdvision
   stereomatcher.hpp
   devstereomatcher.hpp devstereomatcher.cpp
   cpustereomatcher.hpp cpustereomatcher.cpp
+  stereomatcherfactory.hpp
+  commonstereomatcherfactory.hpp commonstereomatcherfactory.cpp
   thunderlang.hpp thunderlang.cpp
   tlctx.h tlctx.cpp  
   ThunderLangParser.h ThunderLangParser.c

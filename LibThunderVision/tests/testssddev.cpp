@@ -6,6 +6,7 @@
 #include <tdvision/ssddev.hpp>
 #include <tdvision/wtadev.hpp>
 #include <tdvision/medianfilterdev.hpp>
+#include <tdvision/medianfiltercpu.hpp>
 #include <tdvision/floatconv.hpp>
 #include <tdvision/rgbconv.hpp>
 #include <tdvision/dynamicprogdev.hpp>
@@ -21,7 +22,7 @@ TEST(TestSSD, Dev)
     tdv::FloatConv fconvl, fconvr;
     tdv::RGBConv rconvl, rconvr;
     
-    tdv::SSDDev ssd(155, 1024*1024*128);
+    tdv::SSDDev ssd(16);
     
     fconvl.input(readerL.output());
     fconvr.input(readerR.output());
@@ -39,7 +40,7 @@ TEST(TestSSD, Dev)
     
     EXPECT_EQ(384, dsi.dim().width());
     EXPECT_EQ(288, dsi.dim().height());
-    EXPECT_EQ(155, dsi.dim().depth());    
+    EXPECT_EQ(16, dsi.dim().depth());    
 }
 
 static void runOptimizerTest(const std::string &outputImg, tdv::Optimizer *opt)
@@ -49,12 +50,19 @@ static void runOptimizerTest(const std::string &outputImg, tdv::Optimizer *opt)
     tdv::FloatConv fconvl, fconvr;
     tdv::RGBConv rconv;
     
-    tdv::SSDDev ssd(155, 1024*1024*128);    
+    tdv::SSDDev ssd(64);    
     tdv::ImageWriter writer(outputImg);
+    tdv::MedianFilterCPU ml, mr;
     
     fconvl.input(readerL.output());
     fconvr.input(readerR.output());
-    ssd.inputs(fconvl.output(), fconvr.output());    
+    
+    ml.input(fconvl.output());
+    mr.input(fconvr.output());
+    
+    //ssd.inputs(fconvl.output(), fconvr.output());    
+    ssd.inputs(ml.output(), mr.output());    
+    
     opt->input(ssd.output());    
     rconv.input(opt->output());
     writer.input(rconv.output());
@@ -63,19 +71,20 @@ static void runOptimizerTest(const std::string &outputImg, tdv::Optimizer *opt)
     readerR.update();
     fconvl.update();
     fconvr.update();
+    ml.update();
+    mr.update();
     ssd.update();
     opt->update();
     rconv.update();
     writer.update();    
 }
 
-#if 0
+
 TEST(TestSSD, WithWTA)
 {
     tdv::WTADev wta;
     runOptimizerTest("tsukuba_ssdwta.png", &wta);       
 }
-#endif
 
 TEST(TestSSD, WithDynProg)
 {

@@ -39,6 +39,8 @@ public:
         assert(m_optimizer != NULL);
         return m_optimizer->output();
     }
+    
+    std::string name() const;
 
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;

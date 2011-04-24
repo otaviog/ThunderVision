@@ -52,7 +52,7 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     } 
       
       
-    sumCostDSI[c0Offset] = c0 + m;
+    sumCostDSI[c0Offset] = c0 + m*1.1f;
     pathDSI[c0Offset] = p;
     
     __threadfence();
@@ -87,8 +87,8 @@ __global__ void dynamicprog(int x, const DSIDim dim, const float *costDSI,
      * c2-c0
      * c3/
      */  
-    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI)*0.90;
-    const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI)*0.85;
+    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI)*0.90f;
+    const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI)*0.85f;
     const float c3 = dsiIntensityClamped(dim, x - 1, y, z - 1, sumCostDSI);
     
     float m;      

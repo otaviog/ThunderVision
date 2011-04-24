@@ -132,6 +132,66 @@ TEST(PipeTest, PipeAndFilter)
     runner.join();     
 }
 
+#define BUFF_SIZE 10
+#define PROD_QTY 1000
+
+class Prod: public Process
+{
+public:
+    void process()
+    {
+        end = false;
+        for (int i=0; i<PROD_QTY; i++)
+        {            
+            p->write(4);
+        }
+        
+        p->finish();
+    }
+    
+    tdv::ReadWritePipe<int> *p;
+    bool end;
+};
+
+class Consu: public Process
+{
+public:
+    void process()
+    {
+        end = false;
+        while ( !end )
+        {
+            usleep(100);
+            int val;
+            end = p->read(&val);
+        }        
+    }
+    
+    tdv::ReadWritePipe<int> *p;
+    bool end;
+};
+
+TEST(PipeTest, BoundedBuffer)
+{
+    tdv::ReadWritePipe<int> p(BUFF_SIZE);
+    
+    Prod p;
+    Consu c;
+    p.p = &p;
+    c.p = &p;
+    
+    ErrorHandler errHdl;
+    tdv::ArrayProcessGroup grp;
+    grp.add(&p);
+    grp.add(&c);
+    
+    tdv::ProcessRunner runner(grp, &errHdl);
+    runner.run();
+    
+    runner.join();
+    
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
    

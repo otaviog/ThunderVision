@@ -22,6 +22,16 @@ public:
         m_rpipe = rpipe;
     }
     
+    void filename(const std::string &filename)
+    {
+        m_filename = filename;
+    }
+
+    const std::string& filename() const
+    {
+        return m_filename;
+    }
+    
     bool update();
         
 private:

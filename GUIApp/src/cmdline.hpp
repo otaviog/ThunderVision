@@ -13,7 +13,7 @@ public:
     
     tdv::StereoInputSource* createInputSource();
     
-    tdv::ThunderSpec* createSpec();
+    tdv::ThunderSpec* createSpec();    
     
 private:
     boost::program_options::variables_map m_vm;

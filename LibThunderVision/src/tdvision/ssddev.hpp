@@ -9,7 +9,7 @@ TDV_NAMESPACE_BEGIN
 class SSDDev: public MatchingCost
 {
 public:    
-    SSDDev(int disparityMax, size_t memoryByPacket);
+    SSDDev(int disparityMax);
     
     void inputs(ReadPipe<FloatImage> *lpipe, ReadPipe<FloatImage> *rpipe)
     {

@@ -64,7 +64,7 @@ public:
     
     SampleList::iterator samplesEnd()
     {
-        return m_samples.begin();
+        return m_samples.end();
     }
     
     void addSample(Sample sample)

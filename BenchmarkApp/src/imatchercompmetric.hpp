@@ -14,10 +14,10 @@ public:
     {
         Report()
         {
-            miss = occlusions = 0.0;
+            error = 0.0;
         }
         
-        double miss, occlusions;
+        double error;
     };
         
     virtual Report compare(FloatImage truthImg, FloatImage resultImg) = 0;

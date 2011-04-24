@@ -23,4 +23,12 @@ void DevStereoMatcher::inputs(ReadPipe<FloatImage> *leftInput,
     m_process.addWork(m_optimizer.get());        
 }
 
+std::string DevStereoMatcher::name() const
+{    
+    return ((m_matchCost != NULL) 
+            ? m_matchCost->workName() : std::string(""))
+        + std::string("+") 
+        + ((m_optimizer != NULL) ? m_optimizer->workName() : std::string(""));
+}
+
 TDV_NAMESPACE_END

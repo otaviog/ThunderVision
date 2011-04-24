@@ -135,5 +135,3 @@ stereo [void *ctxobj]
 	;
 
 
-
-
