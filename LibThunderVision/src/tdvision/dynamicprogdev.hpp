@@ -9,7 +9,11 @@ TDV_NAMESPACE_BEGIN
 class DynamicProgDev: public AbstractOptimizer
 {
 public:
-
+    DynamicProgDev()
+    {
+        workName("DynamicProg");
+    }
+    
 protected:
     void updateImpl(DSIMem dsi, FloatImage outimg);
 };

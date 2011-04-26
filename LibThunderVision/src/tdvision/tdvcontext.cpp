@@ -7,6 +7,7 @@
 #include "ssddev.hpp"
 #include "wtadev.hpp"
 #include "processgroup.hpp"
+#include "commonstereomatcherfactory.hpp"
 #include "tdvcontext.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -74,23 +75,24 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     {
         return reconst;
     }
-
+    
+    CommonStereoMatcherFactory matcherFactory;
+    
     if ( profileName == "Device" )
     {
-        DevStereoMatcher *matcher = new DevStereoMatcher;
-        m_matcher = matcher;
-        matcher->setMatchingCost(boost::shared_ptr<SSDDev>(
-                                     new SSDDev(255, 1024*1024*256)));
-        matcher->setOptimizer(boost::shared_ptr<WTADev>(new WTADev));
+        matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
     }
     else if ( profileName == "CPU" )
     {
-        m_matcher = new CPUStereoMatcher();
+        matcherFactory.computeDev(CommonStereoMatcherFactory::CPU);
     }
+
+    m_matcher = matcherFactory.createStereoMatcher();
 
     m_inputTees[0].enable(0);
     m_inputTees[1].enable(0);
-
+    
+    
     reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(0),
                                  m_inputTees[1].output(0));

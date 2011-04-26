@@ -53,12 +53,11 @@ void VideoProcess<Type, MatAdapter>::process()
     while ( m_pipe->read(&image) && !m_end )
     {        
         QMutexLocker locker(m_imgMutex);
-#if 1
         if ( !firstFrame )
         {
             tdv::SinkTraits<Type>::Sinker::sink(m_lastFrame);
         }
-#endif
+
         firstFrame = false;
         m_lastFrame = image;
         
@@ -153,7 +152,7 @@ void VideoWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     QMutexLocker locker(&m_imageMutex);
-    
+        
     if ( m_lastFrame == NULL )
     {
         setMinimumSize(256, 128);
@@ -177,7 +176,6 @@ void VideoWidget::paintEvent(QPaintEvent *event)
     {
         assert(false);
     }
-            
 }
 
 void VideoWidget::errorOcurred(const std::exception &err)

@@ -15,6 +15,8 @@ public:
                         ReadPipe<FloatImage> *rightInput) = 0;
     
     virtual ReadPipe<FloatImage>* output() = 0;
+    
+    virtual std::string name() const = 0;
 };
 
 TDV_NAMESPACE_END

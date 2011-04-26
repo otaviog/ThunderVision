@@ -8,4 +8,10 @@ void WorkUnitProcess::process()
     while ( m_work.update() );
 }
 
+void PWorkUnitProcess::process()
+{
+    assert(m_work != NULL);
+    while ( m_work->update() );
+}
+
 TDV_NAMESPACE_END

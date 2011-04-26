@@ -58,3 +58,20 @@ TEST(UtilTest, Replace)
                             replace2, strlen(replace2));
     ASSERT_TRUE(nstr == NULL);
 }
+
+TEST(UtilTest, PowerOf2)
+{
+    EXPECT_EQ(1024, tdv::util::nextPowerOf2(983));
+    EXPECT_EQ(512, tdv::util::previousPowerOf2(983));
+    EXPECT_EQ(1024, tdv::util::nearestPowerOf2(983));
+
+    EXPECT_EQ(1024, tdv::util::nextPowerOf2(647));
+    EXPECT_EQ(512, tdv::util::previousPowerOf2(647));
+    EXPECT_EQ(512, tdv::util::nearestPowerOf2(647));
+    
+    EXPECT_EQ(65536, tdv::util::nextPowerOf2(52356));
+    EXPECT_EQ(32768, tdv::util::previousPowerOf2(52356));
+    EXPECT_EQ(65536, tdv::util::nearestPowerOf2(52356));
+
+    
+}

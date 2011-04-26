@@ -4,6 +4,7 @@
 #include <tdvbasic/common.hpp>
 #include <cv.h>
 #include <highgui.h>
+#include "tmpbufferimage.hpp"
 #include "floatimage.hpp"
 #include "process.hpp"
 #include "pipe.hpp"
@@ -30,7 +31,8 @@ public:
 
 private:
     ReadWritePipe<CvMat*> m_wpipe;
-    CvCapture *m_capture;    
+    CvCapture *m_capture;
+    TmpBufferImage m_resizeTmp;
 };
 
 

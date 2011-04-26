@@ -1,36 +1,64 @@
+#include "sink.hpp"
 #include "ctrlprocess.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-CtrlProcess::CtrlProcess()
+FlowCtrl::FlowCtrl()
 {
     m_step = false;
-    m_mode = Step;
+    m_mode = Step;    
+    m_hasWrite = false;
 }
 
-void CtrlProcess::process()
+bool FlowCtrl::testFlow()
+{
+    if ( m_step )
+    {                
+        if ( m_mode == Step )
+            m_step = false;
+        
+        return true;
+    }
+    
+    return false;
+}
+
+
+bool CtrlWork::update()
 {
     CvMat *limg, *rimg;
     
-    while ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
+    try
     {
-        if ( m_step )
+        if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
         {
-            m_lwpipe.write(limg);
-            m_rwpipe.write(rimg);
-
-            if ( m_mode == Step )
-                m_step = false;
+            if ( testFlow() )
+            {
+                m_lwpipe.write(limg);
+                m_rwpipe.write(rimg);
+            }
+            else
+            {
+                CvMatSinkPol::sink(limg);
+                CvMatSinkPol::sink(rimg);
+            }
+            
+            return true;
         }
         else
         {
-            cvDecRefData(limg);
-            cvDecRefData(rimg);
+            m_lwpipe.finish();
+            m_rwpipe.finish();
+            
+            return false;
         }
-    }    
-
-    m_lwpipe.finish();
-    m_rwpipe.finish();
+    }
+    catch (const std::exception &ex)
+    {
+        m_lwpipe.finish();
+        m_rwpipe.finish();
+        throw ex;                
+    }
 }
 
 TDV_NAMESPACE_END

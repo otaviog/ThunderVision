@@ -5,10 +5,11 @@
 #include <QPainter>
 #include <tdvision/thunderlang.hpp>
 #include <tdvision/writeexception.hpp>
-#include "calibrationwidget.hpp"
+#include "videowidget.hpp"
 #include "calibrationdialog.hpp"
 
-CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx, QWidget *parent)
+CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx, 
+                                     QWidget *parent)
     : QDialog(parent)
 {
     setupUi(this);
@@ -17,9 +18,8 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx, QWidget *parent
 
     m_calib = calibCtx;
 
-    m_calibWid = new CalibrationWidget;
-
-    lyCalibWid->addWidget(m_calibWid);
+    m_videoWid = new VideoWidget;    
+    lyCamWid->addWidget(m_videoWid);
 
     connect(&m_errHandle, SIGNAL(informError(QString)),
             this, SLOT(informCriticalError(QString)));
@@ -27,17 +27,19 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx, QWidget *parent
             this, SLOT(save()));    
     connect(pbPrintPattern, SIGNAL(clicked()),
             this, SLOT(printPattern()));
+
 }
 
 void CalibrationDialog::init()
 {
-    m_calibWid->init(m_calib->detectionImage());
-    m_calib->observer(m_calibWid);
+    m_videoWid->input(m_calib->detectionImage());
+    m_videoWid->init();
+    m_calib->observer(this);
 }
 
 void CalibrationDialog::dispose()
 {
-    m_calibWid->dispose();
+    m_videoWid->dispose();
 }
 
 void CalibrationDialog::closeEvent(QCloseEvent *ev)
@@ -89,4 +91,23 @@ void CalibrationDialog::printPattern()
     painter.drawImage(QPoint(0, 0), img);
     
     painter.end();
+}
+
+void CalibrationDialog::calibrationUpdate(const tdv::Calibration &calib)
+{
+    float percent = float(calib.framesProcessed())/float(calib.numFrames());
+    QMetaObject::invokeMethod(pbProgress, "setValue", Qt::QueuedConnection,
+                              Q_ARG(int, percent*100));
+    
+    if ( calib.framesProcessed() == calib.numFrames() )
+    {
+        QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
+                                  Q_ARG(QString, tr("Calibration done")));
+
+    }
+    else
+    {
+        QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
+                                  Q_ARG(QString, tr("Calibrating...")));
+    }
 }

@@ -2,6 +2,7 @@
 #define TDV_WORKUNITPROCESS_HPP
 
 #include <tdvbasic/common.hpp>
+#include <cassert>
 #include "process.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -16,12 +17,29 @@ public:
     {
     }
     
-    void process();
-    
-    virtual void finish() { }
+    void process();        
     
 private:
     WorkUnit &m_work;
+};
+
+class PWorkUnitProcess: public Process
+{
+public:
+    PWorkUnitProcess(WorkUnit *work = NULL)
+    {
+        m_work = work;
+    }
+  
+    void work(WorkUnit *work)
+    {
+        m_work = work;
+    }
+
+    void process();
+    
+private:
+    WorkUnit *m_work;
 };
 
 template<typename WorkUnitType>
@@ -34,9 +52,7 @@ public:
     void process()
     {
         while ( WorkUnitType::update() );
-    }
-    
-    virtual void finish() { }
+    }    
     
 private:
 };

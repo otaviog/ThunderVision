@@ -5,6 +5,7 @@
 #include <cv.h>
 #include "pipe.hpp"
 #include "workunit.hpp"
+#include "tmpbufferimage.hpp"
 #include "floatimage.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -12,7 +13,14 @@ TDV_NAMESPACE_BEGIN
 class StereoCorrespondenceCV: public WorkUnit
 {
 public:
-    StereoCorrespondenceCV();
+    enum MatchingMode
+    {
+        LocalMatching,
+        GlobalMatching
+    };
+    
+    StereoCorrespondenceCV(MatchingMode mode, 
+                           int maxDisparity, int maxIterations = 4);
 
     ~StereoCorrespondenceCV();
 
@@ -33,7 +41,14 @@ public:
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wpipe;
-    CvStereoBMState *m_bmState;
+    MatchingMode m_mode;
+    
+    TmpBufferImage m_limg8U, m_rimg8U;
+    union 
+    {
+        CvStereoBMState *m_bmState;
+        CvStereoGCState *m_gcState;
+    };
 };
 
 TDV_NAMESPACE_END

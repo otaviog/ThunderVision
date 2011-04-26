@@ -7,11 +7,11 @@ void DevSSDRun(int maxDisparity,
                Dim dsiDim, float *leftImg, float *rightImg,
                float *dsiMem);
 
-SSDDev::SSDDev(int disparityMax, size_t memoryByPacket)
+SSDDev::SSDDev(int disparityMax)
 {
-    workName("SSD on device");
+    workName("SSD");
     m_maxDisparaty = disparityMax;
-    m_memoryByPacket = memoryByPacket;
+    m_memoryByPacket = 0;
 }
 
 #if 0

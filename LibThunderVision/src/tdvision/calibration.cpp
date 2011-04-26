@@ -11,6 +11,8 @@ Calibration::Calibration(size_t numFrames)
     m_numFrames = numFrames;
     chessPattern(ChessboardPattern());
     m_observer = NULL;
+    
+    continuous();
 }
 
 void Calibration::chessPattern(const ChessboardPattern &cbpattern)
@@ -68,12 +70,12 @@ CvMat* Calibration::updateChessboardCorners(
         return NULL;
     }
     
-    cvFindCornerSubPix(limg, leftPoints.get(), leftPointsCount, cvSize(11, 11),
-                       cvSize(-1, -1), cvTermCriteria(
+    cvFindCornerSubPix(limg, leftPoints.get(), leftPointsCount, 
+                       cvSize(11, 11), cvSize(-1, -1), cvTermCriteria(
                            CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
                            30, 0.01));
-    cvFindCornerSubPix(limg, rightPoints.get(), rightPointsCount, cvSize(11, 11),
-                       cvSize(-1, -1), cvTermCriteria(
+    cvFindCornerSubPix(limg, rightPoints.get(), rightPointsCount, 
+                       cvSize(11, 11), cvSize(-1, -1), cvTermCriteria(
                            CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
                            30, 0.01));
     
@@ -147,23 +149,30 @@ void Calibration::updateCalibration(const CvSize &imgSize)
 }
 
 bool Calibration::update()
-{
+{        
     WriteGuard<ReadWritePipe<CvMat*> > wg(m_dipipe);
 
     CvMat *limgOrigin, *rimgOrigin;
 
     if ( !m_rlpipe->read(&limgOrigin) || !m_rrpipe->read(&rimgOrigin) )
+    {                
         return false;
+    }
+    
+    if ( !testFlow() )
+    {
+        wg.write(limgOrigin);
+        CvMatSinkPol::sink(rimgOrigin);
+        return true;
+    }
     
     CvMat *limg = m_limg.getImage(cvGetSize(limgOrigin));
     CvMat *rimg = m_rimg.getImage(cvGetSize(rimgOrigin));
     
     cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
-       
-    CvMatSinkPol::sink(limgOrigin);
-    CvMatSinkPol::sink(rimgOrigin);
-
+               
+    CvMatSinkPol::sink(rimgOrigin);        
     const CvSize imgSz = cvGetSize(limg);
 
     CvMat *patternDetectPrg = updateChessboardCorners(
@@ -171,13 +180,15 @@ bool Calibration::update()
     
     if ( patternDetectPrg == NULL )
     {
-        wg.write(limg);
+        wg.write(limgOrigin);
         return true;
     }        
-
+    
+    CvMatSinkPol::sink(limgOrigin);
+    
     m_currFrame = (m_currFrame + 1) % m_numFrames;
-    m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);
-
+    m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);    
+    
     updateCalibration(imgSz);
 
     if ( m_observer != NULL )
@@ -188,6 +199,16 @@ bool Calibration::update()
     wg.write(patternDetectPrg);
     
     return true;
+}
+
+CalibrationProc::CalibrationProc(size_t maxFrames)
+  : Calibration(maxFrames)
+{ }
+
+void CalibrationProc::process()
+{
+    while ( update() )
+    { }
 }
 
 TDV_NAMESPACE_END

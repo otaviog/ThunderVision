@@ -9,6 +9,7 @@
 #include "pipe.hpp"
 #include "tmpbufferimage.hpp"
 #include "process.hpp"
+#include "ctrlprocess.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -22,14 +23,14 @@ public:
 private:
 };
 
-class Calibration: public WorkUnit
+class Calibration: public WorkUnit, public FlowCtrl
 {
 public:
     Calibration(size_t numFrames);
     
     void chessPattern(const ChessboardPattern &cbpattern);
     
-    void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe)               
+    virtual void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe)               
     {
         m_rlpipe = rlpipe;
         m_rrpipe = rrpipe;
@@ -63,7 +64,6 @@ public:
     bool update();
     
 private:
-
     CvMat* updateChessboardCorners(const CvMat *limg, 
                                    const CvMat *rimg);
     
@@ -89,16 +89,9 @@ private:
 class CalibrationProc: public Process, public Calibration
 {
 public:
-    CalibrationProc(size_t maxFrames)
-        : Calibration(maxFrames)
-    {
-    }
+    CalibrationProc(size_t maxFrames);
     
-    void process()
-    {
-        while ( update() )
-        { }
-    }
+    void process();
 };
 
 TDV_NAMESPACE_END

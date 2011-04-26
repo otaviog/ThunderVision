@@ -12,7 +12,8 @@ TDV_NAMESPACE_BEGIN
 class CPUStereoMatcher: public StereoMatcher
 {
 public:
-    CPUStereoMatcher();
+    CPUStereoMatcher(StereoCorrespondenceCV::MatchingMode mode,
+                     int maxDisparity, int maxIteration);
 
     void inputs(ReadPipe<FloatImage> *leftInput,
                 ReadPipe<FloatImage> *rightInput)
@@ -30,8 +31,14 @@ public:
         return m_procs.processes();
     }
     
+    std::string name() const
+    {        
+        return "CPU+" + m_corresp.workName();
+    }
+    
 private:
-    TWorkUnitProcess<StereoCorrespondenceCV> m_corresp;
+    StereoCorrespondenceCV m_corresp;
+    PWorkUnitProcess m_correspProc;
     ArrayProcessGroup m_procs;
 };
 

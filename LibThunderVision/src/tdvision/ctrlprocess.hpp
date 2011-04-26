@@ -3,33 +3,17 @@
 
 #include <cv.h>
 #include <tdvbasic/common.hpp>
+#include "workunit.hpp"
+#include "workunitprocess.hpp"
 #include "process.hpp"
 #include "pipe.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class CtrlProcess: public Process
+class FlowCtrl
 {
 public:
-    CtrlProcess();
-    
-    void inputs(ReadPipe<CvMat*> *lrpipe, ReadPipe<CvMat*> *rrpipe)
-    {
-        m_lrpipe = lrpipe;
-        m_rrpipe = rrpipe;
-    }
-    
-    ReadPipe<CvMat*>* leftImgOutput() 
-    {
-        return &m_lwpipe;
-    }
-    
-    ReadPipe<CvMat*>* rightImgOutput() 
-    {
-        return &m_rwpipe;
-    }
-
-    void process();
+    FlowCtrl();
     
     void pause()
     {
@@ -48,17 +32,50 @@ public:
         m_mode = Continuous;
     }
     
+protected:
+    bool testFlow();
+    
 private:
     enum Mode
     {
         Continuous, Step
     };
+      
+    bool m_step, m_hasWrite;
+    Mode m_mode;
+};   
+
+class CtrlWork: public WorkUnit, public FlowCtrl
+{
+public:
+    CtrlWork();
+    
+    bool update();
+
+    void inputs(ReadPipe<CvMat*> *lrpipe, ReadPipe<CvMat*> *rrpipe)
+    {
+        m_lrpipe = lrpipe;
+        m_rrpipe = rrpipe;
+    }
+    
+    ReadPipe<CvMat*>* leftImgOutput() 
+    {
+        return &m_lwpipe;
+    }
+    
+    ReadPipe<CvMat*>* rightImgOutput() 
+    {
+        return &m_rwpipe;
+    }
+    
+private:
+    FlowCtrl m_ctrl;
     
     ReadPipe<CvMat*> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<CvMat*> m_lwpipe, m_rwpipe;
-    bool m_step;
-    Mode m_mode;
 };
+
+typedef TWorkUnitProcess<CtrlWork> CtrlProcess;
 
 TDV_NAMESPACE_END
 

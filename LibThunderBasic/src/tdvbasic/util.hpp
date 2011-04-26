@@ -50,7 +50,10 @@ namespace util
      * @param v the number to be round up.
      */
     size_t nextPowerOf2(size_t v);
+    
+    size_t previousPowerOf2(size_t v);
 
+    size_t nearestPowerOf2(size_t v);
 }
 
 TDV_NAMESPACE_END

@@ -17,3 +17,22 @@ ThunderLangParser.h
 ThunderLangParser.c
 ThunderLangLexer.h
 ThunderLangLexer.c
+/BenchmarkApp/src/Cones_1024x512_CPU Matcher.png
+/BenchmarkApp/src/Cones_1024x512_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Cones_1024x512_GPU Matcher.png
+/BenchmarkApp/src/Cones_2048x1024_CPU Matcher.png
+/BenchmarkApp/src/Cones_2048x1024_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Cones_2048x1024_GPU Matcher.png
+/BenchmarkApp/src/Cones_512x512_CPU Matcher.png
+/BenchmarkApp/src/Cones_512x512_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Cones_512x512_GPU Matcher.png
+/BenchmarkApp/src/Teddy_1024x512_CPU Matcher.png
+/BenchmarkApp/src/Teddy_1024x512_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Teddy_1024x512_GPU Matcher.png
+/BenchmarkApp/src/Teddy_2048x1024_CPU Matcher.png
+/BenchmarkApp/src/Teddy_2048x1024_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Teddy_2048x1024_GPU Matcher.png
+/BenchmarkApp/src/Teddy_512x512_CPU Matcher.png
+/BenchmarkApp/src/Teddy_512x512_CPU+OpenCV_BlockMatcher.png
+/BenchmarkApp/src/Teddy_512x512_GPU Matcher.png
+/doc/impl.juth.bak

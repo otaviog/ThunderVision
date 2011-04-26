@@ -9,6 +9,11 @@ TDV_NAMESPACE_BEGIN
 class WTADev: public AbstractOptimizer
 {
 public:    
+    WTADev()
+    {
+        workName("WTA");
+    }
+    
     virtual ~WTADev()
     {
     }

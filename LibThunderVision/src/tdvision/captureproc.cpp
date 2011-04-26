@@ -3,11 +3,13 @@
 #include <boost/format.hpp>
 #include <boost/system/error_code.hpp>
 #include <tdvbasic/exception.hpp>
+#include <tdvbasic/util.hpp>
 #include "captureproc.hpp"
 
 TDV_NAMESPACE_BEGIN
 
 Capture::Capture()
+    : m_resizeTmp(CV_8UC3)
 {
     m_capture = NULL;
 }
@@ -43,8 +45,13 @@ void Capture::update()
         
     if ( frame != NULL )
     {
-        CvMat *mat = cvCreateMat(frame->height, frame->width, CV_8UC3);
-        cvConvertImage(frame, mat, CV_CVTIMG_SWAP_RB);
+        CvMat *rmat = m_resizeTmp.getImage(
+            util::nearestPowerOf2(frame->height),
+            util::nearestPowerOf2(frame->width));        
+        cvResize(frame, rmat, CV_INTER_CUBIC);
+        
+        CvMat *mat = cvCreateMat(rmat->height, rmat->width, CV_8UC3);           
+        cvConvertImage(rmat, mat, CV_CVTIMG_SWAP_RB);
         m_wpipe.write(mat);        
     }    
 }
