@@ -52,6 +52,7 @@ void CamerasViewDialog::showCalibrationDlg()
     if ( calib != NULL )
     {
         m_calibDlg = new CalibrationDialog(calib);
+        m_calibDlg->init();
         m_calibDlg->show();
         pbCalibrate->setEnabled(false);
         connect(m_calibDlg, SIGNAL(finished(int)),

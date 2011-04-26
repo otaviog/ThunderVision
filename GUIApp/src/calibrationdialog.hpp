@@ -32,6 +32,8 @@ private slots:
     
     void printPattern();
     
+    void passFrame();
+    
 private:
     tdv::Calibration *m_calib;
     VideoWidget *m_videoWid;

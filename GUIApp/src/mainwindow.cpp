@@ -25,6 +25,9 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
             this, SLOT(showDisparityMap()));
     connect(pbRectification, SIGNAL(clicked()),
             this, SLOT(showRectification()));
+
+    pbRectification->setEnabled(false);
+    pbDisparityMap->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -142,8 +145,10 @@ void MainWindow::showRectification()
 void MainWindow::initReconstruction()
 {
     if ( m_reconst == NULL )
-    {
+    {        
         m_reconst = m_ctx->runReconstruction("CPU");
+        pbRectification->setEnabled(true);
+        pbDisparityMap->setEnabled(true);
     }
 }
 

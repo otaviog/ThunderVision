@@ -17,7 +17,9 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
     assert(calibCtx != NULL);
 
     m_calib = calibCtx;
-
+    
+    m_calib->stepMode();
+    
     m_videoWid = new VideoWidget;    
     lyCamWid->addWidget(m_videoWid);
 
@@ -27,6 +29,8 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
             this, SLOT(save()));    
     connect(pbPrintPattern, SIGNAL(clicked()),
             this, SLOT(printPattern()));
+    connect(pbPassFrame, SIGNAL(clicked()),
+            this, SLOT(passFrame()));
 
 }
 
@@ -91,6 +95,11 @@ void CalibrationDialog::printPattern()
     painter.drawImage(QPoint(0, 0), img);
     
     painter.end();
+}
+
+void CalibrationDialog::passFrame()
+{
+    m_calib->step();
 }
 
 void CalibrationDialog::calibrationUpdate(const tdv::Calibration &calib)

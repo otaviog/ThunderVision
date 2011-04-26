@@ -26,6 +26,12 @@ public:
         m_step = true;
     }
     
+    void stepMode()
+    {
+        m_mode = Step;
+        m_step = false;
+    }
+    
     void continuous()
     {
         m_step = true;
@@ -47,9 +53,7 @@ private:
 
 class CtrlWork: public WorkUnit, public FlowCtrl
 {
-public:
-    CtrlWork();
-    
+public:    
     bool update();
 
     void inputs(ReadPipe<CvMat*> *lrpipe, ReadPipe<CvMat*> *rrpipe)
