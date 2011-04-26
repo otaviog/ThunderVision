@@ -75,13 +75,13 @@ TEST(TestSSD, WithWTA)
     tdv::WTADev wta;
     runOptimizerTest("tsukuba_ssdwta.png", &wta);       
 }
-#endif
-
+#else
 TEST(TestSSD, WithDynProg)
 {
     tdv::DynamicProgDev dp;
     runOptimizerTest("tsukuba_ssddynprog.png", &dp);   
 }
+#endif
 
 #if 0
 TEST(TestSSD, WithMedianWTA)

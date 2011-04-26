@@ -12,16 +12,16 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   const uint z = threadIdx.x;
   const uint y = blockIdx.x;
   
-  if ( z >= dim.z || y >= dim.y  )
-    return ;
+  //  if ( z >= dim.z || y >= dim.y  )
+  //return ;
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
-  sumCostDSI[initialOff] = costDSI[initialOff];
-  pathDSI[initialOff] = 0;
-
-  __syncthreads();
+  sumCostDSI[initialOff] = costDSI[initialOff]/1.0f;
+  pathDSI[initialOff] = 0;  
 
   for (uint x=1; x<dim.x; x++) {    
+    __syncthreads();
+    
     const uint c0Offset = dsiOffset(dim, x, y, z);  
     const float c0 = costDSI[c0Offset];
       
@@ -30,11 +30,11 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
      * c2-c0
      * c3/
      */  
-    const float c1 = dsiIntensityClamped(dim, x - 1, y, z - 1, sumCostDSI);
+    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI) + 0.0001;
     const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI);
-    const float c3 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI);      
+    const float c3 = dsiIntensityClamped(dim, x - 1, y, z - 1, sumCostDSI) + 0.0001;      
       
-    float m;      
+    float m = 0.0f;      
     int p;  
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
@@ -47,9 +47,9 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
       p = -1;
     }
       
-    sumCostDSI[c0Offset] = c0 + m;
-    pathDSI[c0Offset] = p;
-    
+    sumCostDSI[c0Offset] = c0/1.0f + m;
+    pathDSI[c0Offset] = p;        
+
     __syncthreads();
   }
 }
@@ -73,20 +73,21 @@ __global__ void reduceImage(const DSIDim dim, const float *sumCostDSI,
     }          
   }
   
-  //  lastMinZ = dim.z;
+  lastMinZ = 90;
   uint imgOffset = y*dim.x + (dim.x - 1);
   dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
-      
+  
   for (uint _x=0; _x < dim.x - 1; _x++) {
     const uint x = dim.x - 2 - _x;
     const uint offset = dsiOffset(dim, x, y, lastMinZ);
-    const uint nz = lastMinZ + pathDSI[offset];
+    const int p = pathDSI[offset];
+    const uint nz = lastMinZ + p;
     
     if ( nz < dim.maxOffset )
       lastMinZ = nz;
     
-    imgOffset = y*dim.x + x;
-    dispImg[imgOffset] = float(lastMinZ)/float(dim.z);    
+    imgOffset = y*dim.x + x;    
+    dispImg[imgOffset] = float(lastMinZ)/float(dim.z);      
   }
 }
 
