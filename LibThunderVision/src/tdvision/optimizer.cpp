@@ -10,7 +10,7 @@ AbstractOptimizer::AbstractOptimizer()
 
 bool AbstractOptimizer::update()
 {
-    WriteGuard<ReadWritePipe<FloatImage, FloatImage> > guard(m_wpipe);
+    WriteGuard<ReadWritePipe<FloatImage> > guard(m_wpipe);
     
     DSIMem dsi;
     if ( m_rpipe->read(&dsi) )

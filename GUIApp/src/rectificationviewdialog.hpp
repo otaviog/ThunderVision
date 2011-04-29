@@ -15,13 +15,13 @@ public:
                             QWidget *parent = NULL);
 
     void init();
-
+    
+    void dispose();
+                  
 public slots:
     
 protected:
-    void closeEvent(QCloseEvent *event);
-    
-    void dispose();
+    void closeEvent(QCloseEvent *event);        
 
 private:    
     tdv::Reconstruction *m_rctx;

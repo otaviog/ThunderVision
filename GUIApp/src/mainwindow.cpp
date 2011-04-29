@@ -139,6 +139,19 @@ void MainWindow::showRectification()
         m_rectDialog = new RectificationViewDialog(m_reconst, this);
         m_rectDialog->init();
         m_rectDialog->show();
+        connect(m_rectDialog, SIGNAL(finished(int)),
+                this, SLOT(doneRectification()));
+        pbRectification->setEnabled(false);        
+    }
+}
+
+void MainWindow::doneRectification()
+{
+    if ( m_rectDialog != NULL )
+    {
+        m_rectDialog->dispose();
+        m_rectDialog = NULL;        
+        pbRectification->setEnabled(true);
     }
 }
 

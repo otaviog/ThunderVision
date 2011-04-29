@@ -6,6 +6,7 @@
 #include "cudaprocess.hpp"
 #include "stereomatcher.hpp"
 #include "optimizer.hpp"
+#include "cpyimagetocpu.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -35,9 +36,8 @@ public:
     }
     
     ReadPipe<FloatImage>* output()
-    {
-        assert(m_optimizer != NULL);
-        return m_optimizer->output();
+    {        
+        return m_cpyCPU.output();
     }
     
     std::string name() const;
@@ -46,7 +46,7 @@ private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
     boost::shared_ptr<MatchingCost> m_matchCost;
     boost::shared_ptr<Optimizer> m_optimizer;
-    
+    CpyImageToCPU m_cpyCPU;
     CUDAProcess m_process;
     Process *m_procs[2];
 };

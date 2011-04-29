@@ -56,7 +56,7 @@ TEST_F(MedianFilterTest, Dev)
 {
     filter = new tdv::MedianFilterDev;
     
-    filter->input(fconv.output());
+    filter->input(fconv.output());    
     rconv.input(filter->output());
 
     tdv::WorkUnitProcess p0(reader);    
@@ -64,7 +64,7 @@ TEST_F(MedianFilterTest, Dev)
     tdv::WorkUnitProcess p2(writer);    
     
     p1.addWork(&fconv);
-    p1.addWork(filter);
+    p1.addWork(filter);    
     p1.addWork(&rconv);
                    
     tdv::ArrayProcessGroup procs;    

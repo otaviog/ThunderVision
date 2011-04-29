@@ -12,7 +12,6 @@ class CpyImageToCPU: public MonoWorkUnit<FloatImage, FloatImage>
 {
 public:
     FloatImage updateImpl(FloatImage);    
-
 };
 
 TDV_NAMESPACE_END

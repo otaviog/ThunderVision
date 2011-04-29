@@ -4,7 +4,9 @@
 #include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
-#if 0
+#define SINGLE_KERNEL 1
+
+#ifdef SINGLE_KERNEL
 __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
                             float *sumCostDSI, int *pathDSI)
 {
@@ -17,27 +19,38 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     return ;
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
-  sumCostDSI[initialOff] = costDSI[initialOff]/1.0f;
-  pathDSI[initialOff] = 0;  
-
-  for (uint x=1; x<dim.x; x++) {    
-    __threadfence();
-    __syncthreads();
+  sumCostDSI[initialOff] = costDSI[initialOff];
+  sumCostDSI[initialOff] = 0;
+  __threadfence();
+  pathDSI[initialOff] = 0;    
+  __syncthreads();
+  
+  __shared__ float sharedCost[32];    
+  for (uint x=0; x<dim.x; x++) {    
     
     const uint c0Offset = dsiOffset(dim, x, y, z);  
     const float c0 = costDSI[c0Offset];
-      
-    /**
-     * c1\
-     * c2-c0
-     * c3/
-     */  
-    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI);
-    const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI);
-    const float c3 = dsiIntensityClamped(dim, x - 1, y, z - 1, sumCostDSI);
+    float c2;
+    if ( x > 0 )
+      c2 = sumCostDSI[dsiOffset(dim, x - 1, y, z)];
+    else
+      c2 = c0;
     
+    sharedCost[z] = c2;
+    __syncthreads();
+    
+    float c1, c3;
+    if ( z > 0 )
+      c1 = sharedCost[z - 1];
+    else 
+      c1 = DSI_HIGHDSI_VALUE;
+    
+    if ( z < dim.z - 1 ) 
+      c3 = sharedCost[z + 1];
+    else
+      c3 = DSI_HIGHDSI_VALUE;
+      
     float m;      
-
     int p;  
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
@@ -50,10 +63,9 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
       p = -1;
     } 
             
-    sumCostDSI[c0Offset] = c0 + m*1.1f;
+    sumCostDSI[c0Offset] = c0 + m;
     pathDSI[c0Offset] = p;
     
-    __threadfence();
     __syncthreads();
   }
 }
@@ -85,8 +97,8 @@ __global__ void dynamicprog(int x, const DSIDim dim, const float *costDSI,
      * c2-c0
      * c3/
      */  
-    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI)*0.90f;
-    const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI)*0.85f;
+    const float c1 = dsiIntensityClamped(dim, x - 1, y, z + 1, sumCostDSI);
+    const float c2 = dsiIntensityClamped(dim, x - 1, y, z, sumCostDSI);
     const float c3 = dsiIntensityClamped(dim, x - 1, y, z - 1, sumCostDSI);
     
     float m;      
@@ -160,7 +172,7 @@ void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
                                                        tdv_dsiDim.width()));  
   tdv::CudaBenchmarker bm;
   bm.begin();
-#if 0
+#if SINGLE_KERNEL
   dynamicprog<<<tdv_dsiDim.height(), tdv_dsiDim.depth()>>>(dsiDim, dsi, sumCostDSI.mem(), pathDSI);  
 #else
   for (size_t x=0; x<tdv_dsiDim.width(); x++) {
