@@ -31,10 +31,6 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
             this, SLOT(printPattern()));
     connect(pbPassFrame, SIGNAL(clicked()),
             this, SLOT(passFrame()));
-<<<<<<< HEAD
-=======
-
->>>>>>> 86c364aaf86ad43dbbef056f0d19ab8973178c57
 }
 
 void CalibrationDialog::init()
