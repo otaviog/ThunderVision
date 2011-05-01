@@ -10,6 +10,41 @@
 
 TDV_NAMESPACE_BEGIN
 
+class FlowCtrl
+{
+public:
+    void pause()
+    {
+        m_step = false;
+    }
+    
+    void step()
+    {
+        m_mode = Step;
+        m_step = true;
+    }
+    
+    void continuous()
+    {
+        m_step = true;
+        m_mode = Continuous;
+    }
+    
+    bool hasWrite() const
+    {
+        return m_hasWrite;
+    }
+    
+private:
+    enum Mode
+    {
+        Continuous, Step
+    };
+    
+    bool m_step, m_hasWrite;
+    Mode m_mode;
+};
+
 class CtrlWork: public WorkUnit
 {
 public:

@@ -27,7 +27,8 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
             this, SLOT(save()));    
     connect(pbPrintPattern, SIGNAL(clicked()),
             this, SLOT(printPattern()));
-
+    connect(pbPassFrame, SIGNAL(clicked()),
+            this, SLOT(passFrame()));
 }
 
 void CalibrationDialog::init()
@@ -110,4 +111,9 @@ void CalibrationDialog::calibrationUpdate(const tdv::Calibration &calib)
         QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
                                   Q_ARG(QString, tr("Calibrating...")));
     }
+}
+
+void CalibrationDialog::passFrame()
+{
+    m_calib->stepCalibration();
 }
