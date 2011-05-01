@@ -11,6 +11,8 @@ Calibration::Calibration(size_t numFrames)
     m_numFrames = numFrames;
     chessPattern(ChessboardPattern());
     m_observer = NULL;
+    
+    continuous();
 }
 
 void Calibration::chessPattern(const ChessboardPattern &cbpattern)
@@ -153,8 +155,17 @@ bool Calibration::update()
     CvMat *limgOrigin, *rimgOrigin;
 
     if ( !m_rlpipe->read(&limgOrigin) || !m_rrpipe->read(&rimgOrigin) )
+    {                
         return false;
-        
+    }
+    
+    if ( !testFlow() )
+    {
+        wg.write(limgOrigin);
+        CvMatSinkPol::sink(rimgOrigin);
+        return true;
+    }
+    
     CvMat *limg = m_limg.getImage(cvGetSize(limgOrigin));
     CvMat *rimg = m_rimg.getImage(cvGetSize(rimgOrigin));
     
@@ -192,20 +203,12 @@ bool Calibration::update()
 
 CalibrationProc::CalibrationProc(size_t maxFrames)
   : Calibration(maxFrames)
-{
-    Calibration::input(m_ctrl.leftImgOutput(), m_ctrl.rightImgOutput());
-
-}
+{ }
 
 void CalibrationProc::process()
 {
-    while ( m_ctrl.update() )
-    {
-        if ( m_ctrl.hasWrite() )
-        {
-            Calibration::update();
-        }
-    }
+    while ( update() )
+    { }
 }
 
 TDV_NAMESPACE_END

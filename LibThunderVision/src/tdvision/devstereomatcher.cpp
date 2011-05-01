@@ -16,11 +16,16 @@ void DevStereoMatcher::inputs(ReadPipe<FloatImage> *leftInput,
     m_lrpipe = leftInput;
     m_rrpipe = rightInput;
     
+    assert(m_matchCost != NULL);
     m_matchCost->inputs(m_lrpipe, m_rrpipe);
-    m_optimizer->input(m_matchCost->output());
     
+    assert(m_optimizer != NULL);
+    m_optimizer->input(m_matchCost->output());
+    m_cpyCPU.input(m_optimizer->output());
+                   
     m_process.addWork(m_matchCost.get());
-    m_process.addWork(m_optimizer.get());        
+    m_process.addWork(m_optimizer.get()); 
+    m_process.addWork(&m_cpyCPU);
 }
 
 std::string DevStereoMatcher::name() const

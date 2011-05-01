@@ -34,7 +34,7 @@ void FloatImageSinkPol::incrRef(FloatImage img)
  
 void FloatImageSinkPol::sink(FloatImage img)
 { 
-    img.dispose();
+    //img.dispose();
 }    
 
 TDV_NAMESPACE_END

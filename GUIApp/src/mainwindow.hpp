@@ -44,9 +44,10 @@ protected:
     
     void initReconstruction();              
 
-private slots:
-    
+private slots:    
     void doneCamerasViews();
+    
+    void doneRectification();
     
 private:
     tdv::TDVContext *m_ctx;

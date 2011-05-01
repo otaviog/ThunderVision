@@ -18,6 +18,8 @@ StereoCorrespondenceCV::StereoCorrespondenceCV(
         m_gcState = cvCreateStereoGCState(maxDisparity, maxIterations);
         workName("OpenCV_GraphCut");
     }
+
+    m_mode = mode;
         
 }
 

@@ -2,6 +2,7 @@
 #include <tdvision/imagewriter.hpp>
 #include <tdvision/processrunner.hpp>
 #include <highgui.h>
+#include <iostream>
 #include "ibenchmarkdataset.hpp"
 #include "imatchercompmetric.hpp"
 #include "benchmarkrunner.hpp"
@@ -47,7 +48,8 @@ void BenchmarkRunner::run()
             if ( outPipe->read(&matcherImage) )
             {
                 IMatcherCompMetric::Report report = m_metric->compare(
-                    sample.groundTruth(), matcherImage);                
+                    sample.groundTruth(), matcherImage);
+                cvConvertScale(matcherImage.cpuMem(), matcherImage.cpuMem(), 255.0);
                 cvSaveImage(
                     (boost::format("%1%_%2%x%3%_%4%.png")
                      % spair->name() % sample.width()
@@ -60,6 +62,7 @@ void BenchmarkRunner::run()
 
 void BenchmarkRunner::errorOcurred(const std::exception &err)
 {
+    std::cout << err.what() << std::endl;
 }
 
 TDV_NAMESPACE_END

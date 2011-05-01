@@ -3,12 +3,26 @@
 
 TDV_NAMESPACE_BEGIN
 
-CtrlWork::CtrlWork()
+FlowCtrl::FlowCtrl()
 {
     m_step = false;
     m_mode = Step;    
     m_hasWrite = false;
 }
+
+bool FlowCtrl::testFlow()
+{
+    if ( m_step )
+    {                
+        if ( m_mode == Step )
+            m_step = false;
+        
+        return true;
+    }
+    
+    return false;
+}
+
 
 bool CtrlWork::update()
 {
@@ -18,20 +32,15 @@ bool CtrlWork::update()
     {
         if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
         {
-            if ( m_step )
+            if ( testFlow() )
             {
                 m_lwpipe.write(limg);
                 m_rwpipe.write(rimg);
-
-                m_hasWrite = true;
-                if ( m_mode == Step )
-                    m_step = false;
             }
             else
             {
                 CvMatSinkPol::sink(limg);
                 CvMatSinkPol::sink(rimg);
-                m_hasWrite = false;
             }
             
             return true;

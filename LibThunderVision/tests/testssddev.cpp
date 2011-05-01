@@ -92,14 +92,13 @@ TEST(TestSSD, WithDynProg)
     runOptimizerTest("tsukuba_ssddynprog.png", &dp);   
 }
 
-#if 0
 TEST(TestSSD, WithMedianWTA)
 {
     tdv::ImageReader readerL("../../res/tsukuba512_L.png");
     tdv::ImageReader readerR("../../res/tsukuba512_R.png");
     tdv::FloatConv fconvl, fconvr;
     tdv::MedianFilterDev mfL, mfR;    
-    tdv::SSDDev ssd(155, 1024*1024*128);
+    tdv::SSDDev ssd(155);
     tdv::WTADev wta;
     tdv::RGBConv rconv;    
     
@@ -125,4 +124,3 @@ TEST(TestSSD, WithMedianWTA)
     rconv.update();
     writer.update();    
 }
-#endif

@@ -135,7 +135,7 @@ TEST(PipeTest, PipeAndFilter)
 #define BUFF_SIZE 10
 #define PROD_QTY 1000
 
-class Prod: public Process
+class Prod: public tdv::Process
 {
 public:
     void process()
@@ -153,7 +153,7 @@ public:
     bool end;
 };
 
-class Consu: public Process
+class Consu: public tdv::Process
 {
 public:
     void process()
@@ -175,15 +175,15 @@ TEST(PipeTest, BoundedBuffer)
 {
     tdv::ReadWritePipe<int> p(BUFF_SIZE);
     
-    Prod p;
-    Consu c;
-    p.p = &p;
-    c.p = &p;
+    Prod pr;
+    Consu cs;
+    pr.p = &p;
+    cs.p = &p;
     
     ErrorHandler errHdl;
     tdv::ArrayProcessGroup grp;
-    grp.add(&p);
-    grp.add(&c);
+    grp.addProcess(&pr);
+    grp.addProcess(&cs);
     
     tdv::ProcessRunner runner(grp, &errHdl);
     runner.run();

@@ -28,7 +28,7 @@ void RectificationViewDialog::init()
 
 void RectificationViewDialog::closeEvent(QCloseEvent *event)
 {
-    dispose();
+    emit finished(QDialog::Accepted);
 }
     
 void RectificationViewDialog::dispose()

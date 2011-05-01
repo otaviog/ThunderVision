@@ -2,14 +2,12 @@ QT4_WRAP_CPP(QT_WRAPS
   videowidget.hpp
   mainwindow.hpp
   camerasviewdialog.hpp
-  calibrationwidget.hpp 
   calibrationdialog.hpp
   selectinputdialog.hpp
   errorreport.hpp
   rectificationviewdialog.hpp)
 
 QT4_WRAP_UI(QT_UICS 
-  calibrationwidget.ui 
   calibrationdialog.ui 
   mainwindow.ui 
   camerasviewdialog.ui
@@ -24,7 +22,6 @@ ADD_LIBRARY(GUILib
   cmdline.hpp cmdline.cpp
   mainwindow.hpp mainwindow.cpp
   videowidget.hpp videowidget.cpp  
-  calibrationwidget.hpp calibrationwidget.cpp
   calibrationdialog.hpp calibrationdialog.cpp
   camerasviewdialog.hpp camerasviewdialog.cpp
   selectinputdialog.hpp selectinputdialog.cpp

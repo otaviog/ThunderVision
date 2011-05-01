@@ -13,6 +13,8 @@ TDV_NAMESPACE_BEGIN
 class FlowCtrl
 {
 public:
+    FlowCtrl();
+    
     void pause()
     {
         m_step = false;
@@ -24,32 +26,34 @@ public:
         m_step = true;
     }
     
+    void stepMode()
+    {
+        m_mode = Step;
+        m_step = false;
+    }
+    
     void continuous()
     {
         m_step = true;
         m_mode = Continuous;
     }
     
-    bool hasWrite() const
-    {
-        return m_hasWrite;
-    }
+protected:
+    bool testFlow();
     
 private:
     enum Mode
     {
         Continuous, Step
     };
-    
+      
     bool m_step, m_hasWrite;
     Mode m_mode;
-};
+};   
 
-class CtrlWork: public WorkUnit
+class CtrlWork: public WorkUnit, public FlowCtrl
 {
-public:
-    CtrlWork();
-    
+public:    
     bool update();
 
     void inputs(ReadPipe<CvMat*> *lrpipe, ReadPipe<CvMat*> *rrpipe)
@@ -67,39 +71,12 @@ public:
     {
         return &m_rwpipe;
     }
-
-    void pause()
-    {
-        m_step = false;
-    }
-    
-    void step()
-    {
-        m_mode = Step;
-        m_step = true;
-    }
-    
-    void continuous()
-    {
-        m_step = true;
-        m_mode = Continuous;
-    }
-    
-    bool hasWrite() const
-    {
-        return m_hasWrite;
-    }
     
 private:
-    enum Mode
-    {
-        Continuous, Step
-    };
+    FlowCtrl m_ctrl;
     
     ReadPipe<CvMat*> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<CvMat*> m_lwpipe, m_rwpipe;
-    bool m_step, m_hasWrite;
-    Mode m_mode;
 };
 
 typedef TWorkUnitProcess<CtrlWork> CtrlProcess;

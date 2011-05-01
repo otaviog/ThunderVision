@@ -23,7 +23,7 @@ public:
 private:
 };
 
-class Calibration: public WorkUnit
+class Calibration: public WorkUnit, public FlowCtrl
 {
 public:
     Calibration(size_t numFrames);
@@ -92,14 +92,6 @@ public:
     CalibrationProc(size_t maxFrames);
     
     void process();
-
-    virtual void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe)               
-    {
-        m_ctrl.inputs(rlpipe, rrpipe);        
-    }
-
-private:
-    CtrlWork m_ctrl;
 };
 
 TDV_NAMESPACE_END

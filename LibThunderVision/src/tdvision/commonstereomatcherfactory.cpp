@@ -5,7 +5,7 @@
 #include "wtadev.hpp"
 #include "ssddev.hpp"
 #include "dynamicprogdev.hpp"
-#include "commonsmatcherfactory.hpp"
+#include "commonstereomatcherfactory.hpp"
 
 TDV_NAMESPACE_BEGIN
 
