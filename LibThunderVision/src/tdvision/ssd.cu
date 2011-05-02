@@ -15,7 +15,7 @@ __device__ float ssdAtDisp(int x, int y, int disp)
     for (int col=-1; col<2; col++) {
       
       float lI = tex2D(texLeftImg, x + col, y + row), 
-        rI = tex2D(texRightImg, x + disp + col, y + row);   
+        rI = tex2D(texRightImg, x + col - disp, y + row);   
       
       sum += (lI - rI)*(lI - rI);
     }
@@ -29,7 +29,7 @@ __global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, float *dsiM
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 
   if ( x < dsiDim.x && y < dsiDim.y ) {    
-    for (int disp=0; (disp < maxDisparity) && (x + disp) < dsiDim.x; disp++) {   
+    for (int disp=0; (disp < maxDisparity) && (x - disp) >= 0; disp++) {   
       float ssdValue = ssdAtDisp(x, y, disp);      
       dsiSetIntensity(dsiDim, x, y, disp, ssdValue, dsiMem);
     }    

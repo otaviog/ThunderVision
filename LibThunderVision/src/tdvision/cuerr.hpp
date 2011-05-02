@@ -76,7 +76,11 @@ public:
         checkErr();
         return *this;
     }
-
+    
+    bool good() const
+    {
+        return m_lastErr == cudaSuccess;
+    }
 private:
     cudaError_t m_lastErr;
 };
