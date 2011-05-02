@@ -20,7 +20,7 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
     
     m_calib->stepMode();
     
-    m_videoWid = new VideoWidget;    
+    m_videoWid = new VideoWidget(this);    
     lyCamWid->addWidget(m_videoWid);
 
     connect(&m_errHandle, SIGNAL(informError(QString)),
@@ -96,6 +96,7 @@ void CalibrationDialog::printPattern()
     painter.end();
 }
 
+
 void CalibrationDialog::passFrame()
 {
     m_calib->step();
@@ -118,9 +119,4 @@ void CalibrationDialog::calibrationUpdate(const tdv::Calibration &calib)
         QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
                                   Q_ARG(QString, tr("Calibrating...")));
     }
-}
-
-void CalibrationDialog::passFrame()
-{
-    m_calib->stepCalibration();
 }

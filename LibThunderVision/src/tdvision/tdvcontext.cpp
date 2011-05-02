@@ -90,8 +90,7 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     m_matcher = matcherFactory.createStereoMatcher();
 
     m_inputTees[0].enable(0);
-    m_inputTees[1].enable(0);
-    
+    m_inputTees[1].enable(0);    
     
     reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(0),

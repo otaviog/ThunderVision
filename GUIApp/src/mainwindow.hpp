@@ -10,6 +10,7 @@
 
 class CamerasViewDialog;
 class RectificationViewDialog;
+class DisparityDialog;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -23,14 +24,12 @@ public:
     void start(tdv::StereoInputSource *inputSrc);
                 
 public slots:
-    void showCamerasViews();
-    
-    void showDisparityMap();
-    
-    void showReconstructionConfig();
+    void showCamerasViews();        
 
     void showRectification();
-
+    
+    void showDisparity();
+    
     void playReconstruction();
 
     void stepReconstruction();
@@ -49,12 +48,15 @@ private slots:
     
     void doneRectification();
     
+    void doneDisparity();
+    
 private:
     tdv::TDVContext *m_ctx;
     tdv::Reconstruction *m_reconst;
     
     CamerasViewDialog *m_camsDialog;
     RectificationViewDialog *m_rectDialog;
+    DisparityDialog *m_dispDialog;
 };
 
 #endif /* TDV_MAINWINDOW_HPP */

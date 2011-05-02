@@ -18,7 +18,7 @@ void RectificationViewDialog::init()
 {
     tdv::ReadPipe<tdv::FloatImage> *lpipe, *rpipe;
     
-    m_rctx->dupRectficatin(&lpipe, &rpipe);
+    m_rctx->dupRectification(&lpipe, &rpipe);
     
     m_leftVidWid->input(lpipe);
     m_rightVidWid->input(rpipe);

@@ -4,6 +4,7 @@
 #include "camerasviewdialog.hpp"
 #include "rectificationviewdialog.hpp"
 #include "selectinputdialog.hpp"
+#include "disparitydialog.hpp"
 #include "mainwindow.hpp"
 
 MainWindow::MainWindow(tdv::TDVContext *ctx)
@@ -13,7 +14,8 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
 
     m_camsDialog = NULL;
     m_rectDialog = NULL;
-
+    m_dispDialog = NULL;
+    
     setupUi(this);
     connect(pbCamerasView, SIGNAL(clicked()),
             this, SLOT(showCamerasViews()));
@@ -22,7 +24,7 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
     connect(pbReconstStream, SIGNAL(clicked()),
             this, SLOT(playReconstruction()));
     connect(pbDisparityMap, SIGNAL(clicked()),
-            this, SLOT(showDisparityMap()));
+            this, SLOT(showDisparity()));
     connect(pbRectification, SIGNAL(clicked()),
             this, SLOT(showRectification()));
 
@@ -123,15 +125,6 @@ void MainWindow::doneCamerasViews()
     }
 }
 
-void MainWindow::showDisparityMap()
-{
-
-}
-
-void MainWindow::showReconstructionConfig()
-{
-}
-
 void MainWindow::showRectification()
 {
     if ( m_reconst != NULL && m_rectDialog == NULL )
@@ -152,6 +145,29 @@ void MainWindow::doneRectification()
         m_rectDialog->dispose();
         m_rectDialog = NULL;        
         pbRectification->setEnabled(true);
+    }
+}
+
+void MainWindow::showDisparity()
+{
+    if ( m_reconst != NULL && m_dispDialog == NULL )
+    {
+        m_dispDialog = new DisparityDialog(m_reconst, this);
+        m_dispDialog->init();
+        m_dispDialog->show();
+        connect(m_dispDialog, SIGNAL(finished(int)),
+                this, SLOT(doneDisparity()));
+        pbDisparityMap->setEnabled(false);
+    }
+}
+
+void MainWindow::doneDisparity()
+{
+    if ( m_dispDialog != NULL )
+    {
+        m_dispDialog->dispose();
+        m_dispDialog = NULL;
+        pbDisparityMap->setEnabled(true);
     }
 }
 

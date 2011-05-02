@@ -43,11 +43,15 @@ public:
     
     const Benchmark& benchmark() const;
     
-    void dupRectficatin(ReadPipe<FloatImage> **leftRectOut, 
-                        ReadPipe<FloatImage> **rightRectOut);
+    void dupRectification(ReadPipe<FloatImage> **leftRectOut, 
+                          ReadPipe<FloatImage> **rightRectOut);
 
     void undupRectification();
-        
+    
+    void dupDisparityMap(ReadPipe<FloatImage> **dispMapOut);
+    
+    void undupDisparityMap();
+    
     void camerasDesc(const CamerasDesc &desc)
     {
         m_rectify.camerasDesc(desc);
@@ -57,6 +61,7 @@ private:
     CtrlProcess m_ctrlProc;
     TWorkUnitProcess<RectificationCV> m_rectify;
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];    
+    TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_dispTee;    
     StereoMatcher *m_matcher;    
     
     ArrayProcessGroup m_procs;

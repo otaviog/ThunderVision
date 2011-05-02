@@ -23,15 +23,19 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_matcher->inputs(m_rectTee[0].output(0),
                       m_rectTee[1].output(0));
     
+    m_dispTee.input(m_matcher->output());
+    
     m_procs.addProcess(&m_ctrlProc);
     m_procs.addProcess(&m_rectify);
     m_procs.addProcess(&m_rectTee[0]);
     m_procs.addProcess(&m_rectTee[1]);
+    m_procs.addProcess(&m_dispTee);
     m_procs.addProcess(*m_matcher);    
 }
 
-void Reconstruction::dupRectficatin(ReadPipe<FloatImage> **leftRectOut, 
-                                    ReadPipe<FloatImage> **rightRectOut)
+void Reconstruction::dupRectification(
+    ReadPipe<FloatImage> **leftRectOut, 
+    ReadPipe<FloatImage> **rightRectOut)
 {
     m_rectTee[0].enable(1);
     m_rectTee[1].enable(1);
@@ -44,6 +48,17 @@ void Reconstruction::undupRectification()
 {
     m_rectTee[0].disable(1);
     m_rectTee[1].disable(1);
+}
+
+void Reconstruction::dupDisparityMap(ReadPipe<FloatImage> **dispMapOut)
+{
+    m_dispTee.enable(1);
+    *dispMapOut = m_dispTee.output(1);
+}
+    
+void Reconstruction::undupDisparityMap()
+{
+    m_dispTee.disable(1);
 }
 
 TDV_NAMESPACE_END
