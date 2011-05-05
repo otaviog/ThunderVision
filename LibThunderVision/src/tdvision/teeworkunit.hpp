@@ -26,7 +26,7 @@ public:
 
     void disable(int wpipeId);
 
-    bool update();
+    bool update();    
     
     ReadPipe<TeeType>* output(int wpipeId)
     {
@@ -37,11 +37,16 @@ public:
     {
         m_rp = rpipe;
     }
+    
+    ReadPipe<TeeType>* input()
+    {
+        return m_rp;
+    }
 
 private:
     ReadPipe<TeeType> *m_rp;
     WPipeMap m_wpipes;
-    std::map<int, bool> m_wpipeEnabled;
+    std::map<int, bool> m_wpipeEnabled;    
 };
 
 template<typename TeeType, typename SinkPolicy>
@@ -59,7 +64,7 @@ bool TeeWorkUnit<TeeType, SinkPolicy>::update()
 {
     TeeType data;
     const bool rd = m_rp->read(&data);    
-
+    
     for ( typename WPipeMap::iterator mIt = m_wpipes.begin();
           mIt != m_wpipes.end(); mIt++)
     {

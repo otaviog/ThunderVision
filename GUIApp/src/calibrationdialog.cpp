@@ -31,6 +31,8 @@ CalibrationDialog::CalibrationDialog(tdv::Calibration *calibCtx,
             this, SLOT(printPattern()));
     connect(pbPassFrame, SIGNAL(clicked()),
             this, SLOT(passFrame()));
+    
+    pbSave->setEnabled(false);
 }
 
 void CalibrationDialog::init()
@@ -112,6 +114,8 @@ void CalibrationDialog::calibrationUpdate(const tdv::Calibration &calib)
     {
         QMetaObject::invokeMethod(lbStatus, "setText", Qt::QueuedConnection,
                                   Q_ARG(QString, tr("Calibration done")));
+        QMetaObject::invokeMethod(pbSave, "setEnabled", Qt::QueuedConnection,
+                                  Q_ARG(bool, true));
 
     }
     else

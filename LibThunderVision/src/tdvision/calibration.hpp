@@ -30,6 +30,8 @@ public:
     
     void chessPattern(const ChessboardPattern &cbpattern);
     
+    bool update();
+    
     virtual void input(ReadPipe<CvMat*> *rlpipe, ReadPipe<CvMat*> *rrpipe)               
     {
         m_rlpipe = rlpipe;
@@ -59,9 +61,12 @@ public:
     const CamerasDesc& camerasDesc() const
     {
         return m_camDesc;
-    }
+    }    
     
-    bool update();
+    bool isComplete() const
+    {
+        return framesProcessed() == numFrames();
+    }
     
 private:
     CvMat* updateChessboardCorners(const CvMat *limg, 

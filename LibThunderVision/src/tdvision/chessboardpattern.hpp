@@ -10,7 +10,7 @@ TDV_NAMESPACE_BEGIN
 class ChessboardPattern
 {
 public:
-    ChessboardPattern(const Dim &dim = Dim(7, 6));
+    ChessboardPattern(const Dim &dim = Dim(8, 5));
         
     CvSize dim()
     {

@@ -18,6 +18,8 @@ CamerasViewDialog::CamerasViewDialog(tdv::TDVContext *ctx, QWidget *parent)
     
     connect(pbCalibrate, SIGNAL(clicked()),
             this, SLOT(showCalibrationDlg()));
+    connect(pbSwitchCameras, SIGNAL(clicked()),
+            this, SLOT(switchCameras()));
 }
 
 void CamerasViewDialog::init()
@@ -47,11 +49,11 @@ void CamerasViewDialog::closeEvent(QCloseEvent *event)
 
 void CamerasViewDialog::showCalibrationDlg()
 {
-    tdv::Calibration *calib = m_ctx->runCalibration();
+    m_calib = m_ctx->runCalibration();
     
-    if ( calib != NULL )
+    if ( m_calib != NULL )
     {
-        m_calibDlg = new CalibrationDialog(calib);
+        m_calibDlg = new CalibrationDialog(m_calib);
         m_calibDlg->init();
         m_calibDlg->show();
         pbCalibrate->setEnabled(false);
@@ -67,5 +69,11 @@ void CamerasViewDialog::doneCalibrationDlg()
         m_calibDlg->dispose();
         m_calibDlg = NULL;
         pbCalibrate->setEnabled(true);
+        m_ctx->releaseCalibration(m_calib);
     }
+}
+
+void CamerasViewDialog::switchCameras()
+{
+    m_ctx->switchCameras();
 }

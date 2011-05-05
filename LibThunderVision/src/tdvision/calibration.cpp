@@ -63,10 +63,6 @@ CvMat* Calibration::updateChessboardCorners(
     if ( leftPointsCount < totalCorners
          && rightPointsCount < totalCorners )
     {
-        std::cout<<"No points: "
-                 <<leftPointsCount<<' '
-                 <<rightPointsCount<<std::endl;
-
         return NULL;
     }
     
@@ -189,7 +185,10 @@ bool Calibration::update()
     m_currFrame = (m_currFrame + 1) % m_numFrames;
     m_avalFrames = std::min(m_avalFrames + 1, m_numFrames);    
     
-    updateCalibration(imgSz);
+    if ( m_avalFrames >= m_numFrames )
+    {
+        updateCalibration(imgSz);
+    }
 
     if ( m_observer != NULL )
     {

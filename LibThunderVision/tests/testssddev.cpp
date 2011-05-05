@@ -51,7 +51,7 @@ static void runOptimizerTest(const std::string &outputImg, tdv::Optimizer *opt)
     tdv::FloatConv fconvl, fconvr;
     tdv::RGBConv rconv;
     
-    tdv::SSDDev ssd(32);    
+    tdv::SSDDev ssd(128);    
     tdv::ImageWriter writer(outputImg);
     tdv::MedianFilterCPU ml, mr;
     

@@ -33,7 +33,7 @@ CUDA_ADD_LIBRARY(tdvision
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
-#  dynamicprogcpu.hpp dynamicprogcpu.cpp
+  dynamicprogcpu.hpp dynamicprogcpu.cpp
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
   stereoinputsource.hpp

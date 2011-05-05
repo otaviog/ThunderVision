@@ -41,13 +41,15 @@ public:
     
     void undupInputSource();
     
+    void switchCameras();
+    
     void errorOcurred(const std::exception &err);
     
     void errorHandler(ExceptionReport *handler)
     {
         m_errHandler = handler;
     }    
-    
+        
 private:
     tdv::ProcessRunner *m_inputRunner, 
         *m_reconstRunner,

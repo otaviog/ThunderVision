@@ -21,7 +21,9 @@ private slots:
     void showCalibrationDlg();
     
     void doneCalibrationDlg();
-        
+    
+    void switchCameras();
+    
 protected:
     void closeEvent(QCloseEvent *event);        
     
@@ -30,6 +32,7 @@ private:
     VideoWidget *m_leftVidWid;
     VideoWidget *m_rightVidWid;
     
+    tdv::Calibration *m_calib;
     CalibrationDialog *m_calibDlg;
 };
 

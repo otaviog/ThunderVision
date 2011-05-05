@@ -4,6 +4,7 @@
 #include "cpustereomatcher.hpp"
 #include "wtadev.hpp"
 #include "ssddev.hpp"
+#include "crosscorrelationdev.hpp"
 #include "dynamicprogdev.hpp"
 #include "commonstereomatcherfactory.hpp"
 
@@ -39,6 +40,10 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
         case SSD:
             matcher->setMatchingCost(boost::shared_ptr<SSDDev>(
                                          new SSDDev(m_maxDisparity)));
+            break;
+        case CrossCorrelationNorm:
+            matcher->setMatchingCost(boost::shared_ptr<CrossCorrelationDev>(
+                                         new CrossCorrelationDev(m_maxDisparity)));
             break;
         default:
             assert(false);

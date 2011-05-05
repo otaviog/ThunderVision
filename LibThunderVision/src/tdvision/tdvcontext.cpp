@@ -123,7 +123,7 @@ Calibration* TDVContext::runCalibration()
     CalibrationProc *calib = NULL;
     if ( m_calibRunner == NULL )
     {                
-        calib = new CalibrationProc(10);
+        calib = new CalibrationProc(14);
         
         m_inputTees[0].enable(2);
         m_inputTees[1].enable(2);
@@ -142,12 +142,18 @@ Calibration* TDVContext::runCalibration()
 
 void TDVContext::releaseCalibration(Calibration *calib)
 {
+    assert(calib != NULL);
     if ( m_calibRunner != NULL )
     {        
         m_inputTees[0].disable(0);
         m_inputTees[1].disable(0);
         
         m_calibRunner->join();
+        if ( calib->isComplete() )
+        {
+            m_spec->camerasDesc("default") = calib->camerasDesc();
+        }
+        
         delete calib;
         
         m_calibRunner = NULL;
@@ -177,6 +183,19 @@ void TDVContext::undupInputSource()
 {
     m_inputTees[0].disable(1);
     m_inputTees[1].disable(1);
+}
+
+void TDVContext::switchCameras()
+{
+    m_inputTees[0].waitPauseProc();
+    m_inputTees[1].waitPauseProc();
+    
+    ReadPipe<CvMat*> *aux = m_inputTees[0].input();
+    m_inputTees[0].input(m_inputTees[1].input());
+    m_inputTees[1].input(aux);    
+
+    m_inputTees[0].resumeProc();
+    m_inputTees[1].resumeProc();    
 }
 
 TDV_NAMESPACE_END

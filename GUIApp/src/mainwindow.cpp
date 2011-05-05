@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QCloseEvent>
 #include "camerasviewdialog.hpp"
 #include "rectificationviewdialog.hpp"
 #include "selectinputdialog.hpp"
@@ -112,7 +113,7 @@ void MainWindow::showCamerasViews()
         connect(m_camsDialog, SIGNAL(finished(int)),
                 this, SLOT(doneCamerasViews()));
         pbCamerasView->setEnabled(false);
-    }
+     }
 }
 
 void MainWindow::doneCamerasViews()
@@ -183,6 +184,16 @@ void MainWindow::initReconstruction()
 
 void MainWindow::dispose()
 {
+    if ( m_camsDialog != NULL )
+    {
+        m_camsDialog->close();
+    }
+
+    if ( m_rectDialog != NULL )
+    {
+        m_rectDialog->close();
+    }
+
     if ( m_reconst != NULL )
     {
         m_ctx->releaseReconstruction(m_reconst);
@@ -190,6 +201,10 @@ void MainWindow::dispose()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
-{
+{    
+    if ( m_rectDialog != NULL 
+         || m_camsDialog != NULL )
+        event->ignore();
+    
     dispose();
 }

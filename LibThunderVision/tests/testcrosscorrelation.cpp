@@ -10,7 +10,7 @@
 #include <tdvision/floatconv.hpp>
 #include <tdvision/rgbconv.hpp>
 #include <tdvision/dynamicprogdev.hpp>
-//#include <tdvision/dynamicprogcpu.hpp>
+#include <tdvision/dynamicprogcpu.hpp>
 #include <cv.h>
 #include <highgui.h>
 
@@ -92,10 +92,8 @@ TEST(TestXCorr, WithDynProg)
     runOptimizerTest("tsukuba_xcorrdynprog.png", &dp);   
 }
 
-#if 0
 TEST(TestXCorr, WithDynCPU)
 {
     tdv::DynamicProgCPU dp;
     runOptimizerTest("tsukuba_xcorrdynprogcpu.png", &dp);
 }
-#endif
