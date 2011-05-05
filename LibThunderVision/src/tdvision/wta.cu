@@ -19,7 +19,7 @@ __global__ void wtaKernel(const DSIDim dim, const float *dsi,
     
     for (uint d=0; d<dim.z && (d + x) < dim.x; d++) {      
       const float diff = dsiIntensity(dim, x, y, d, dsi);
-      
+            
       if ( diff < leastDiff ) {
         leastDiff = diff;
         wonDisparity = d;

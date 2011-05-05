@@ -14,7 +14,7 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   if ( z >= dim.z || y >= dim.y  )
     return ;
   
-  __shared__ float sharedCost[32];
+  __shared__ float sharedCost[128];
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
   sharedCost[z] = costDSI[initialOff];
@@ -55,7 +55,7 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     __syncthreads();
   }
   
-  lastSumCost[dim.z*y + z] = sharedCost[z];
+  lastSumCost[dim.z*y + z] = 1.0 - sharedCost[z];
 }
 
 __global__ void reduceImage(const DSIDim dim, const float *lastSumCost, 
@@ -80,19 +80,16 @@ __global__ void reduceImage(const DSIDim dim, const float *lastSumCost,
   uint imgOffset = y*dim.x + (dim.x - 1);
   dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
   
-  for (uint _x=0; _x < dim.x - 1; _x++) {
-    const uint x = dim.x - 2 - _x;
+  for (int x = dim.x - 1; x >= 0; x--) {    
     const uint offset = dsiOffset(dim, x, y, lastMinZ);
-    const char p = 0; //pathDSI[offset];
+    const char p = pathDSI[offset];
     const uint nz = lastMinZ + p;
     
     if ( nz < dim.maxOffset )
       lastMinZ = nz;
     
     imgOffset = y*dim.x + x;    
-    //dispImg[imgOffset] = float(lastMinZ)/float(dim.z);      
-    if ( offset < dim.maxOffset )
-        dispImg[imgOffset] = float(pathDSI[offset])/float(dim.z);      
+    dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
   }
 }
 
@@ -111,7 +108,7 @@ void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
   char *pathDSI = NULL;
   size_t pathSize = tdv_dsiDim.size();  
   
-  cuerr = cudaMalloc((void**) &pathDSI, pathSize + 32);  
+  cuerr = cudaMalloc((void**) &pathDSI, pathSize*sizeof(int));  
   if ( !cuerr.good() ) {
     cudaFree(lastSumCost);
     cuerr.checkErr();

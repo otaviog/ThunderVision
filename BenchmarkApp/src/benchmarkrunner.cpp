@@ -16,9 +16,10 @@ BenchmarkRunner::BenchmarkRunner(
     m_matcher = matcher;
     m_dataset = dataset;
     m_metric = metric;
+    m_hasError = false;
 }
 
-void BenchmarkRunner::run()
+bool BenchmarkRunner::run()
 {
     ReadWritePipe<FloatImage> leftPipe, rightPipe;
 
@@ -44,6 +45,9 @@ void BenchmarkRunner::run()
             runner.run();
             runner.join();
             
+            if ( m_hasError )
+                return false;
+            
             FloatImage matcherImage;
             if ( outPipe->read(&matcherImage) )
             {
@@ -58,11 +62,14 @@ void BenchmarkRunner::run()
             }
         }
     }
+    
+    return true;
 }
 
 void BenchmarkRunner::errorOcurred(const std::exception &err)
 {
     std::cout << err.what() << std::endl;
+    m_hasError = true;
 }
 
 TDV_NAMESPACE_END

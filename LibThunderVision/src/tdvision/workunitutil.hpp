@@ -60,8 +60,7 @@ public:
     {
         return &m_wpipe;
     }
-    
-    
+        
 protected:       
     ReadPipe<InType> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<OutType> m_wpipe;

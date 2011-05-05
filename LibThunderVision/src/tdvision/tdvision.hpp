@@ -49,7 +49,6 @@
 #include "tdvision.hpp"
 #include "teeworkunit.hpp"
 #include "thunderlang.hpp"
-#include "tristripmesh.hpp"
 #include "workunit.hpp"
 #include "workunitprocess.hpp"
 #include "workunitutil.hpp"

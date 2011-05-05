@@ -1,23 +1,24 @@
-#ifndef TDV_SSDDEV_HPP
-#define TDV_SSDDEV_HPP
+#ifndef TDV_CROSSCORRELATIONDEV_HPP
+#define TDV_CROSSCORRELATIONDEV_HPP
 
 #include <tdvbasic/common.hpp>
 #include "matchingcost.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class SSDDev: public AbstractMatchingCost
+class CrossCorrelationDev: public AbstractMatchingCost
 {
-public:    
-    SSDDev(int disparityMax)
+public:
+    CrossCorrelationDev(int disparityMax)
         : AbstractMatchingCost(disparityMax)
-    { workName("SSD"); }
+    { workName("CrossCorrelation"); }
 
 protected:    
     void updateImpl(FloatImage leftImg, FloatImage rightImg,
                     DSIMem dsi);
+
 };
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_SSDDEV_HPP */
+#endif /* TDV_CROSSCORRELATIONDEV_HPP */

@@ -27,12 +27,13 @@ CUDA_ADD_LIBRARY(tdvision
   teeworkunit.hpp 
   medianfiltercpu.hpp medianfiltercpu.cpp
   medianfilterdev.hpp medianfilterdev.cpp medianfilter.cu
-  matchingcost.hpp
+  matchingcost.hpp matchingcost.cpp
   ssddev.hpp ssddev.cpp ssd.cu
+  crosscorrelationdev.hpp crosscorrelationdev.cpp crosscorrelation.cu
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
-  dynamicprogcpu.hpp dynamicprogcpu.cpp
+#  dynamicprogcpu.hpp dynamicprogcpu.cpp
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
   stereoinputsource.hpp

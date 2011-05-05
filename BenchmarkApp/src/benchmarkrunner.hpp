@@ -16,7 +16,7 @@ public:
     BenchmarkRunner(StereoMatcher *matcher, IBenchmarkDataset *dataset,
                     IMatcherCompMetric *metric);
     
-    void run();
+    bool run();
     
     void errorOcurred(const std::exception &err);
     
@@ -24,6 +24,7 @@ private:
     StereoMatcher *m_matcher;
     IBenchmarkDataset *m_dataset;
     IMatcherCompMetric *m_metric;
+    bool m_hasError;
 };
 
 TDV_NAMESPACE_END

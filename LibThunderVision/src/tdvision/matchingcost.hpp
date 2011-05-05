@@ -16,7 +16,34 @@ public:
                         ReadPipe<FloatImage> *rightInput) = 0;
     
     virtual ReadPipe<DSIMem>* output() = 0;
+};
 
+class AbstractMatchingCost: public MatchingCost
+{
+public:
+    AbstractMatchingCost(int disparityMax);
+    
+    void inputs(ReadPipe<FloatImage> *lpipe, ReadPipe<FloatImage> *rpipe)
+    {
+        m_lrpipe = lpipe;
+        m_rrpipe = rpipe;
+    }
+    
+    ReadPipe<DSIMem>* output()
+    {
+        return &m_wpipe;
+    }
+        
+    bool update();    
+    
+protected:
+    virtual void updateImpl(FloatImage left, FloatImage right,
+                            DSIMem mem) = 0;
+        
+private:
+    ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
+    ReadWritePipe<DSIMem, DSIMem> m_wpipe;
+    size_t m_maxDisparaty;
 };
 
 TDV_NAMESPACE_END
