@@ -2,6 +2,7 @@
 #include <tdvision/imagereader.hpp>
 #include <tdvision/calibration.hpp>
 #include <tdvision/rectificationcv.hpp>
+#include <tdvision/thunderlang.hpp>
 #include <highgui.h>
 
 TEST(TestCalibration, Calibration)
@@ -9,7 +10,7 @@ TEST(TestCalibration, Calibration)
     tdv::ImageReader readerL("../../res/OpenCVBook_StereoDataL/", tdv::ImageReader::Directory);
     tdv::ImageReader readerR("../../res/OpenCVBook_StereoDataR/", tdv::ImageReader::Directory);
     
-    tdv::Calibration calib(14);
+    tdv::Calibration calib(13);
     calib.input(readerL.output(), readerR.output());
     calib.chessPattern(tdv::ChessboardPattern(tdv::Dim(9, 6)));
     for (size_t i=0; i<14; i++)
@@ -67,4 +68,9 @@ TEST(TestCalibration, Calibration)
     cvShowImage("R", rimg.cpuMem());
     
     cvWaitKey(0);
+    
+    tdv::ThunderSpec spec;
+    spec.camerasDesc("default") = cdesc;
+    tdv::ThunderLangWriter wrt;
+    wrt.write("calib.tl", spec);
 }

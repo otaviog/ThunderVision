@@ -84,6 +84,7 @@ public:
     void camerasDesc(const CamerasDesc &desc)
     {
         m_camsDesc = desc;
+        m_camsDescChanged = true;
     }
 
     bool update();

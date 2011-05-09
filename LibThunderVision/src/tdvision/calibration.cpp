@@ -73,7 +73,7 @@ CvMat* Calibration::updateChessboardCorners(
                        cvSize(11, 11), cvSize(-1, -1), cvTermCriteria(
                            CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
                            30, 0.01));
-    cvFindCornerSubPix(limg, rightPoints.get(), rightPointsCount, 
+    cvFindCornerSubPix(rimg, rightPoints.get(), rightPointsCount, 
                        cvSize(11, 11), cvSize(-1, -1), cvTermCriteria(
                            CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
                            30, 0.01));

@@ -103,7 +103,7 @@ void RectificationCV::calibratedRectify(const CvMat *lM, const CvMat *rM,
     cvSetIdentity(&v_rP);
 
     cvStereoRectify(lM, rM, lD, rD, imgSize, R, T,
-                    &v_lR, &v_rR, &v_lP, &v_rP);
+                    &v_lR, &v_rR, &v_lP, &v_rP, 0, 0);
 
     cvInitUndistortRectifyMap(lM, lD, &v_lR, &v_lP,
                               mxLeft, myLeft);
@@ -277,14 +277,18 @@ bool RectificationCV::update()
 
     CvMat *limout_c = limout.cpuMem();
     CvMat *rimout_c = rimout.cpuMem();
-
+    
+#if 1
     cvRemap(limg32f, limout_c, m_mxLeft.get(), m_myLeft.get());
     cvRemap(rimg32f, rimout_c, m_mxRight.get(), m_myRight.get());
 
     showImage("L", limout_c);
     showImage("R", rimout_c);
     waitKey(0);
-
+#else
+    cvConvert(limg32f, limout_c);
+    cvConvert(rimg32f, rimout_c);
+#endif
     lwg.write(limout);
     rwg.write(rimout);
 

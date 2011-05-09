@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <limits>
 #include <boost/system/error_code.hpp>
 #include "parserexception.hpp"
 #include "writeexception.hpp"
@@ -203,6 +204,7 @@ void ThunderLangWriter::write(const std::string &filename,
                              % filename % errcode.message());
     }
     
+    out.precision(std::numeric_limits<double>::digits10);
     for (ThunderSpec::CamerasDescMap::const_iterator cIt=spec.camerasBegIt();
          cIt != spec.camerasEndIt(); cIt++)
     {

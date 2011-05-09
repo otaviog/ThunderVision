@@ -81,12 +81,16 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     if ( profileName == "Device" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
+        matcherFactory.maxDisparity(128);
+        //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);
+        matcherFactory.matchingCost(CommonStereoMatcherFactory::CrossCorrelationNorm);
     }
     else if ( profileName == "CPU" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::CPU);
     }
-
+    
+        
     m_matcher = matcherFactory.createStereoMatcher();
 
     m_inputTees[0].enable(RECONSTRUCTION_TEE_ID);
@@ -123,7 +127,7 @@ Calibration* TDVContext::runCalibration()
     CalibrationProc *calib = NULL;
     if ( m_calibRunner == NULL )
     {                
-        calib = new CalibrationProc(14);
+        calib = new CalibrationProc(13);
         
         m_inputTees[0].enable(CALIBRATION_TEE_ID);
         m_inputTees[1].enable(CALIBRATION_TEE_ID);
