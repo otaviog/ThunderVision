@@ -37,6 +37,11 @@ public:
         return getImage(sz.width, sz.height);
     }
     
+    CvMat* get()
+    {
+        return m_img;
+    }
+    
 private:
     void copy(const TmpBufferImage &cpy);
     

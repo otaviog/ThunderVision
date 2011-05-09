@@ -89,12 +89,12 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
 
     m_matcher = matcherFactory.createStereoMatcher();
 
-    m_inputTees[0].enable(0);
-    m_inputTees[1].enable(0);    
+    m_inputTees[0].enable(RECONSTRUCTION_TEE_ID);
+    m_inputTees[1].enable(RECONSTRUCTION_TEE_ID);    
     
     reconst = new Reconstruction(m_matcher,
-                                 m_inputTees[0].output(0),
-                                 m_inputTees[1].output(0));
+                                 m_inputTees[0].output(RECONSTRUCTION_TEE_ID),
+                                 m_inputTees[1].output(RECONSTRUCTION_TEE_ID));
     
     reconst->camerasDesc(m_spec->camerasDesc("default"));
     m_reconstRunner = new ProcessRunner(*reconst, this);
@@ -107,8 +107,8 @@ void TDVContext::releaseReconstruction(Reconstruction *reconst)
 {
     if ( m_reconstRunner != NULL )
     {
-        m_inputTees[0].disable(0);
-        m_inputTees[1].disable(0);
+        m_inputTees[0].disable(RECONSTRUCTION_TEE_ID);
+        m_inputTees[1].disable(RECONSTRUCTION_TEE_ID);
     
         m_reconstRunner->join();
 
@@ -125,11 +125,11 @@ Calibration* TDVContext::runCalibration()
     {                
         calib = new CalibrationProc(14);
         
-        m_inputTees[0].enable(2);
-        m_inputTees[1].enable(2);
+        m_inputTees[0].enable(CALIBRATION_TEE_ID);
+        m_inputTees[1].enable(CALIBRATION_TEE_ID);
         
-        calib->input(m_inputTees[0].output(2),
-                     m_inputTees[1].output(2));
+        calib->input(m_inputTees[0].output(CALIBRATION_TEE_ID),
+                     m_inputTees[1].output(CALIBRATION_TEE_ID));
         
         ArrayProcessGroup grp;
         grp.addProcess(calib);
@@ -145,8 +145,8 @@ void TDVContext::releaseCalibration(Calibration *calib)
     assert(calib != NULL);
     if ( m_calibRunner != NULL )
     {        
-        m_inputTees[0].disable(0);
-        m_inputTees[1].disable(0);
+        m_inputTees[0].disable(CALIBRATION_TEE_ID);
+        m_inputTees[1].disable(CALIBRATION_TEE_ID);
         
         m_calibRunner->join();
         if ( calib->isComplete() )
@@ -172,17 +172,17 @@ void TDVContext::dupInputSource(
     ReadPipe<CvMat*> **leftSrc,
     ReadPipe<CvMat*> **rightSrc)
 {
-    m_inputTees[0].enable(1);
-    m_inputTees[1].enable(1);
+    m_inputTees[0].enable(VIEW_TEE_ID);
+    m_inputTees[1].enable(VIEW_TEE_ID);
 
-    *leftSrc = m_inputTees[0].output(1);
-    *rightSrc = m_inputTees[1].output(1);
+    *leftSrc = m_inputTees[0].output(VIEW_TEE_ID);
+    *rightSrc = m_inputTees[1].output(VIEW_TEE_ID);
 }
 
 void TDVContext::undupInputSource()
 {
-    m_inputTees[0].disable(1);
-    m_inputTees[1].disable(1);
+    m_inputTees[0].disable(VIEW_TEE_ID);
+    m_inputTees[1].disable(VIEW_TEE_ID);
 }
 
 void TDVContext::switchCameras()

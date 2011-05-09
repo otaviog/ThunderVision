@@ -19,6 +19,10 @@ class ThunderSpec;
 
 class TDVContext: public ExceptionReport
 {
+private:
+    static const int CALIBRATION_TEE_ID = 2;
+    static const int RECONSTRUCTION_TEE_ID = 0;
+    static const int VIEW_TEE_ID = 1;
 public:    
     TDVContext();
     

@@ -1,7 +1,10 @@
-#include <iostream>
 #include <boost/scoped_array.hpp>
 #include "sink.hpp"
 #include "calibration.hpp"
+
+#include <iostream>
+#include <boost/format.hpp>
+#include <highgui.h>
 
 TDV_NAMESPACE_BEGIN
 
@@ -167,7 +170,15 @@ bool Calibration::update()
     
     cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
-               
+    
+    cvSaveImage(
+        (boost::format("left%1%.jpg") % (m_currFrame + 1)).str().c_str(),
+        limgOrigin);
+    
+    cvSaveImage(
+        (boost::format("right%1%.jpg") % (m_currFrame + 1)).str().c_str(),
+        rimgOrigin);
+
     CvMatSinkPol::sink(rimgOrigin);        
     const CvSize imgSz = cvGetSize(limg);
 
@@ -179,7 +190,7 @@ bool Calibration::update()
         wg.write(limgOrigin);
         return true;
     }        
-    
+        
     CvMatSinkPol::sink(limgOrigin);
     
     m_currFrame = (m_currFrame + 1) % m_numFrames;
