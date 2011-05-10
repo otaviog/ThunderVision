@@ -1,5 +1,5 @@
-#ifndef TDV_IMATCHERCOMPMETRIC_HPP
-#define TDV_IMATCHERCOMPMETRIC_HPP
+#ifndef TDV_QUALITYMETRIC_HPP
+#define TDV_QUALITYMETRIC_HPP
 
 #include <tdvbasic/common.hpp>
 #include <tdvision/workunit.hpp>
@@ -7,7 +7,7 @@
 
 TDV_NAMESPACE_BEGIN
 
-class IMatcherCompMetric
+class QualityMetric
 {
 public:
     struct Report
@@ -25,4 +25,4 @@ public:
 
 TDV_NAMESPACE_END
 
-#endif /* TDV_IMATCHERCOMPMETRIC_HPP */
+#endif /* TDV_QUALITYMETRIC_HPP */

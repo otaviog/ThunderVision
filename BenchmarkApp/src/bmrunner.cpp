@@ -3,15 +3,15 @@
 #include <tdvision/processrunner.hpp>
 #include <highgui.h>
 #include <iostream>
-#include "ibenchmarkdataset.hpp"
-#include "imatchercompmetric.hpp"
-#include "benchmarkrunner.hpp"
+#include "bmdataset.hpp"
+#include "qualitymetric.hpp"
+#include "bmrunner.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-BenchmarkRunner::BenchmarkRunner(
-    StereoMatcher *matcher, IBenchmarkDataset *dataset,
-    IMatcherCompMetric *metric)
+BMRunner::BMRunner(
+    StereoMatcher *matcher, BMDataset *dataset,
+    QualityMetric *metric)
 {
     m_matcher = matcher;
     m_dataset = dataset;
@@ -19,8 +19,10 @@ BenchmarkRunner::BenchmarkRunner(
     m_hasError = false;
 }
 
-bool BenchmarkRunner::run()
+bool BMRunner::run()
 {
+    using namespace bmdata;
+    
     ReadWritePipe<FloatImage> leftPipe, rightPipe;
 
     m_matcher->inputs(&leftPipe, &rightPipe);
@@ -29,11 +31,12 @@ bool BenchmarkRunner::run()
     for (size_t i=0; i<m_dataset->stereoPairCount(); i++)
     {
         StereoPair *spair = m_dataset->stereoPair(i);
-
+        bmdata::StereoPairReport report(spair->name(), m_matcher->name());
+        
         for (StereoPair::SampleList::iterator it = spair->samplesBegin();
              it != spair->samplesEnd(); it++)
         {
-            StereoPair::Sample &sample(*it);
+            Sample &sample(*it);
 
             leftPipe.write(sample.leftImage());
             rightPipe.write(sample.rightImage());
@@ -51,22 +54,30 @@ bool BenchmarkRunner::run()
             FloatImage matcherImage;
             if ( outPipe->read(&matcherImage) )
             {
-                IMatcherCompMetric::Report report = m_metric->compare(
+                const QualityMetric::Report qrep = m_metric->compare(
                     sample.groundTruth(), matcherImage);
-                cvConvertScale(matcherImage.cpuMem(), matcherImage.cpuMem(), 255.0);
+                cvConvertScale(matcherImage.cpuMem(), matcherImage.cpuMem(), 
+                               255.0);
                 cvSaveImage(
                     (boost::format("%1%_%2%x%3%_%4%.png")
-                     % spair->name() % sample.width()
-                     % sample.height() % m_matcher->name()).str().c_str(),
-                    matcherImage.cpuMem());
-            }
+                     % spair->name() % sample.dim().width()
+                     % sample.dim().height() % m_matcher->name()).str().c_str(),
+                    matcherImage.cpuMem());                                
+                
+                // report.addSampleReport(
+                //     SampleReport(qrep.error, 
+                //                  m_matcher->benchmark().secs(), 
+                //                  sample.dim()));                                
+            }            
         }
+        
+        m_reports.push_back(report);
     }
     
     return true;
 }
 
-void BenchmarkRunner::errorOcurred(const std::exception &err)
+void BMRunner::errorOcurred(const std::exception &err)
 {
     std::cout << err.what() << std::endl;
     m_hasError = true;

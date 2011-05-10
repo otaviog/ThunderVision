@@ -4,12 +4,12 @@
 #include <cv.h>
 #include <highgui.h>
 #include <tdvbasic/exception.hpp>
-#include "ibenchmarkdataset.hpp"
-#include "benchdatasetfactory.hpp"
+#include "bmdataset.hpp"
+#include "bmdatasetfactory.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class DefaultBenchDataset: public IBenchmarkDataset
+class DefaultBenchDataset: public BMDataset
 {
 public:
     virtual ~DefaultBenchDataset()
@@ -25,18 +25,18 @@ public:
         return m_stereos.size();
     }
     
-    StereoPair* stereoPair(size_t idx)
+    bmdata::StereoPair* stereoPair(size_t idx)
     {
         return m_stereos[idx];
     }
         
-    void addStereoPair(StereoPair *pair)
+    void addStereoPair(bmdata::StereoPair *pair)
     {
         m_stereos.push_back(pair);
     }
     
 private:
-    std::vector<StereoPair*> m_stereos;
+    std::vector<bmdata::StereoPair*> m_stereos;
 };
 
 static FloatImage loadImage(const std::string &filename)
@@ -55,8 +55,9 @@ static FloatImage loadImage(const std::string &filename)
     }
 }
 
-IBenchmarkDataset* BenchDatasetFactory::CreateDefault(const std::string &basePath)
+BMDataset* BMDatasetFactory::CreateDefault(const std::string &basePath)
 {
+    using namespace bmdata;
     namespace fs = boost::filesystem;
     
     fs::path base(basePath);
@@ -64,17 +65,17 @@ IBenchmarkDataset* BenchDatasetFactory::CreateDefault(const std::string &basePat
     
     StereoPair *teddyPair = new StereoPair("Teddy");
     teddyPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Teddy/f_left.png").string()),
             loadImage((base / "Teddy/f_right.png").string()),
             loadImage((base / "Teddy/f_true.png").string())));
     teddyPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Teddy/h_left.png").string()),
             loadImage((base / "Teddy/h_right.png").string()),
             loadImage((base / "Teddy/h_true.png").string())));
     teddyPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Teddy/q_left.png").string()),
             loadImage((base / "Teddy/q_right.png").string()),
             loadImage((base / "Teddy/q_true.png").string())));
@@ -82,17 +83,17 @@ IBenchmarkDataset* BenchDatasetFactory::CreateDefault(const std::string &basePat
         
     StereoPair *conesPair = new StereoPair("Cones");
     conesPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Cones/f_left.png").string()),
             loadImage((base / "Cones/f_right.png").string()),
             loadImage((base / "Cones/f_true.png").string())));
     conesPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Cones/h_left.png").string()),
             loadImage((base / "Cones/h_right.png").string()),
             loadImage((base / "Cones/h_true.png").string())));
     conesPair->addSample(
-        StereoPair::Sample(
+        Sample(
             loadImage((base / "Cones/q_left.png").string()),
             loadImage((base / "Cones/q_right.png").string()),
             loadImage((base / "Cones/q_true.png").string())));    

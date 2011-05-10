@@ -2,11 +2,10 @@
 #include <tdvision/commonstereomatcherfactory.hpp>
 #include <tdvbasic/exception.hpp>
 #include <boost/program_options.hpp>
-#include "imatchercompmetric.hpp"
-#include "meancompmetric.hpp"
-#include "ibenchmarkdataset.hpp"
-#include "benchdatasetfactory.hpp"
-#include "benchmarkrunner.hpp"
+#include "meanqmetric.hpp"
+#include "bmdataset.hpp"
+#include "bmdatasetfactory.hpp"
+#include "bmrunner.hpp"
 
 static bool commandLine(
     int argc, char *argv[],
@@ -84,10 +83,10 @@ int main(int argc, char *argv[])
     if ( !commandLine(argc, argv, &matcher) )
         return 1;        
 
-    tdv::IBenchmarkDataset *dataset = NULL;    
+    tdv::BMDataset *dataset = NULL;    
     try
     {
-        tdv::BenchDatasetFactory dsetFactory;
+        tdv::BMDatasetFactory dsetFactory;
         dataset = dsetFactory.CreateDefault(
             "../../res/Benchmark");        
     }
@@ -97,9 +96,9 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    tdv::IMatcherCompMetric *metric = new tdv::MeanCompMetric;    
+    tdv::QualityMetric *metric = new tdv::MeanQMetric;    
     
-    tdv::BenchmarkRunner brunner(matcher, dataset, metric);
+    tdv::BMRunner brunner(matcher, dataset, metric);
     brunner.run();
     
     return 0;

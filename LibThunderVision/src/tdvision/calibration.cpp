@@ -138,10 +138,12 @@ void Calibration::updateCalibration(const CvSize &imgSize)
         + CV_CALIB_SAME_FOCAL_LENGTH);
     
     m_camDesc.leftCamera().intrinsics(c_lM);
-    m_camDesc.leftCamera().distortion(c_lD[0], c_lD[1], c_lD[2], c_lD[3], c_lD[4]);
+    m_camDesc.leftCamera().distortion(c_lD[0], c_lD[1], c_lD[2], 
+                                      c_lD[3], c_lD[4]);
     
     m_camDesc.rightCamera().intrinsics(c_rM);
-    m_camDesc.rightCamera().distortion(c_rD[0], c_rD[1], c_rD[2], c_rD[3], c_rD[4]);
+    m_camDesc.rightCamera().distortion(c_rD[0], c_rD[1], c_rD[2], 
+                                       c_rD[3], c_rD[4]);
     
     m_camDesc.fundamentalMatrix(c_F);
     m_camDesc.extrinsics(c_R, c_T);

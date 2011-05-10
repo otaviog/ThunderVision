@@ -1,4 +1,4 @@
-#include "meancompmetric.hpp"
+#include "meanqmetric.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -7,7 +7,7 @@ static inline double dbl(double v)
     return v*v;
 }
 
-IMatcherCompMetric::Report MeanCompMetric::compare(
+QualityMetric::Report MeanQMetric::compare(
     FloatImage truthImg, FloatImage resultImg)
 {
     float * const timg = truthImg.cpuMem()->data.fl;

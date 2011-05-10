@@ -1,9 +1,9 @@
 ADD_LIBRARY(BenchmarkLib 
-  ibenchmarkdataset.hpp
-  benchmarkrunner.hpp benchmarkrunner.cpp
-  benchdatasetfactory.hpp benchdatasetfactory.cpp
-  imatchercompmetric.hpp
-  meancompmetric.hpp meancompmetric.cpp)
+  bmdataset.hpp
+  bmrunner.hpp bmrunner.cpp
+  bmdatasetfactory.hpp bmdatasetfactory.cpp
+  qualitymetric.hpp
+  meanqmetric.hpp meanqmetric.cpp)
 
 ADD_EXECUTABLE(BenchmarkApp main.cpp)
 
