@@ -15,6 +15,8 @@ public:
     
     virtual ReadPipe<CvMat*> *rightImgOutput() = 0;
     
+    virtual void framesPerSec(float fps) = 0;
+    
 private:
 };
 

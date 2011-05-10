@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <iostream>
 #include <tdvbasic/util.hpp>
 
 TEST(UtilTest, ReplaceFirst)

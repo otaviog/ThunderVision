@@ -11,6 +11,7 @@ CUDA_ADD_LIBRARY(tdvision
   cudaprocess.hpp cudaprocess.cpp
   processgroup.hpp processgroup.cpp
   exceptionreport.hpp
+  updatecount.hpp updatecount.cpp
   processrunner.hpp processrunner.cpp
   floatimage.hpp floatimage.cpp
   dsimemutil.h

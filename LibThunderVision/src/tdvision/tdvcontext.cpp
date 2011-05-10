@@ -82,15 +82,14 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
         matcherFactory.maxDisparity(128);
-        //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);
-        matcherFactory.matchingCost(CommonStereoMatcherFactory::CrossCorrelationNorm);
+        matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
+        //matcherFactory.matchingCost(CommonStereoMatcherFactory::CrossCorrelationNorm);
     }
     else if ( profileName == "CPU" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::CPU);
     }
-    
-        
+            
     m_matcher = matcherFactory.createStereoMatcher();
 
     m_inputTees[0].enable(RECONSTRUCTION_TEE_ID);
@@ -101,9 +100,10 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
                                  m_inputTees[1].output(RECONSTRUCTION_TEE_ID));
     
     reconst->camerasDesc(m_spec->camerasDesc("default"));
+    reconst->benchmarkCallback(this);
     m_reconstRunner = new ProcessRunner(*reconst, this);
     m_reconstRunner->run();
-
+    
     return reconst;
 }
 
@@ -127,7 +127,7 @@ Calibration* TDVContext::runCalibration()
     CalibrationProc *calib = NULL;
     if ( m_calibRunner == NULL )
     {                
-        calib = new CalibrationProc(13);
+        calib = new CalibrationProc(3);
         
         m_inputTees[0].enable(CALIBRATION_TEE_ID);
         m_inputTees[1].enable(CALIBRATION_TEE_ID);
@@ -200,6 +200,11 @@ void TDVContext::switchCameras()
 
     m_inputTees[0].resumeProc();
     m_inputTees[1].resumeProc();    
+}
+
+void TDVContext::reconstructionDone(float framesSec)
+{
+    m_inputSrc->framesPerSec(framesSec);
 }
 
 TDV_NAMESPACE_END

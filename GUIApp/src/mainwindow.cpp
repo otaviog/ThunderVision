@@ -176,7 +176,7 @@ void MainWindow::initReconstruction()
 {
     if ( m_reconst == NULL )
     {        
-        m_reconst = m_ctx->runReconstruction("CPU");
+        m_reconst = m_ctx->runReconstruction("Device");
         pbRectification->setEnabled(true);
         pbDisparityMap->setEnabled(true);
     }

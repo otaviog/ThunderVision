@@ -10,7 +10,7 @@ TEST(TestCalibration, Calibration)
     tdv::ImageReader readerL("../../res/OpenCVBook_StereoDataL/", tdv::ImageReader::Directory);
     tdv::ImageReader readerR("../../res/OpenCVBook_StereoDataR/", tdv::ImageReader::Directory);
     
-    tdv::Calibration calib(13);
+    tdv::Calibration calib(10);
     calib.input(readerL.output(), readerR.output());
     calib.chessPattern(tdv::ChessboardPattern(tdv::Dim(9, 6)));
     for (size_t i=0; i<14; i++)

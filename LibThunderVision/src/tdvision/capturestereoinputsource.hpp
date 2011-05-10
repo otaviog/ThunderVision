@@ -28,6 +28,12 @@ public:
         return m_capture2.output();
     }
     
+    void framesPerSec(float fps)
+    {
+        m_capture1.framesPerSec(fps);
+        m_capture2.framesPerSec(fps);
+    }
+    
     Process** processes()
     {
         return m_procs;

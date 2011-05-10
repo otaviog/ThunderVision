@@ -17,6 +17,28 @@ class Benchmark;
 class Reconstruction: public ProcessGroup
 {
 public:
+    class BenchmarkCallback
+    {
+    public:
+        virtual void reconstructionDone(float time) = 0;
+    };
+    
+private:
+    class DispTeeProcess: public Process, public TeeWorkUnit<FloatImage>
+    {
+    public:
+        DispTeeProcess(BenchmarkCallback **callback)
+        {
+            m_callback = callback;
+        }
+        
+        void process();
+        
+    private:
+        BenchmarkCallback **m_callback;        
+    };
+    
+public:
     Reconstruction(StereoMatcher *matcher, 
                    ReadPipe<CvMat*> *leftImgIn,
                    ReadPipe<CvMat*> *rightImgIn);
@@ -34,6 +56,8 @@ public:
     void step()
     {
         m_ctrlProc.step();
+        if ( m_bcallback != NULL )
+            m_bcallback->reconstructionDone(30);
     }
     
     void pause()
@@ -57,14 +81,20 @@ public:
         m_rectify.camerasDesc(desc);
     }
     
+    void benchmarkCallback(BenchmarkCallback *callback)
+    {
+        m_bcallback = callback;
+    }
+
 private:
     CtrlProcess m_ctrlProc;
     TWorkUnitProcess<RectificationCV> m_rectify;
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];    
-    TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_dispTee;    
-    StereoMatcher *m_matcher;    
-    
+    DispTeeProcess m_dispTee;    
+    StereoMatcher *m_matcher;        
     ArrayProcessGroup m_procs;
+
+    BenchmarkCallback *m_bcallback;
 };
 
 

@@ -6,6 +6,7 @@
 #include "sink.hpp"
 #include "workunit.hpp"
 #include "pipe.hpp"
+#include "updatecount.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -28,6 +29,11 @@ public:
 
     bool update();    
     
+    float packetsBySeconds() const
+    {
+        return m_updateCount.countPerSecs();
+    }
+    
     ReadPipe<TeeType>* output(int wpipeId)
     {
         return m_wpipes[wpipeId];
@@ -47,6 +53,7 @@ private:
     ReadPipe<TeeType> *m_rp;
     WPipeMap m_wpipes;
     std::map<int, bool> m_wpipeEnabled;    
+    UpdateCount m_updateCount;
 };
 
 template<typename TeeType, typename SinkPolicy>
@@ -61,9 +68,9 @@ TeeWorkUnit<TeeType, SinkPolicy>::~TeeWorkUnit()
 
 template<typename TeeType, typename SinkPolicy>
 bool TeeWorkUnit<TeeType, SinkPolicy>::update()
-{
+{    
     TeeType data;
-    const bool rd = m_rp->read(&data);    
+    const bool rd = m_rp->read(&data);            
     
     for ( typename WPipeMap::iterator mIt = m_wpipes.begin();
           mIt != m_wpipes.end(); mIt++)
@@ -84,6 +91,8 @@ bool TeeWorkUnit<TeeType, SinkPolicy>::update()
             }
         }        
     }
+    
+    m_updateCount.count();
     
     if ( rd )
     {

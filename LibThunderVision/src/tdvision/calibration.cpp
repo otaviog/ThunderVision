@@ -147,6 +147,16 @@ void Calibration::updateCalibration(const CvSize &imgSize)
     m_camDesc.extrinsics(c_R, c_T);
 }
 
+static inline std::string tmpName(const size_t frame, const std::string &base)
+{
+    if ( frame > 9 )
+        return 
+            (boost::format("%1%%2%.jpg") % base % frame).str();
+    else
+        return 
+            (boost::format("%1%0%2%.jpg") % base % frame).str();
+}
+
 bool Calibration::update()
 {        
     WriteGuard<ReadWritePipe<CvMat*> > wg(m_dipipe);
@@ -172,11 +182,11 @@ bool Calibration::update()
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
     
     cvSaveImage(
-        (boost::format("left%1%.jpg") % (m_currFrame + 1)).str().c_str(),
+        tmpName(m_currFrame + 1, "left").c_str(),
         limgOrigin);
     
     cvSaveImage(
-        (boost::format("right%1%.jpg") % (m_currFrame + 1)).str().c_str(),
+        tmpName(m_currFrame + 1, "right").c_str(),
         rimgOrigin);
 
     CvMatSinkPol::sink(rimgOrigin);        

@@ -6,6 +6,7 @@
 #include "ssddev.hpp"
 #include "crosscorrelationdev.hpp"
 #include "dynamicprogdev.hpp"
+#include "dynamicprogcpu.hpp"
 #include "commonstereomatcherfactory.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -60,6 +61,10 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
             matcher->setOptimizer(boost::shared_ptr<DynamicProgDev>(
                                       new DynamicProgDev));
             break;
+        case DynamicProgOnCPU:
+            matcher->setOptimizer(boost::shared_ptr<DynamicProgCPU>(
+                                      new DynamicProgCPU));
+            break;
         default:
             assert(false);
         }
@@ -74,6 +79,7 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
         {
         case WTA:
         case DynamicProg:
+        case DynamicProgOnCPU:
             cvMatchMode = StereoCorrespondenceCV::LocalMatching;
             break;
         case Global:

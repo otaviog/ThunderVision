@@ -1,5 +1,7 @@
 #include <cstring>
 #include <vector>
+#include <sys/time.h> 
+#include <stdlib.h>
 #include "util.hpp"
 
 TDV_NAMESPACE_BEGIN

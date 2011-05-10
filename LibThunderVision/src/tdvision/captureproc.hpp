@@ -8,6 +8,7 @@
 #include "floatimage.hpp"
 #include "process.hpp"
 #include "pipe.hpp"
+#include "updatecount.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -29,10 +30,18 @@ public:
         return &m_wpipe;
     }
 
+    void framesPerSec(float fps)
+    {
+        m_fps = fps;
+    }
+    
 private:
     ReadWritePipe<CvMat*> m_wpipe;
     CvCapture *m_capture;
     TmpBufferImage m_resizeTmp;
+    float m_fps;
+    
+    UpdateCount m_updateCount;
 };
 
 

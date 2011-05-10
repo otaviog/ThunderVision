@@ -12,6 +12,7 @@ Capture::Capture()
     : m_resizeTmp(CV_8UC3)
 {
     m_capture = NULL;
+    m_fps = 30;
 }
 
 void Capture::init(const std::string &filename)
@@ -22,9 +23,7 @@ void Capture::init(const std::string &filename)
         boost::system::error_code errcode;
         throw Exception(boost::format("Can't open file %1%: %2%") 
                         % filename % errcode.message());
-    }
-    
-    cvSetCaptureProperty(m_capture, CV_CAP_PROP_FPS, 20);
+    }    
 }
 
 void Capture::init(int capDevice)
@@ -39,10 +38,15 @@ void Capture::init(int capDevice)
 }
 
 void Capture::update()
-{
+{            
+    if ( m_updateCount.countPerSecsNow() > m_fps )
+        return ;
+    
     cvGrabFrame(m_capture);        
     IplImage *frame = cvRetrieveFrame(m_capture);
-        
+
+    m_updateCount.count();
+    
     if ( frame != NULL )
     {
         CvMat *rmat = m_resizeTmp.getImage(

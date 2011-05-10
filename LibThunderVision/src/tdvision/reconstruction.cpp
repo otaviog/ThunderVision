@@ -1,3 +1,4 @@
+#include <limits>
 #include "stereomatcher.hpp"
 #include "reconstruction.hpp"
 
@@ -6,7 +7,9 @@ TDV_NAMESPACE_BEGIN
 Reconstruction::Reconstruction(StereoMatcher *matcher, 
                                ReadPipe<CvMat*> *leftImgIn,
                                ReadPipe<CvMat*> *rightImgIn)
+    : m_dispTee(&m_bcallback)
 {
+    m_bcallback = NULL;
     m_matcher = matcher;
     
     m_ctrlProc.inputs(leftImgIn, rightImgIn);
@@ -59,6 +62,23 @@ void Reconstruction::dupDisparityMap(ReadPipe<FloatImage> **dispMapOut)
 void Reconstruction::undupDisparityMap()
 {
     m_dispTee.disable(1);
+}
+
+void Reconstruction::DispTeeProcess::process()
+{    
+    bool cont = update();
+    
+    while ( cont )
+    {
+        cont = update();
+        
+        if ( *m_callback != NULL )
+        {
+            const float pbs = packetsBySeconds();
+            if ( pbs < std::numeric_limits<float>::infinity() )
+                (*m_callback)->reconstructionDone(pbs);
+        }
+    }
 }
 
 TDV_NAMESPACE_END
