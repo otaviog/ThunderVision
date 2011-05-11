@@ -2,6 +2,7 @@
 #define TDV_RECTIFICATIONCV_HPP
 
 #include <tdvbasic/common.hpp>
+#include <cv.h>
 #include "workunit.hpp"
 #include "pipe.hpp"
 #include "floatimage.hpp"
@@ -123,7 +124,6 @@ private:
 
     TmpBufferImage m_limg32f, m_rimg32f, m_limg8u, m_rimg8u,
         m_mxLeft, m_myLeft, m_mxRight, m_myRight;
-
 };
 
 TDV_NAMESPACE_END

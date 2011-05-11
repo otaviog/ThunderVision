@@ -1,6 +1,7 @@
 ADD_ANTLR3_GRAMMAR(ThunderLang)
 
 CUDA_ADD_LIBRARY(tdvision  
+  vec3.hpp
   dim.hpp dim.cpp
   pipe.hpp
   workunit.hpp  
@@ -57,4 +58,10 @@ CUDA_ADD_LIBRARY(tdvision
   tlctx.h tlctx.cpp  
   ThunderLangParser.h ThunderLangParser.c
   ThunderLangLexer.h ThunderLangLexer.c
-  parserexception.hpp)
+  parserexception.hpp
+  glcommon.hpp
+  vertexbuffer.hpp vertexbuffer.cpp
+  reprojector.hpp 
+  cvreprojector.hpp cvreprojector.cpp
+  tristripmesh.hpp tristripmesh.cpp
+  )
