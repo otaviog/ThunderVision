@@ -13,6 +13,11 @@ TDV_NAMESPACE_BEGIN
 class FlowCtrl
 {
 public:
+    enum Mode
+    {
+        Continuous, Step
+    };
+
     FlowCtrl();
     
     void pause()
@@ -38,15 +43,15 @@ public:
         m_mode = Continuous;
     }
     
+    Mode mode() const
+    {
+        return m_mode;
+    }
+    
 protected:
     bool testFlow();
     
-private:
-    enum Mode
-    {
-        Continuous, Step
-    };
-      
+private:      
     bool m_step, m_hasWrite;
     Mode m_mode;
 };   

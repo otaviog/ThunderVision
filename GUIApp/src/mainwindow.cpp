@@ -31,6 +31,9 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
 
     pbRectification->setEnabled(false);
     pbDisparityMap->setEnabled(false);
+    
+    m_reprView = new ReprojectionView(this);
+    layReproj->addWidget(m_reprView, 0, 0);
 }
 
 MainWindow::~MainWindow()
@@ -176,7 +179,7 @@ void MainWindow::initReconstruction()
 {
     if ( m_reconst == NULL )
     {        
-        m_reconst = m_ctx->runReconstruction("Device");
+        m_reconst = m_ctx->runReconstruction("Device", m_reprView->reprojection());
         pbRectification->setEnabled(true);
         pbDisparityMap->setEnabled(true);
     }

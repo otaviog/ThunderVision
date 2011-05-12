@@ -7,6 +7,7 @@
 #include <tdvision/stereoinputsource.hpp>
 #include "ui_mainwindow.h"
 #include "videowidget.hpp"
+#include "reprojectionview.hpp"
 
 class CamerasViewDialog;
 class RectificationViewDialog;
@@ -57,6 +58,7 @@ private:
     CamerasViewDialog *m_camsDialog;
     RectificationViewDialog *m_rectDialog;
     DisparityDialog *m_dispDialog;
+    ReprojectionView *m_reprView;
 };
 
 #endif /* TDV_MAINWINDOW_HPP */

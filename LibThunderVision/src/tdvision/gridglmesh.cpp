@@ -14,11 +14,11 @@ void GridGLMesh::resize(const Dim &dim)
     if ( m_dim != dim )
     {
         m_dim = dim;
-        m_vertices.bind(GL_ARRAY_BUFFER, GL_STATIC_DRAW, 
+        m_vertices.bind(GL_ARRAY_BUFFER, GL_STREAM_DRAW, 
                         dim.size()*sizeof(Vec3f));
-        m_colors.bind(GL_ARRAY_BUFFER, GL_STATIC_DRAW, 
+        m_colors.bind(GL_ARRAY_BUFFER, GL_STREAM_DRAW, 
                       dim.size()*sizeof(Vec3f));
-        m_indices.bind(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, 
+        m_indices.bind(GL_ELEMENT_ARRAY_BUFFER, GL_STREAM_DRAW, 
                        (dim.height()*2*(dim.width() - 1))*sizeof(GLuint));
         
         GLuint *indices = m_indices.map<GLuint>();

@@ -81,8 +81,7 @@ typedef Sink<CvMat*, CvMatSinkPol> CvMatSink;
 
 template<typename Type>
 struct SinkTraits
-{    
-
+{        
 };
 
 template<>

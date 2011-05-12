@@ -3,17 +3,19 @@
 #include <boost/lexical_cast.hpp>
 #include <QLocale>
 #include <tdvbasic/log.hpp>
+#include <tdvision/glcommon.hpp>
 #include <tdvision/tdvcontext.hpp>
 #include <tdvision/capturestereoinputsource.hpp>
 #include "cmdline.hpp"
 #include "mainwindow.hpp"
 
 int main(int argc, char *argv[])
-{
-    tdv::TdvGlobalLogDefaultOutputs();
+{    
+    tdv::TdvGlobalLogDefaultOutputs();    
+    
     QApplication qapp(argc, argv);        
     Q_INIT_RESOURCE(resources);
-    
+
     tdv::StereoInputSource *inputSrc = NULL;
     tdv::ThunderSpec *spec = NULL;
     try
@@ -41,12 +43,13 @@ int main(int argc, char *argv[])
     {
         std::cout<<unknowOpt.what()<<std::endl;
         
-    }
+    }        
     
     tdv::TDVContext context;
     context.spec(spec);
     
     MainWindow *mainWindow = new MainWindow(&context);    
+    glewInit();
     mainWindow->start(inputSrc);
     mainWindow->show();        
     

@@ -9,7 +9,7 @@ TDV_NAMESPACE_BEGIN
 class Reprojector
 {
 public:
-    virtual Vec3f reproject(int x, int y, float disp) = 0;
+    virtual Vec3f reproject(int x, int y, float disp) const = 0;
 };
 
 TDV_NAMESPACE_END

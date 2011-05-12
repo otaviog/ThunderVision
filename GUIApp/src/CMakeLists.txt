@@ -6,7 +6,9 @@ QT4_WRAP_CPP(QT_WRAPS
   selectinputdialog.hpp
   errorreport.hpp
   rectificationviewdialog.hpp
-  disparitydialog.hpp)
+  disparitydialog.hpp
+  reprojectionview.hpp
+  )
 
 QT4_WRAP_UI(QT_UICS 
   calibrationdialog.ui 
@@ -29,6 +31,7 @@ ADD_LIBRARY(GUILib
   selectinputdialog.hpp selectinputdialog.cpp
   rectificationviewdialog.hpp rectificationviewdialog.cpp
   disparitydialog.hpp disparitydialog.cpp
+  reprojectionview.hpp reprojectionview.cpp
   ${QT_WRAPS} ${QT_UICS} ${QT_RECS})
 
 ADD_EXECUTABLE(GUIApp

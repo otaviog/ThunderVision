@@ -67,7 +67,7 @@ void TDVContext::dispose()
     }
 }
 
-Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
+Reconstruction* TDVContext::runReconstruction(const std::string &profileName, Reprojection *reproj)
 {
     Reconstruction *reconst = NULL;
 
@@ -97,7 +97,8 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName)
     
     reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(RECONSTRUCTION_TEE_ID),
-                                 m_inputTees[1].output(RECONSTRUCTION_TEE_ID));
+                                 m_inputTees[1].output(RECONSTRUCTION_TEE_ID),
+                                 reproj);
     
     reconst->camerasDesc(m_spec->camerasDesc("default"));
     reconst->benchmarkCallback(this);

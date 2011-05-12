@@ -15,6 +15,11 @@ public:
     
     Vec3f reproject(int x, int y, float disp) const;    
     
+    void qmatrix(double mtx[16])
+    {
+        memcpy(m_qMatrix, mtx, sizeof(double)*16);
+    }
+    
 private:
     mutable double m_qMatrix[16];
 };

@@ -8,6 +8,7 @@
 #include "floatconv.hpp"
 #include "teeworkunit.hpp"
 #include "workunitprocess.hpp"
+#include "reprojectprocess.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -27,21 +28,31 @@ private:
     class DispTeeProcess: public Process, public TeeWorkUnit<FloatImage>
     {
     public:
-        DispTeeProcess(BenchmarkCallback **callback)
+        DispTeeProcess(Reconstruction *self, BenchmarkCallback **callback)
         {
             m_callback = callback;
+            m_self = self;
         }
         
         void process();
         
     private:
-        BenchmarkCallback **m_callback;        
+        Reconstruction *m_self;
+        BenchmarkCallback **m_callback;                
     };
+    
+    static const int LOGN_CTRL_ID = 0;
+    static const int LOGN_REP_ID = 1;
+    static const int DISP_REP_ID = 0;
+    static const int DISP_VIEW_ID = 1;
+    static const int RECT_MATCHER_ID = 0;
+    static const int RECT_VIEW_ID = 1;    
     
 public:
     Reconstruction(StereoMatcher *matcher, 
                    ReadPipe<CvMat*> *leftImgIn,
-                   ReadPipe<CvMat*> *rightImgIn);
+                   ReadPipe<CvMat*> *rightImgIn,
+                   Reprojection *reprojection);
     
     Process** processes()
     {
@@ -63,6 +74,11 @@ public:
     void pause()
     {
         m_ctrlProc.pause();
+    }
+        
+    FlowCtrl::Mode mode() const
+    {
+        return m_ctrlProc.mode();
     }
     
     const Benchmark& benchmark() const;
@@ -88,12 +104,15 @@ public:
 
 private:
     CtrlProcess m_ctrlProc;
+    TWorkUnitProcess<TeeWorkUnit<CvMat*> > m_leftOriginTee;
     TWorkUnitProcess<RectificationCV> m_rectify;
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];    
     DispTeeProcess m_dispTee;    
-    StereoMatcher *m_matcher;        
+    StereoMatcher *m_matcher;      
+    ReprojectProcess m_reprojectProc;
+    
     ArrayProcessGroup m_procs;
-
+    
     BenchmarkCallback *m_bcallback;
 };
 

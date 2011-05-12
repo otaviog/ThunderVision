@@ -91,20 +91,21 @@ void RectificationCV::calibratedRectify(const CvMat *lM, const CvMat *rM,
                                         CvMat *mxLeft, CvMat *myLeft,
                                         CvMat *mxRight, CvMat *myRight)
 {
-    double c_lR[9], c_rR[9], c_lP[12], c_rP[12];
+    double c_lR[9], c_rR[9], c_lP[12], c_rP[12], c_Q[16];
     CvMat v_lR = cvMat(3, 3, CV_64F, c_lR);
     CvMat v_rR = cvMat(3, 3, CV_64F, c_rR);
     CvMat v_lP = cvMat(3, 4, CV_64F, c_lP);
     CvMat v_rP = cvMat(3, 4, CV_64F, c_rP);
-
+    CvMat v_Q = cvMat(4, 4, CV_64F, c_Q);
+    
     cvSetIdentity(&v_lR);
     cvSetIdentity(&v_rR);
     cvSetIdentity(&v_lP);
     cvSetIdentity(&v_rP);
 
     cvStereoRectify(lM, rM, lD, rD, imgSize, R, T,
-                    &v_lR, &v_rR, &v_lP, &v_rP, 0, 0);
-
+                    &v_lR, &v_rR, &v_lP, &v_rP, &v_Q, 0);
+    m_repr.qmatrix(c_Q);
     cvInitUndistortRectifyMap(lM, lD, &v_lR, &v_lP,
                               mxLeft, myLeft);
     cvInitUndistortRectifyMap(rM, rD, &v_rR, &v_rP,

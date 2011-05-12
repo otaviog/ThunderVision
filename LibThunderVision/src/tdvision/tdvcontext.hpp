@@ -33,7 +33,8 @@ public:
     
     void dispose();
     
-    Reconstruction* runReconstruction(const std::string &profileName);    
+    Reconstruction* runReconstruction(const std::string &profileName, 
+        Reprojection *reproj);
     
     void releaseReconstruction(Reconstruction *reconst);
     

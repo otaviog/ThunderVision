@@ -8,6 +8,7 @@
 #include "floatimage.hpp"
 #include "tmpbufferimage.hpp"
 #include "camerasdesc.hpp"
+#include "cvreprojector.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -52,7 +53,7 @@ private:
 };
 
 
-class RectificationCV: public WorkUnit
+class RectificationCV: public WorkUnit, public Reprojector
 {
 public:
     RectificationCV();
@@ -87,9 +88,14 @@ public:
         m_camsDesc = desc;
         m_camsDescChanged = true;
     }
-
+    
+    Vec3f reproject(int x, int y, float disp) const
+    {
+        return m_repr.reproject(x, y, disp);
+    };    
+    
     bool update();
-
+    
 private:
     void updateRectification(CvMat *limg8u, CvMat *rimg8u);
 
@@ -124,6 +130,8 @@ private:
 
     TmpBufferImage m_limg32f, m_rimg32f, m_limg8u, m_rimg8u,
         m_mxLeft, m_myLeft, m_mxRight, m_myRight;
+    
+    CVReprojector m_repr;
 };
 
 TDV_NAMESPACE_END

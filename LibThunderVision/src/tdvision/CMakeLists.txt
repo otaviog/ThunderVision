@@ -62,6 +62,10 @@ CUDA_ADD_LIBRARY(tdvision
   glcommon.hpp
   vertexbuffer.hpp vertexbuffer.cpp
   reprojector.hpp 
+  reprojection.hpp
   cvreprojector.hpp cvreprojector.cpp
+  directreprojector.hpp
   gridglmesh.hpp gridglmesh.cpp
+  glreprojection.hpp glreprojection.cpp
+  reprojectprocess.hpp reprojectprocess.cpp
   )
