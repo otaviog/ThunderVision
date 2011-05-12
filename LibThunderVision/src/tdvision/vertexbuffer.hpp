@@ -57,6 +57,11 @@ public:
         glBindBuffer(m_elemType, m_id);
         glUnmapBuffer(m_elemType);
     }
+    
+    GLuint get()
+    {
+        return m_id;
+    }
 
 private:
     GLuint m_id;

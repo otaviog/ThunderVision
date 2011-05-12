@@ -11,7 +11,7 @@ class TriStripMesh
 {
 public:        
     TripStripMesh();
-    
+        
     void resizeVerts(size_t size)
     {
         if ( m_nVerts != size )
@@ -45,7 +45,7 @@ public:
         return m_indices.map<GLuint>();
     }
     
-    void draw();            
+    void draw();
     
 private:
     VertexBuffer m_vertices,    
@@ -68,7 +68,6 @@ class Reconstruction
 class GLReconstruction
 {
 public:
-
     
     virtual void draw() = 0;
         

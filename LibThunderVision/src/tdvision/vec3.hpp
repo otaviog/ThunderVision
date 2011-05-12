@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <tdvbasic/common.hpp>
+#include <cmath>
 
 TDV_NAMESPACE_BEGIN
 

@@ -12,6 +12,8 @@ public:
     Dim(size_t w)
     {
         dim[0] = w;
+        dim[1] = 0;
+        dim[2] = 0;
         ndim = 1;
     }
 
@@ -19,6 +21,7 @@ public:
     {
         dim[0] = w;
         dim[1] = h;
+        dim[2] = 0;
         ndim = 2;
     }
 
@@ -76,6 +79,18 @@ private:
     size_t dim[3];
     size_t ndim;
 };
+
+inline bool operator==(const Dim &lfs, const Dim &rhs)
+{
+    return lfs.width() == rhs.width()
+        && lfs.height() == rhs.height()
+        && lfs.depth() == rhs.depth();
+}
+
+inline bool operator!=(const Dim &lfs, const Dim &rhs)
+{
+    return !(lfs == rhs);
+}
 
 TDV_NAMESPACE_END
 

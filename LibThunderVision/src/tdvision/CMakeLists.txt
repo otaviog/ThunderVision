@@ -63,5 +63,5 @@ CUDA_ADD_LIBRARY(tdvision
   vertexbuffer.hpp vertexbuffer.cpp
   reprojector.hpp 
   cvreprojector.hpp cvreprojector.cpp
-  tristripmesh.hpp tristripmesh.cpp
+  gridglmesh.hpp gridglmesh.cpp
   )
