@@ -1,7 +1,6 @@
 ADD_ANTLR3_GRAMMAR(ThunderLang)
 
 CUDA_ADD_LIBRARY(tdvision  
-  vec3.hpp
   dim.hpp dim.cpp
   pipe.hpp
   workunit.hpp  

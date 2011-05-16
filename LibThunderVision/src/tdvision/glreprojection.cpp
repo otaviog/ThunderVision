@@ -10,7 +10,7 @@ GLReprojection::GLReprojection()
 }
 
 void GLReprojection::updateMesh()
-{
+{    
     if ( m_lorigin == NULL )
         return ;
     
@@ -23,19 +23,25 @@ void GLReprojection::updateMesh()
     const size_t step = m_lorigin->step;
     const float _1_255 = 1.0f/255.0f;
     
+    m_box.clear();
+    
     for (size_t r=0; r<dim.height(); r++)
     {
         for (size_t c=0; c<dim.width(); c++)
         {
             uchar *colorBase = &m_lorigin->data.ptr[r*step + c];
 
-            const Vec3f color(colorBase[0]*_1_255,
-                              colorBase[1]*_1_255,
-                              colorBase[2]*_1_255);
-                                                                      
+            const ud::Vec3f color(colorBase[0]*_1_255,
+                                  colorBase[1]*_1_255,
+                                  colorBase[2]*_1_255);
+            const ud::Vec3f vert(
+                m_lrepr->reproject(
+                    c, r, disp_c[r*dim.width() + c]));
+            
+            m_box.add(vert);
+            
             m_mesh.setPoint(
-                c, r, m_lrepr->reproject(
-                    c, r, disp_c[r*dim.width() + c]),
+                c, r, vert,
                 color);
         }
     }

@@ -15,9 +15,9 @@ void GridGLMesh::resize(const Dim &dim)
     {
         m_dim = dim;
         m_vertices.bind(GL_ARRAY_BUFFER, GL_STREAM_DRAW, 
-                        dim.size()*sizeof(Vec3f));
+                        dim.size()*sizeof(ud::Vec3f));
         m_colors.bind(GL_ARRAY_BUFFER, GL_STREAM_DRAW, 
-                      dim.size()*sizeof(Vec3f));
+                      dim.size()*sizeof(ud::Vec3f));
         m_indices.bind(GL_ELEMENT_ARRAY_BUFFER, GL_STREAM_DRAW, 
                        (dim.height()*2*(dim.width() - 1))*sizeof(GLuint));
         
@@ -68,8 +68,8 @@ void GridGLMesh::draw()
 
 void GridGLMesh::lock()
 {
-    m_vertBuff = m_vertices.map<Vec3f>();
-    m_colBuff = m_colors.map<Vec3f>();
+    m_vertBuff = m_vertices.map<ud::Vec3f>();
+    m_colBuff = m_colors.map<ud::Vec3f>();
 }
     
 void GridGLMesh::unlock()

@@ -89,7 +89,7 @@ public:
         m_camsDescChanged = true;
     }
     
-    Vec3f reproject(int x, int y, float disp) const
+    ud::Vec3f reproject(int x, int y, float disp) const
     {
         return m_repr.reproject(x, y, disp);
     };    

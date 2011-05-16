@@ -33,7 +33,7 @@ TEST(TestTDVContext, ShouldCreateReconstruction)
     inputSrc.init("../../res/cam0.avi", "../../res/cam1.avi");
 
     ctx.start(&inputSrc);
-    Reconstruction *reconst = ctx.runReconstruction("CPU");
+    Reconstruction *reconst = ctx.runReconstruction("CPU", NULL);
     
     ASSERT_TRUE(reconst != NULL);
 
@@ -42,7 +42,7 @@ TEST(TestTDVContext, ShouldCreateReconstruction)
     
     ctx.releaseReconstruction(reconst);
     
-    reconst = ctx.runReconstruction("Device");
+    reconst = ctx.runReconstruction("Device", NULL);
     reconst->step();
     
     ctx.releaseReconstruction(reconst);

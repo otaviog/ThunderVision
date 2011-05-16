@@ -1,0 +1,5 @@
+FILE(GLOB verts "${CMAKE_CURRENT_SOURCE_DIR}/*.vert")
+INSTALL(FILES ${verts} DESTINATION share/ud)
+
+FILE(GLOB frag "${CMAKE_CURRENT_SOURCE_DIR}/*.frag")
+INSTALL(FILES ${frag} DESTINATION share/ud)

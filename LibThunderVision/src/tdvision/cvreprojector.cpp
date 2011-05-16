@@ -8,10 +8,10 @@ CVReprojector::CVReprojector()
     cvSetIdentity(&mat);
 }
 
-Vec3f CVReprojector::reproject(int x, int y, float disp) const
+ud::Vec3f CVReprojector::reproject(int x, int y, float disp) const
 {
     float xyd[] = { x, y, disp };
-    Vec3f dst;
+    ud::Vec3f dst;
         
     const CvMat srcArr = cvMat(1, 1, CV_32FC3, xyd);
     CvMat dstArr = cvMat(1, 1, CV_32FC3, dst.v);

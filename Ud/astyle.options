@@ -1,0 +1,4 @@
+style=linux 
+brackets=break 
+min-conditional-indent=0  
+indent=spaces=4

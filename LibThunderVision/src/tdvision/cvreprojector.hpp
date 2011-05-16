@@ -13,7 +13,7 @@ public:
     
     CVReprojector();
     
-    Vec3f reproject(int x, int y, float disp) const;    
+    ud::Vec3f reproject(int x, int y, float disp) const;    
     
     void qmatrix(float mtx[16])
     {

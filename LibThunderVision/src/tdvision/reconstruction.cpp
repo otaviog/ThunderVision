@@ -106,7 +106,6 @@ void Reconstruction::DispTeeProcess::process()
     {
         cont = update();
         
-#if 0 
         if ( *m_callback != NULL )
         {
             const float pbs = packetsBySeconds();
@@ -117,7 +116,6 @@ void Reconstruction::DispTeeProcess::process()
             else if ( pbs < std::numeric_limits<float>::infinity() )   
                 (*m_callback)->reconstructionDone(pbs);        
         }
-#endif
     }
 }
 

@@ -2,10 +2,10 @@
 #define UD_VEC3_HPP
 
 #include <ostream>
-#include <tdvbasic/common.hpp>
 #include <cmath>
+#include "../common.hpp"
 
-TDV_NAMESPACE_BEGIN
+UD_NAMESPACE_BEGIN
 
 /**
  * Simple 3D vector class.
@@ -234,6 +234,6 @@ void Vec3f::normalize()
     *this = vecNormal(*this);
 }
 
-TDV_NAMESPACE_END
+UD_NAMESPACE_END
 
 #endif

@@ -2,6 +2,7 @@
 #define TDV_GLREPROJECTION_HPP
 
 #include <tdvbasic/common.hpp>
+#include <ud/ugl/aabb.hpp>
 #include <boost/thread.hpp>
 #include "reprojection.hpp"
 #include "reprojector.hpp"
@@ -18,6 +19,11 @@ public:
     
     void draw();    
     
+    const ud::Aabb& box() const
+    {
+        return m_box;
+    }
+ 
 private:            
     void updateMesh();
     
@@ -27,6 +33,8 @@ private:
     FloatImage m_ldisp;
     CvMat *m_lorigin;
     Reprojector *m_lrepr;
+    
+    ud::Aabb m_box;
 };
 
 TDV_NAMESPACE_END
