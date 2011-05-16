@@ -10,7 +10,8 @@
 
 TDV_NAMESPACE_BEGIN
 
-template<typename TeeType, typename SinkPolicy = typename SinkTraits<TeeType>::Sinker >
+template<typename TeeType, 
+         typename SinkPolicy = typename SinkTraits<TeeType>::Sinker >
 class TeeWorkUnit: public WorkUnit
 {
     typedef typename std::map<int, ReadWritePipe<TeeType>* > WPipeMap;

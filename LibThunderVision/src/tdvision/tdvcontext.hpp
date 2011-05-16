@@ -16,6 +16,7 @@ class StereoInputSource;
 class StereoMatcher;
 class Calibration;
 class ThunderSpec;
+class Reprojection;
 
 class TDVContext: public ExceptionReport, 
                   public Reconstruction::BenchmarkCallback

@@ -15,13 +15,13 @@ public:
     
     Vec3f reproject(int x, int y, float disp) const;    
     
-    void qmatrix(double mtx[16])
+    void qmatrix(float mtx[16])
     {
-        memcpy(m_qMatrix, mtx, sizeof(double)*16);
+        memcpy(m_qMatrix, mtx, sizeof(float)*16);
     }
     
 private:
-    mutable double m_qMatrix[16];
+    mutable float m_qMatrix[16];
 };
 
 TDV_NAMESPACE_END

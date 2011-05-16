@@ -53,7 +53,6 @@ void MainWindow::start(tdv::StereoInputSource *inputSrc)
             loadDlg.show();
             try
             {
-
                 inputSrc = inputDlg.createInputSource();
             }
             catch (const tdv::Exception &ex)
@@ -179,7 +178,8 @@ void MainWindow::initReconstruction()
 {
     if ( m_reconst == NULL )
     {        
-        m_reconst = m_ctx->runReconstruction("Device", m_reprView->reprojection());
+        m_reconst = m_ctx->runReconstruction(
+            "Device", m_reprView->reprojection());
         pbRectification->setEnabled(true);
         pbDisparityMap->setEnabled(true);
     }

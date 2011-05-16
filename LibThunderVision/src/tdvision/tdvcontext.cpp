@@ -8,6 +8,7 @@
 #include "wtadev.hpp"
 #include "processgroup.hpp"
 #include "commonstereomatcherfactory.hpp"
+#include "reprojection.hpp"
 #include "tdvcontext.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -23,6 +24,9 @@ TDVContext::TDVContext()
     m_errHandler = NULL;
     m_matcher = NULL;
     spec(NULL);
+    
+    m_inputTees[0].workName("Input Tee 0");
+    m_inputTees[1].workName("Input Tee 1");    
 }
 
 void TDVContext::spec(tdv::ThunderSpec *spec)
@@ -45,7 +49,7 @@ void TDVContext::start(StereoInputSource *inputSrc)
 
         m_inputTees[0].input(m_inputSrc->leftImgOutput());
         m_inputTees[1].input(m_inputSrc->rightImgOutput());
-
+        
         ArrayProcessGroup pgrp;
         pgrp.addProcess(*m_inputSrc);
         pgrp.addProcess(&m_inputTees[0]);
@@ -67,7 +71,8 @@ void TDVContext::dispose()
     }
 }
 
-Reconstruction* TDVContext::runReconstruction(const std::string &profileName, Reprojection *reproj)
+Reconstruction* TDVContext::runReconstruction(const std::string &profileName, 
+                                              Reprojection *reproj)
 {
     Reconstruction *reconst = NULL;
 
@@ -135,6 +140,7 @@ Calibration* TDVContext::runCalibration()
         
         calib->input(m_inputTees[0].output(CALIBRATION_TEE_ID),
                      m_inputTees[1].output(CALIBRATION_TEE_ID));
+        calib->workName("Calibration");
         
         ArrayProcessGroup grp;
         grp.addProcess(calib);

@@ -3,7 +3,7 @@
 TDV_NAMESPACE_BEGIN
 
 GridGLMesh::GridGLMesh()
-    : m_dim(-1)
+    : m_dim(0)
 {
     m_vertBuff = NULL;
     m_colBuff = NULL;
@@ -37,6 +37,9 @@ void GridGLMesh::resize(const Dim &dim)
 
 void GridGLMesh::draw()
 {
+    if ( m_dim.width() == 0 )
+        return ;
+    
     glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);

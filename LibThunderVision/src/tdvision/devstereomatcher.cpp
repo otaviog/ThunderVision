@@ -25,7 +25,7 @@ void DevStereoMatcher::inputs(ReadPipe<FloatImage> *leftInput,
                    
     m_process.addWork(m_matchCost.get());
     m_process.addWork(m_optimizer.get()); 
-    m_process.addWork(&m_cpyCPU);
+    m_process.addWork(&m_cpyCPU);        
 }
 
 std::string DevStereoMatcher::name() const

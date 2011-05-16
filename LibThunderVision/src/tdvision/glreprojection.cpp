@@ -41,9 +41,12 @@ void GLReprojection::updateMesh()
     }
     
     m_mesh.unlock();
+    
+    m_lorigin = NULL;
 }
 
-void GLReprojection::reproject(FloatImage disp, CvMat *origin, Reprojector *repr)
+void GLReprojection::reproject(FloatImage disp, CvMat *origin, 
+                               Reprojector *repr)
 {
     assert(repr != NULL);    
     boost::mutex::scoped_lock lock(m_meshMutex);
@@ -51,14 +54,14 @@ void GLReprojection::reproject(FloatImage disp, CvMat *origin, Reprojector *repr
     m_ldisp = disp;
     m_lorigin = origin;
     m_lrepr = repr;
+    
     CvMatSinkPol::incrRef(m_lorigin);
 }
 
 void GLReprojection::draw()
 {
     boost::mutex::scoped_lock lock(m_meshMutex);    
-    updateMesh();    
-    m_lorigin = NULL;
+    updateMesh();        
     
     CvMatSinkPol::sink(m_lorigin);
     

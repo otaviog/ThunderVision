@@ -4,6 +4,15 @@
 
 TDV_NAMESPACE_BEGIN
 
+/**
+ * leftImgIn-|
+ *           |-leftOriginTee
+ *
+ *            
+ * rightImgIn-|
+ *
+ */ 
+
 Reconstruction::Reconstruction(StereoMatcher *matcher, 
                                ReadPipe<CvMat*> *leftImgIn,
                                ReadPipe<CvMat*> *rightImgIn,
@@ -13,11 +22,12 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_bcallback = NULL;
     m_matcher = matcher;
     
-    m_leftOriginTee.input(leftImgIn);
-    m_leftOriginTee.enable(LOGN_CTRL_ID);
-    m_ctrlProc.inputs(m_leftOriginTee.output(LOGN_CTRL_ID), rightImgIn);
+    m_ctrlProc.inputs(leftImgIn, rightImgIn);
     
-    m_rectify.leftImgInput(m_ctrlProc.leftImgOutput());
+    m_leftOriginTee.input(m_ctrlProc.leftImgOutput());    
+    m_leftOriginTee.enable(LOGN_RECT_ID);
+
+    m_rectify.leftImgInput(m_leftOriginTee.output(LOGN_RECT_ID));    
     m_rectify.rightImgInput(m_ctrlProc.rightImgOutput());
     
     m_rectTee[0].input(m_rectify.leftImgOutput());
@@ -29,18 +39,16 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_matcher->inputs(m_rectTee[0].output(RECT_MATCHER_ID),
                       m_rectTee[1].output(RECT_MATCHER_ID));
     
-    m_dispTee.input(m_matcher->output());    
-    
+    m_dispTee.input(m_matcher->output());        
     m_dispTee.enable(DISP_REP_ID);
+    
     m_leftOriginTee.enable(LOGN_REP_ID);
+    
     m_reprojectProc.input(m_dispTee.output(DISP_REP_ID), 
                           m_leftOriginTee.output(LOGN_REP_ID));
     
     if ( reprojection != NULL )
     {
-        m_dispTee.enable(DISP_REP_ID);        
-        m_leftOriginTee.enable(LOGN_REP_ID);
-
         m_reprojectProc.setReprojection(reprojection);
         m_reprojectProc.setReprojector(&m_rectify);
     }    
@@ -50,9 +58,16 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_procs.addProcess(&m_rectify);
     m_procs.addProcess(&m_rectTee[0]);
     m_procs.addProcess(&m_rectTee[1]);
-    m_procs.addProcess(&m_dispTee);
     m_procs.addProcess(*m_matcher);
+    m_procs.addProcess(&m_dispTee);
     m_procs.addProcess(&m_reprojectProc);  
+    
+    m_leftOriginTee.workName("Left Origin Tee");
+    m_ctrlProc.workName("Ctrl Process");
+    m_rectify.workName("Rectification");
+    m_rectTee[0].workName("Rectification Tee 0");
+    m_rectTee[1].workName("Rectification Tee 1");
+    m_dispTee.workName("Disparity Tee");    
 }
 
 void Reconstruction::dupRectification(
@@ -91,17 +106,18 @@ void Reconstruction::DispTeeProcess::process()
     {
         cont = update();
         
+#if 0 
         if ( *m_callback != NULL )
         {
             const float pbs = packetsBySeconds();
-            if ( pbs < std::numeric_limits<float>::infinity() )                
-                (*m_callback)->reconstructionDone(pbs);
-            
             if ( m_self->mode() == FlowCtrl::Step )
             {
                 (*m_callback)->reconstructionDone(30);
             }
+            else if ( pbs < std::numeric_limits<float>::infinity() )   
+                (*m_callback)->reconstructionDone(pbs);        
         }
+#endif
     }
 }
 
