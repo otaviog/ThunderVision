@@ -17,6 +17,7 @@ static ThunderSpec g_defaultSpec;
 
 TDVContext::TDVContext()
 {
+    m_reconst = NULL;
     m_inputSrc = NULL;
     m_inputRunner = NULL;
     m_reconstRunner = NULL;
@@ -73,12 +74,10 @@ void TDVContext::dispose()
 
 Reconstruction* TDVContext::runReconstruction(const std::string &profileName, 
                                               Reprojection *reproj)
-{
-    Reconstruction *reconst = NULL;
-
+{    
     if ( m_reconstRunner != NULL )
     {
-        return reconst;
+        return NULL;
     }
     
     CommonStereoMatcherFactory matcherFactory;
@@ -100,17 +99,17 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName,
     m_inputTees[0].enable(RECONSTRUCTION_TEE_ID);
     m_inputTees[1].enable(RECONSTRUCTION_TEE_ID);    
     
-    reconst = new Reconstruction(m_matcher,
+    m_reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(RECONSTRUCTION_TEE_ID),
                                  m_inputTees[1].output(RECONSTRUCTION_TEE_ID),
                                  reproj);
     
-    reconst->camerasDesc(m_spec->camerasDesc("default"));
-    reconst->benchmarkCallback(this);
-    m_reconstRunner = new ProcessRunner(*reconst, this);
+    m_reconst->camerasDesc(m_spec->camerasDesc("default"));
+    m_reconst->benchmarkCallback(this);
+    m_reconstRunner = new ProcessRunner(*m_reconst, this);
     m_reconstRunner->run();
     
-    return reconst;
+    return m_reconst;
 }
 
 void TDVContext::releaseReconstruction(Reconstruction *reconst)
@@ -124,7 +123,8 @@ void TDVContext::releaseReconstruction(Reconstruction *reconst)
 
         delete m_reconstRunner;
         m_reconstRunner = NULL;
-        delete reconst;        
+        delete m_reconst;        
+        m_reconst = NULL;
     }
 }
 
@@ -161,8 +161,12 @@ void TDVContext::releaseCalibration(Calibration *calib)
         
         m_calibRunner->join();
         if ( calib->isComplete() )
-        {
+        {            
             m_spec->camerasDesc("default") = calib->camerasDesc();
+            if ( m_reconst != NULL )
+            {
+                m_reconst->camerasDesc(calib->camerasDesc());
+            }
         }
         
         delete calib;

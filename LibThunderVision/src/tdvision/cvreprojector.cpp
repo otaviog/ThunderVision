@@ -8,7 +8,7 @@ CVReprojector::CVReprojector()
     cvSetIdentity(&mat);
 }
 
-ud::Vec3f CVReprojector::reproject(int x, int y, float disp) const
+ud::Vec3f CVReprojector::reproject(int x, int y, float disp, const Dim &imgDim) const
 {
     float xyd[] = { x, y, disp };
     ud::Vec3f dst;

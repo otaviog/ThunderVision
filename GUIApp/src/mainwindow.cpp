@@ -27,8 +27,9 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
     connect(pbDisparityMap, SIGNAL(clicked()),
             this, SLOT(showDisparity()));
     connect(pbRectification, SIGNAL(clicked()),
-            this, SLOT(showRectification()));
-
+            this, SLOT(showRectification()));    
+    
+    pbExport->setEnabled(false);
     pbRectification->setEnabled(false);
     pbDisparityMap->setEnabled(false);
     

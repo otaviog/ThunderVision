@@ -9,6 +9,7 @@
 #include "teeworkunit.hpp"
 #include "workunitprocess.hpp"
 #include "reprojectprocess.hpp"
+#include "directreprojector.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -114,6 +115,9 @@ private:
     ArrayProcessGroup m_procs;
 
     BenchmarkCallback *m_bcallback;
+    
+    
+    DirectReprojector m_altReproj;
 };
 
 

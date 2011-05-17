@@ -60,11 +60,13 @@ public:
     }    
         
 private:
+    void specChanged();    
+    
+    Reconstruction *m_reconst;
     tdv::ProcessRunner *m_inputRunner, 
         *m_reconstRunner,
         *m_calibRunner;
 
-    void specChanged();    
     
     StereoInputSource *m_inputSrc;
     TWorkUnitProcess<TeeWorkUnit<CvMat*, CvMatSinkPol> > m_inputTees[2];
@@ -74,6 +76,8 @@ private:
     ExceptionReport *m_errHandler;
         
     ThunderSpec *m_spec;
+    
+    
 };
 
 TDV_NAMESPACE_END

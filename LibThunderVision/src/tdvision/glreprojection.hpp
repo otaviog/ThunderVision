@@ -10,6 +10,14 @@
 
 TDV_NAMESPACE_BEGIN
 
+class GLReprojectionObserver
+{
+public:
+    virtual void reprojectionUpdated() = 0;
+    
+private:
+};
+
 class GLReprojection: public Reprojection
 {
 public:
@@ -19,22 +27,29 @@ public:
     
     void draw();    
     
+    void observer(GLReprojectionObserver *observer)
+    {
+        m_observer = observer;
+    }
+    
     const ud::Aabb& box() const
     {
         return m_box;
     }
- 
+    
 private:            
     void updateMesh();
     
     GridGLMesh m_mesh;
     boost::mutex m_meshMutex;
-    
+        
     FloatImage m_ldisp;
     CvMat *m_lorigin;
     Reprojector *m_lrepr;
     
     ud::Aabb m_box;
+    
+    GLReprojectionObserver *m_observer;
 };
 
 TDV_NAMESPACE_END

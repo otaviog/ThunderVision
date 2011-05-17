@@ -58,11 +58,11 @@ int main(int argc, char *argv[])
             const float st = float(i + j)/1024.0f;
             mesh->setPoint(
                 j, i,
-                tdv::Vec3f(
+                ud::Vec3f(
                     float(j)/512.0f*2.0f - 1.0f, 
                     float(i)/512.0f*2.0f - 1.0f, 
                     -(NEAR + st)),
-                tdv::Vec3f(st, 0.0f, 1.0f-st));
+                ud::Vec3f(st, 0.0f, 1.0f-st));
         }
     }
     

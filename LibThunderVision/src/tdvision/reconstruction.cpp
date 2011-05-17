@@ -50,7 +50,8 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     if ( reprojection != NULL )
     {
         m_reprojectProc.setReprojection(reprojection);
-        m_reprojectProc.setReprojector(&m_rectify);
+        //m_reprojectProc.setReprojector(&m_rectify);
+        m_reprojectProc.setReprojector(&m_altReproj);
     }    
         
     m_procs.addProcess(&m_leftOriginTee);

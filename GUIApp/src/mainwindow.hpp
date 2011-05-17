@@ -49,7 +49,7 @@ private slots:
     
     void doneRectification();
     
-    void doneDisparity();
+    void doneDisparity();    
     
 private:
     tdv::TDVContext *m_ctx;

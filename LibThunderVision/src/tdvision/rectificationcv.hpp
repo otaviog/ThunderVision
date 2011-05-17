@@ -89,9 +89,9 @@ public:
         m_camsDescChanged = true;
     }
     
-    ud::Vec3f reproject(int x, int y, float disp) const
+    ud::Vec3f reproject(int x, int y, float disp, const Dim &imgDim) const
     {
-        return m_repr.reproject(x, y, disp);
+        return m_repr.reproject(x, y, disp, imgDim);
     };    
     
     bool update();

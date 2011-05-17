@@ -8,10 +8,10 @@ TDV_NAMESPACE_BEGIN
 
 class DirectReprojector: public Reprojector
 {
-public:
-    Vec3f reproject(int x, int y, float disp) const
+public:    
+    ud::Vec3f reproject(int x, int y, float disp, const Dim &imgDim) const
     {
-        return Vec3f(x, y, disp);
+        return ud::Vec3f(x, imgDim.height() - y, disp);
     }    
 };
 

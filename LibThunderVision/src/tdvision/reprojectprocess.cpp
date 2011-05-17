@@ -13,7 +13,7 @@ void ReprojectProcess::process()
         if ( m_reproj != NULL )
         {
             assert(m_proj != NULL);
-            m_reproj->reproject(disp, origin, m_proj);            
+            m_reproj->reproject(disp, origin, m_proj);
         }
         CvMatSinkPol::sink(origin);
     }
