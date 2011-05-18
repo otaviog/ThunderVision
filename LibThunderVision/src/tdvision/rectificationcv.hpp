@@ -67,7 +67,7 @@ public:
     {
         m_rrpipe = rrpipe;
     }
-
+    
     ReadPipe<FloatImage>* leftImgOutput()
     {
         return &m_wlpipe;
@@ -77,7 +77,12 @@ public:
     {
         return &m_wrpipe;
     }
-
+    
+    ReadPipe<CvMat*>* colorImgOutput()
+    {
+        return &m_wcpipe;
+    }
+    
     const CamerasDesc& camerasDesc() const
     {
         return m_camsDesc;
@@ -93,6 +98,16 @@ public:
     {
         return m_repr.reproject(x, y, disp, imgDim);
     };    
+    
+    void enableColorRemap() 
+    {
+        m_enableColorRemap = true;
+    }
+    
+    void disableColorRemap()
+    {
+        m_enableColorRemap = false;
+    }
     
     bool update();
     
@@ -123,8 +138,9 @@ private:
 
     ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wlpipe, m_wrpipe;
+    ReadWritePipe<CvMat*> m_wcpipe;
     CamerasDesc m_camsDesc;
-    bool m_camsDescChanged;
+    bool m_camsDescChanged, m_enableColorRemap;
 
     ConjugateCorners m_conjCorners;
 

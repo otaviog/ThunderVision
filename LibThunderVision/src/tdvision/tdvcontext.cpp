@@ -133,7 +133,7 @@ Calibration* TDVContext::runCalibration()
     CalibrationProc *calib = NULL;
     if ( m_calibRunner == NULL )
     {                
-        calib = new CalibrationProc(3);
+        calib = new CalibrationProc(13);
         
         m_inputTees[0].enable(CALIBRATION_TEE_ID);
         m_inputTees[1].enable(CALIBRATION_TEE_ID);

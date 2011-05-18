@@ -13,7 +13,7 @@ TEST(TestCalibration, Calibration)
     tdv::Calibration calib(13);
     calib.input(readerL.output(), readerR.output());
     calib.chessPattern(tdv::ChessboardPattern(tdv::Dim(9, 6)));
-    for (size_t i=0; i<14; i++)
+    for (size_t i=0; i<13; i++)
     {
         readerL.update();
         readerR.update();

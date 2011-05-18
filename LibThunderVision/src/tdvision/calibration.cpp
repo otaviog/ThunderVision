@@ -185,13 +185,19 @@ bool Calibration::update()
     cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
     
-    cvSaveImage(
-        tmpName(m_currFrame + 1, "left").c_str(),
-        limgOrigin);
+    try 
+    {
+        cvSaveImage(
+            tmpName(m_currFrame + 1, "left").c_str(),
+            limgOrigin);
     
-    cvSaveImage(
-        tmpName(m_currFrame + 1, "right").c_str(),
-        rimgOrigin);
+        cvSaveImage(
+            tmpName(m_currFrame + 1, "right").c_str(),
+            rimgOrigin);
+    }
+    catch (...)
+    { 
+    }
 
     CvMatSinkPol::sink(rimgOrigin);        
     const CvSize imgSz = cvGetSize(limg);

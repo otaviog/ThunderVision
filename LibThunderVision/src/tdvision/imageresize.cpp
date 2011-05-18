@@ -30,6 +30,10 @@ bool ImageResize::update()
             ndim = Dim(util::nextPowerOf2(origDim.width()), 
                        util::nextPowerOf2(origDim.height()));
             break;
+        case ClosestPowerOf2:
+            ndim = Dim(util::nearestPowerOf2(origDim.width()), 
+                       util::nearestPowerOf2(origDim.height()));
+            break;
         default:
             assert(false);
         }

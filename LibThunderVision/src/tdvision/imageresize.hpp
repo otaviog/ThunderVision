@@ -12,7 +12,7 @@ class ImageResize: public WorkUnit
 {
     enum Mode
     {
-        Absolute, Percent, NextPowerOf2
+        Absolute, Percent, NextPowerOf2, ClosestPowerOf2
     };
 
 public:    

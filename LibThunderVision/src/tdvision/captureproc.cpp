@@ -49,6 +49,7 @@ void Capture::update()
 
     if ( frame != NULL )
     {
+#if 0 
         CvMat *rmat = m_resizeTmp.getImage(
             util::nearestPowerOf2(frame->height),
             util::nearestPowerOf2(frame->width));
@@ -56,6 +57,10 @@ void Capture::update()
 
         CvMat *mat = cvCreateMat(rmat->height, rmat->width, CV_8UC3);
         cvConvertImage(rmat, mat, CV_CVTIMG_SWAP_RB);
+#else
+        CvMat *mat = cvCreateMat(frame->height, frame->width, CV_8UC3);
+        cvConvertImage(frame, mat, CV_CVTIMG_SWAP_RB);
+#endif
         m_wpipe.write(mat);
     }
 }

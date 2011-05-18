@@ -82,6 +82,8 @@ RectificationCV::RectificationCV()
       m_mxRight(CV_32F), m_myRight(CV_32F)
 {
     m_camsDescChanged = true;
+    m_rlpipe = m_rrpipe = NULL;
+    m_enableColorRemap = false;
 }
 
 void RectificationCV::calibratedRectify(const CvMat *lM, const CvMat *rM,
@@ -174,7 +176,7 @@ void RectificationCV::updateRectification(CvMat *limg8u, CvMat *rimg8u)
         cvSetIdentity(&v_F);
 
         const int fmCount = cvFindFundamentalMat(
-            &leftPoints, &rightPoints, &v_F);
+            &leftPoints, &rightPoints, &v_F, CV_FM_8POINT);
         TDV_LOG(deb).printf("Fundamental matrices found = %d\n", fmCount);
     }
     else
@@ -239,13 +241,15 @@ bool RectificationCV::update()
 
     if ( !m_rlpipe->read(&limg_c)  )
     {
+        m_wcpipe.finish();
         return false;
     }
 
     if ( !m_rrpipe->read(&rimg_c) )
     {
-         CvMatSinkPol::sink(limg_c);
-         return false;
+        m_wcpipe.finish();
+        CvMatSinkPol::sink(limg_c);
+        return false;
     }
         
     const CvSize imgSz(maxSize(limg_c, rimg_c));
@@ -261,7 +265,9 @@ bool RectificationCV::update()
     showImage("OL", limg_c);
     showImage("OR", rimg_c);
 
-    CvMatSinkPol::sink(limg_c);
+    if ( !m_enableColorRemap )
+        CvMatSinkPol::sink(limg_c);
+    
     CvMatSinkPol::sink(rimg_c);
 
     showImage("GL", limg8u);
@@ -284,14 +290,29 @@ bool RectificationCV::update()
 #if 1
     cvRemap(limg32f, limout_c, m_mxLeft.get(), m_myLeft.get());
     cvRemap(rimg32f, rimout_c, m_mxRight.get(), m_myRight.get());
-
+    
+    if ( m_enableColorRemap )
+    {
+        CvMat *nclImg = cvCreateMat(limg_c->rows, limg_c->cols, CV_8UC3);
+        cvRemap(limg_c, nclImg, m_mxLeft.get(), m_myLeft.get());
+        m_wcpipe.write(nclImg);
+                    
+        CvMatSinkPol::sink(limg_c);
+    }
+    
     showImage("L", limout_c);
     showImage("R", rimout_c);
     waitKey(0);
 #else
+    
     cvConvert(limg32f, limout_c);
     cvConvert(rimg32f, rimout_c);
+    
+    if ( m_enableColorRemap )    
+        m_wcpipe.write(limg_c);
 #endif
+    
+    
     lwg.write(limout);
     rwg.write(rimout);
 

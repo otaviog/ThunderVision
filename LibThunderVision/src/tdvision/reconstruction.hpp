@@ -105,7 +105,6 @@ public:
 
 private:
     CtrlProcess m_ctrlProc;
-    TWorkUnitProcess<TeeWorkUnit<CvMat*> > m_leftOriginTee;
     TWorkUnitProcess<RectificationCV> m_rectify;
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];
     DispTeeProcess m_dispTee;
