@@ -26,7 +26,7 @@ __global__ void wtaKernel(const DSIDim dim, const float *dsi,
       }
     }
     
-    outimg[offset] = float(wonDisparity)/float(dim.z);        
+    outimg[offset] = float(wonDisparity)/float(dim.z);            
   }
 }
 

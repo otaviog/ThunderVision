@@ -4,36 +4,68 @@
 #include "cudaconstraits.hpp"
 #include "dsimemutil.h"
 
-texture<float, 2> texLeftImg;
-texture<float, 2> texRightImg;
+texture<float, 1> texLeftImg;
+texture<float, 1> texRightImg;
 
-__device__ float mutualInfoAtDisp(int x, int y, int disp)
+static const int SAMPLES = 9;
+static const int DIM = 3;
+
+#define PI_CONST 3.14159265358979323846f
+
+__device__ float gauss(float value)
 {
-  float sum = 0.0f;
-  
-  for (int row=-1; row<2; row++)
-    for (int col=-1; col<2; col++) {
+  return exp(-PI_CONST*value*value);
+}
+
+__device__ int index(int seq, int xm, int ym, int width)
+{
+  return (ym - DIM/2 + seq/DIM)*width + (xm - DIM/2) + seq - (seq/DIM)*DIM;
+}
+
+__device__ float mutualInfoAtDisp(int x, int y, int disp, int width)
+{
+  float Bl, Br, Blr;
+  Bl = Br = Blr = 0.0f;
+
+  for (int i=0; i<SAMPLES; i++) {
+    float Al, Ar, Alr;
+    Al = Ar = Alr = 0.0f;
+    
+    const uint iOffset = index(i, x - disp, y, width);
+    const uint iLocalOffset = index(i, x, y, width);
+    
+    for (int j=0; j<SAMPLES; j++) {      
+      const uint jLocalOffset = index(j, x, y, width);
+      const uint jOffset = index(j, x - disp, y, width);
+
+      const float Gl = gauss(tex1Dfetch(texLeftImg, iLocalOffset) - tex1Dfetch(texLeftImg, jLocalOffset));
+      const float Gr = gauss(tex1Dfetch(texRightImg, iOffset) - tex1Dfetch(texRightImg, jOffset));
       
-      float lI = tex2D(texLeftImg, x + col, y + row), 
-        rI = tex2D(texRightImg, x + disp + col, y + row);   
-      
-      sum += (lI - rI)*(lI - rI);
+      Al += Gl;
+      Ar += Gr;
+      Alr += Gl*Gr;
     }
+
+    Bl += log(Al/SAMPLES);
+    Br += log(Ar/SAMPLES);
+    Blr += log(Alr/SAMPLES);
+  }
   
-  return sum;
+  return -(Bl + Br - Blr)/SAMPLES;
+  
 }
 
 __global__ void mutualInformation(const DSIDim dsiDim, const int maxDisparity, float *dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
-  int y = blockIdx.y*blockDim.y + threadIdx.y;     
+  int y = blockIdx.y*blockDim.y + threadIdx.y;
 
-  if ( x < dsiDim.x && y < dsiDim.y ) {    
-    for (int disp=0; (disp < maxDisparity) && (x + disp) < dsiDim.x; disp++) {   
-      float ssdValue = ssdAtDisp(x, y, disp);      
-      dsiSetIntensity(dsiDim, x, y, disp, ssdValue, dsiMem);
-    }    
-    
+  if ( x < dsiDim.x && y < dsiDim.y ) {
+    for (int disp=0; (disp < maxDisparity) && (x + disp) < dsiDim.x; disp++) {
+      float miValue = mutualInfoAtDisp(x, y, disp, dsiDim.x);
+      dsiSetIntensity(dsiDim, x, y, disp, miValue, dsiMem);
+    }
+
   }
 }
 
@@ -44,26 +76,22 @@ void DevMutualInformationRun(int maxDisparity,
                              float *dsiMem)
 {
   CUerrExp err;
-    
-  err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
-                           cudaCreateChannelDesc<float>(),
-                           dsiDim.width(), dsiDim.height(),
-                           dsiDim.width()*sizeof(float));
-  
-  err << cudaBindTexture2D(NULL, texRightImg, rightImg_d, 
-                           cudaCreateChannelDesc<float>(),
-                           dsiDim.width(), dsiDim.height(),
-                           dsiDim.width()*sizeof(float));
-  
+
+  size_t offset;
+  err << cudaBindTexture(&offset, texLeftImg, leftImg_d,
+                         dsiDim.size()*sizeof(float));
+
+  err << cudaBindTexture(NULL, texRightImg, rightImg_d,
+                         dsiDim.size()*sizeof(float));
+
   texLeftImg.addressMode[0] = texRightImg.addressMode[0] = cudaAddressModeWrap;
-  texLeftImg.addressMode[1] = texRightImg.addressMode[1] = cudaAddressModeWrap;
   texLeftImg.normalized = texRightImg.normalized = false;
   texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;
-    
-  DSIDim ddim(DSIDimCreate(dsiDim));  
-  CudaConstraits constraits;  
-  WorkSize ws = constraits.imageWorkSize(dsiDim);  
-  ssdKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem); 
+
+  DSIDim ddim(DSIDimCreate(dsiDim));
+  CudaConstraits constraits;
+  WorkSize ws = constraits.imageWorkSize(dsiDim);
+  mutualInformation<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);
 }
 
 TDV_NAMESPACE_END
