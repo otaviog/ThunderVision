@@ -1,9 +1,11 @@
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
+ADD_LIBRARY(StereoTest stereotest.hpp stereotest.cpp)
+
 MACRO(ADD_TEST output source)
-  CUDA_ADD_EXECUTABLE(${output} ${source})
+  CUDA_ADD_EXECUTABLE(${output} ${source} tdvtestmain.cpp)
   TARGET_LINK_LIBRARIES(${output}
-    ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} ${ThunderVision_LIBRARIES})
+    ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} StereoTest ${ThunderVision_LIBRARIES})
 ENDMACRO(ADD_TEST)
 
 ADD_TEST(testmedianfilter testmedianfilter.cpp)

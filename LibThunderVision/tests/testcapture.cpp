@@ -1,7 +1,8 @@
 #include <tdvision/tdvision.hpp>
+#include <gtest/gtest.h>
 #include "errorhandler.hpp"
 
-int main(int argc, char *argv[])
+TEST(CaptureTest, InfiniteLoopToCheckMemLeak)
 {
     tdv::CaptureProc cap;
     tdv::TWorkUnitProcess<tdv::CvMatSink> sink;
@@ -18,6 +19,4 @@ int main(int argc, char *argv[])
     tdv::ProcessRunner runner(grp, &errHdl);
     runner.run();
     runner.join();
-
-    return 0;
 }

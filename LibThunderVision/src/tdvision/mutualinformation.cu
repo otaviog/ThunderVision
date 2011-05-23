@@ -59,7 +59,7 @@ __device__ float mutualInfoAtDisp(int x, int y, int disp, int width,
     for (int j=0; j<SAMPLES; j++) {      
       const uint jOffset = index(j, x - disp, y, width);      
       const float jValue = tex1Dfetch(texRightImg, jOffset);
-      const int histJ = rhistMem[dsiOffset(histDim, x, y, int(jValue*(SAMPLES - 1)))];
+      const int histJ = rhistMem[dsiOffset(histDim, x - disp, y, int(jValue*(SAMPLES - 1)))];
       
       float probI = histI;      
       float probJ = histJ;                  
@@ -75,11 +75,12 @@ __device__ float mutualInfoAtDisp(int x, int y, int disp, int width,
         probIJ = 3;
       else
         probIJ = 4;
+      //probIJ = histI + histJ;
       mi += probIJ*log(probIJ/(probI*probJ));      
     }
   }
   
-  return 1.0 - mi;  
+  return mi;  
 }
 
 __global__ void mutualInformation(const DSIDim dsiDim, const int maxDisparity, 

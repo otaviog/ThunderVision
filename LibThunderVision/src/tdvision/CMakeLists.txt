@@ -32,6 +32,7 @@ CUDA_ADD_LIBRARY(tdvision
   ssddev.hpp ssddev.cpp ssd.cu  
   crosscorrelationdev.hpp crosscorrelationdev.cpp crosscorrelation.cu
   mutualinformationdev.hpp mutualinformationdev.cpp mutualinformation.cu
+  mutualinformationcpu.hpp mutualinformationcpu.cpp mutualinformation.cu
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
