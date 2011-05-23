@@ -15,7 +15,8 @@ void CaptureStereoInputSource::init()
     m_capture2.init(1);
 }
 
-void CaptureStereoInputSource::init(const std::string &filename1, const std::string &filename2)
+void CaptureStereoInputSource::init(const std::string &filename1, 
+                                    const std::string &filename2)
 {
     m_capture1.init(filename1);
     m_capture2.init(filename2);

@@ -66,7 +66,6 @@ private:
     tdv::ProcessRunner *m_inputRunner, 
         *m_reconstRunner,
         *m_calibRunner;
-
     
     StereoInputSource *m_inputSrc;
     TWorkUnitProcess<TeeWorkUnit<CvMat*, CvMatSinkPol> > m_inputTees[2];
@@ -75,9 +74,7 @@ private:
     
     ExceptionReport *m_errHandler;
         
-    ThunderSpec *m_spec;
-    
-    
+    ThunderSpec *m_spec;        
 };
 
 TDV_NAMESPACE_END

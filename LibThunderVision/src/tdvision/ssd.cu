@@ -7,12 +7,16 @@
 texture<float, 2> texLeftImg;
 texture<float, 2> texRightImg;
 
+#define SSD_WIND_DIM 5
+#define SSD_WIND_START -3
+#define SSD_WIND_END 4
+
 __device__ float ssdAtDisp(int x, int y, int disp)
 {
   float sum = 0.0f;
   
-  for (int row=-1; row<2; row++)
-    for (int col=-1; col<2; col++) {
+  for (int row=SSD_WIND_START; row<SSD_WIND_END; row++)
+    for (int col=SSD_WIND_START; col<SSD_WIND_END; col++) {
       
       float lI = tex2D(texLeftImg, x + col, y + row), 
         rI = tex2D(texRightImg, x + col - disp, y + row);   
@@ -23,7 +27,8 @@ __device__ float ssdAtDisp(int x, int y, int disp)
   return sum;
 }
 
-__global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, float *dsiMem)
+__global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, 
+                        float *dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;     

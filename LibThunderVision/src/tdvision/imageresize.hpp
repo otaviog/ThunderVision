@@ -12,7 +12,10 @@ class ImageResize: public WorkUnit
 {
     enum Mode
     {
-        Absolute, Percent, NextPowerOf2, ClosestPowerOf2
+        Absolute, 
+        Percent, 
+        NextPowerOf2, 
+        ClosestPowerOf2
     };
 
 public:    
@@ -21,7 +24,7 @@ public:
         : m_newDim(-1)
     {     
         workName("Image resize");
-        m_mode = NextPowerOf2;
+        m_mode = ClosestPowerOf2;
         m_rpipe = NULL;         
     }
         

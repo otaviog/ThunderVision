@@ -14,7 +14,7 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   if ( z >= dim.z || y >= dim.y  )
     return ;
   
-  __shared__ float sharedCost[128];
+  __shared__ float sharedCost[512];
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
   sharedCost[z] = costDSI[initialOff];

@@ -5,7 +5,7 @@
 #include "processgroup.hpp"
 #include "ctrlprocess.hpp"
 #include "rectificationcv.hpp"
-#include "floatconv.hpp"
+#include "imageresize.hpp"
 #include "teeworkunit.hpp"
 #include "workunitprocess.hpp"
 #include "reprojectprocess.hpp"
@@ -105,10 +105,11 @@ public:
 
 private:
     CtrlProcess m_ctrlProc;
-    TWorkUnitProcess<RectificationCV> m_rectify;
+    TWorkUnitProcess<RectificationCV> m_rectify;    
     TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];
-    DispTeeProcess m_dispTee;
+    TWorkUnitProcess<ImageResize> m_resize[2];
     StereoMatcher *m_matcher;
+    DispTeeProcess m_dispTee;
     ReprojectProcess m_reprojectProc;
 
     ArrayProcessGroup m_procs;
