@@ -16,10 +16,8 @@ public:
         workName("Median filter device");
     }
     
-
 protected:
     FloatImage updateImpl(FloatImage img);
-
 };
 
 TDV_NAMESPACE_END

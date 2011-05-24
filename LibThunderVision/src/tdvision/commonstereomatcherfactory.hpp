@@ -16,7 +16,7 @@ public:
 
     enum MatchMode
     {
-        SSD, CrossCorrelationNorm
+        SSD, CrossCorrelationNorm, BirchfieldTomasi
     };
 
     enum OptMode

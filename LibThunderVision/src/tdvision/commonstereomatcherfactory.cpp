@@ -7,6 +7,7 @@
 #include "crosscorrelationdev.hpp"
 #include "dynamicprogdev.hpp"
 #include "dynamicprogcpu.hpp"
+#include "birchfieldcostdev.hpp"
 #include "commonstereomatcherfactory.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -46,6 +47,10 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
             matcher->setMatchingCost(boost::shared_ptr<CrossCorrelationDev>(
                                          new CrossCorrelationDev(m_maxDisparity)));
             break;
+        case BirchfieldTomasi:
+            matcher->setMatchingCost(boost::shared_ptr<BirchfieldCostDev>(
+                                         new BirchfieldCostDev(m_maxDisparity)));
+            break;            
         default:
             assert(false);
         }
@@ -71,9 +76,8 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
         return matcher;
     }
     else
-    {
-        
-        StereoCorrespondenceCV::MatchingMode cvMatchMode;
+    {        
+        StereoCorrespondenceCV::MatchingMode cvMatchMode = StereoCorrespondenceCV::LocalMatching;
         
         switch ( m_optMode )
         {
@@ -85,7 +89,7 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
         case Global:
             cvMatchMode = StereoCorrespondenceCV::GlobalMatching;
             break;
-        default:
+        default:            
             assert(false);
         }
         

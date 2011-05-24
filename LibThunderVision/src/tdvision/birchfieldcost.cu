@@ -15,18 +15,30 @@ texture<float, 2> texRightImg;
 #define max3(a, b, c) max(a, max(b, c))
 
 __device__ float costAtDisp(int x, int y, int disp)
-{
-    
-  const float lI = tex2D(texLeftImg, x, y);      
-  const float rI = tex2D(texRightImg, x - disp, y);   
+{    
+  float sum = 0.0f;
+  
+  for (int v=x - 12; v < x + 12; v++) {    
+    const float lI = tex2D(texLeftImg, v, y);      
+    const float rI = tex2D(texRightImg, v - disp, y);   
       
-  const float raI = 0.5f*(rI + tex2D(texRightImg, x + disp - 1, y));
-  const float rbI = 0.5f*(rI + tex2D(texRightImg, x + disp + 1, y));
+    const float laI = 0.5f*(lI + tex2D(texLeftImg, v - 1, y));
+    const float lbI = 0.5f*(lI + tex2D(texLeftImg, v + 1, y));
   
-  const float rImi = min3(raI, rbI, rI);
-  const float rIma = max3(raI, rbI, rI);
+    const float raI = 0.5f*(rI + tex2D(texRightImg, v - disp - 1, y));
+    const float rbI = 0.5f*(rI + tex2D(texRightImg, v - disp + 1, y));
+
+    const float lImi = min3(laI, lbI, lI);
+    const float lIma = max3(laI, lbI, lI);
+
+    const float rImi = min3(raI, rbI, rI);
+    const float rIma = max3(raI, rbI, rI);
+    
+    sum += min(max3(0.0f, lI - rIma, rImi - lI),
+               max3(0.0f, rI - lIma, lImi - rI));
+  }
   
-  return max3(0.0f, lI - rIma, rImi - lI);
+  return sum;
 }
 
 __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity, 

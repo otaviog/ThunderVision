@@ -5,6 +5,10 @@
 #include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
+const int Nm = 12;
+const float kOcc = 25;
+const float kR = 5;
+
 __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
                             float *lastSumCost, char *pathDSI)
 {
@@ -14,10 +18,12 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   if ( z >= dim.z || y >= dim.y  )
     return ;
   
-  __shared__ float sharedCost[512];
+  __shared__ float sharedCost[128];
+  __shared__ int occs[128];
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
   sharedCost[z] = costDSI[initialOff];
+  occs[z] = 0;
   pathDSI[initialOff] = 0;      
 
   __syncthreads();  
@@ -41,21 +47,25 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
       p = -1;
+      occs[z] += 1;
     } else if ( c2 < c3 ) {
       m = c2;
       p = 0;
     } else {
       m = c3;
       p = 1;
+      occs[z] += 1;
     } 
                 
     pathDSI[c0Offset] = p;
     
-    sharedCost[z] = c0 + m;        
+    //sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
+    sharedCost[z] = c0 + m;
+
     __syncthreads();
   }
   
-  lastSumCost[dim.z*y + z] = 1.0 - sharedCost[z];
+  lastSumCost[dim.z*y + z] = sharedCost[z];
 }
 
 __global__ void reduceImage(const DSIDim dim, const float *lastSumCost, 

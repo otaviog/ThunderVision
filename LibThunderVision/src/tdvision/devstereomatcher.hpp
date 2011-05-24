@@ -7,6 +7,7 @@
 #include "stereomatcher.hpp"
 #include "optimizer.hpp"
 #include "cpyimagetocpu.hpp"
+#include "medianfilterdev.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -39,16 +40,19 @@ public:
     {        
         return m_cpyCPU.output();
     }
-    
+        
     std::string name() const;
 
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
+    MedianFilterDev m_medianFilter[2];
     boost::shared_ptr<MatchingCost> m_matchCost;
     boost::shared_ptr<Optimizer> m_optimizer;
     CpyImageToCPU m_cpyCPU;
-    CUDAProcess m_process;
+    CUDAProcess m_process;    
     Process *m_procs[2];
+    
+    bool m_useMedianfilter;
 };
 
 TDV_NAMESPACE_END

@@ -14,7 +14,7 @@ __global__ void wtaKernel(const DSIDim dim, const float *dsi,
   const uint offset = blockDim.x*gridDim.x*y + x;
   
   if ( offset < maxOffset ) {
-    float leastDiff = 9999999.0f;
+    float leastDiff = CUDART_INF_F;
     uint wonDisparity = 0;
     
     for (uint d=0; d<dim.z && (d + x) < dim.x; d++) {      
