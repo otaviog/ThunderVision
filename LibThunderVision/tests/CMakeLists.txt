@@ -18,6 +18,7 @@ ADD_TEST(testcapture testcapture.cpp)
 ADD_TEST(testcalibration testcalibration.cpp)
 ADD_TEST(testcrosscorrelation testcrosscorrelation.cpp)
 ADD_TEST(testmutualinformation testmutualinformation.cpp)
+ADD_TEST(testbirchfieldcost testbirchfieldcost.cpp)
 
 CUDA_ADD_EXECUTABLE(testgridglmesh testgridglmesh.cpp)
 TARGET_LINK_LIBRARIES(testgridglmesh

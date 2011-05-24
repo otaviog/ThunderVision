@@ -33,6 +33,7 @@ CUDA_ADD_LIBRARY(tdvision
   crosscorrelationdev.hpp crosscorrelationdev.cpp crosscorrelation.cu
   mutualinformationdev.hpp mutualinformationdev.cpp mutualinformation.cu
   mutualinformationcpu.hpp mutualinformationcpu.cpp mutualinformation.cu
+  birchfieldcostdev.hpp birchfieldcostdev.cpp birchfieldcost.cu
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
