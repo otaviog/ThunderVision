@@ -6,8 +6,8 @@
 #include "cudaconstraits.hpp"
 
 const int Nm = 12;
-const float kOcc = 25;
-const float kR = 5;
+const float kOcc = 5;
+const float kR = 25;
 
 __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
                             float *lastSumCost, char *pathDSI)
@@ -56,11 +56,16 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
       p = 1;
       occs[z] += 1;
     } 
-                
+          
     pathDSI[c0Offset] = p;
     
-    //sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
-    sharedCost[z] = c0 + m;
+    sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
+
+    if ( x % 24 == 0 ) {      
+        occs[z] = 0;
+      }
+    
+    //sharedCost[z] = c0 + m;
 
     __syncthreads();
   }

@@ -49,8 +49,13 @@ __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity,
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
     
-    for (int disp=0; (disp < maxDisparity) && (x - disp) >= 0; disp++) {   
-      float value = costAtDisp(x, y, disp);      
+    for (int disp=0; (disp < maxDisparity); disp++) {   
+      float value = CUDART_INF_F;
+      
+      if ( x - disp >= 0 ) {       
+        value = costAtDisp(x, y, disp); 
+      }
+      
       dsiSetIntensity(dsiDim, x, y, disp, value, dsiMem);
     }    
     
