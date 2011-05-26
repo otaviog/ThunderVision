@@ -59,13 +59,13 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
           
     pathDSI[c0Offset] = p;
     
-    sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
+    //sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
 
     if ( x % 24 == 0 ) {      
         occs[z] = 0;
       }
     
-    //sharedCost[z] = c0 + m;
+    sharedCost[z] = c0 + m;
 
     __syncthreads();
   }

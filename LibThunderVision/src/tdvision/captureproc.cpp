@@ -35,17 +35,7 @@ void Capture::init(int capDevice)
     {
         throw Exception(boost::format("Can't open capture device %1%")
                         % capDevice);
-    }
-    
-    std::cout 
-        << cvGetCaptureProperty(m_capture, CV_CAP_PROP_BRIGHTNESS)
-        << std::endl
-        << cvGetCaptureProperty(m_capture, CV_CAP_PROP_CONTRAST)
-        << std::endl
-        << cvGetCaptureProperty(m_capture, CV_CAP_PROP_SATURATION)
-        << std::endl
-        << cvGetCaptureProperty(m_capture, CV_CAP_PROP_HUE)
-        << std::endl;
+    }    
 }
 
 void Capture::update()

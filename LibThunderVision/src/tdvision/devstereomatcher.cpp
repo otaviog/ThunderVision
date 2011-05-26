@@ -8,7 +8,7 @@ DevStereoMatcher::DevStereoMatcher()
 {
     m_procs[0] = &m_process;
     m_procs[1] = NULL;
-    m_useMedianfilter = true;
+    m_useMedianfilter = false;
 }
 
 void DevStereoMatcher::inputs(ReadPipe<FloatImage> *leftInput,
