@@ -7,6 +7,7 @@
 #include "crosscorrelationdev.hpp"
 #include "dynamicprogdev.hpp"
 #include "dynamicprogcpu.hpp"
+#include "semiglobaldev.hpp"
 #include "birchfieldcostdev.hpp"
 #include "commonstereomatcherfactory.hpp"
 
@@ -70,6 +71,11 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
             matcher->setOptimizer(boost::shared_ptr<DynamicProgCPU>(
                                       new DynamicProgCPU));
             break;
+        case SemiGlobal:
+            matcher->setOptimizer(boost::shared_ptr<SemiGlobalDev>(
+                                      new SemiGlobalDev));
+            break;
+
         default:
             assert(false);
         }

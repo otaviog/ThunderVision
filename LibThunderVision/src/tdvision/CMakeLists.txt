@@ -39,6 +39,7 @@ CUDA_ADD_LIBRARY(tdvision
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
   dynamicprogcpu.hpp dynamicprogcpu.cpp
   semiglobaloptcpu.hpp semiglobaloptcpu.cpp
+  semiglobaldev.hpp semiglobaldev.cpp semiglobal.cu
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
   stereoinputsource.hpp

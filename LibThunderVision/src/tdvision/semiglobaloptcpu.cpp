@@ -214,9 +214,9 @@ void SemiGlobalOptCPU::updateImpl(DSIMem mem, FloatImage img)
         {0, 0, 1}
     };
 
-    //FloatImage left(cvLoadImage("../../res/tsukuba512_L.png")), 
-        //FloatImage left(cvLoadImage("rt.png")), 
-        FloatImage left(cvLoadImage("q_left.png")), 
+    FloatImage left(cvLoadImage("../../res/tsukuba512_L.png")), 
+    //FloatImage left(cvLoadImage("rt.png")), 
+    //FloatImage left(cvLoadImage("q_left.png")), 
         right(cvLoadImage("../../res/tsukuba512_R.png"));
     zeroVolume(dim, aggreg.get());
 

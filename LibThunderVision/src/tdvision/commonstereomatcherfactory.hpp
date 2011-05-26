@@ -21,7 +21,7 @@ public:
 
     enum OptMode
     {
-        WTA, DynamicProg, DynamicProgOnCPU, Global
+        WTA, DynamicProg, DynamicProgOnCPU, Global, SemiGlobal
     };
         
     CommonStereoMatcherFactory();

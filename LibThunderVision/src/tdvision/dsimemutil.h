@@ -14,7 +14,9 @@ struct DSIDim
 inline __host__ __device__ uint dsiOffset(
     const DSIDim &dim, uint x, uint y, uint z)
 {
-    return z + dim.z*y + dim.y*dim.z*x;
+    //return z + dim.z*y + dim.y*dim.z*x;
+    //return dim.x*dim.y*z + dim.x*y + x;
+    return dim.z*dim.x*y + dim.z*x + z;
 }
 
 inline __device__ float dsiIntensityClamped(

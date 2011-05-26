@@ -4,7 +4,8 @@
 #include "cuerr.hpp"
 #include "dsimemutil.h"
 
-__global__ void wtaKernel(const DSIDim dim, const float *dsi, 
+__global__ void wtaKernel(const DSIDim dim, 
+                          const float *dsi, 
                           const uint maxOffset, 
                           float *outimg)
 {
