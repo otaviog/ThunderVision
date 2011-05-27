@@ -4,7 +4,7 @@
 #include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
-#define MAX_DISP 256
+#define MAX_DISP 768
 
 #define min4(a, b, c, d) min(a, min(b, min(c, d)))
 
@@ -43,7 +43,7 @@ inline __device__ float pathCost(const DSIDim dsiDim, const float *costDSI,
     + min4(lcD,
            lcDm1 + P1,
            lcDp1 + P1,
-           minDisp + P2) - minDisp;
+           minDisp + P2Adjust) - minDisp;
 
   aggregVol[dsiOff] += Lr;
 
@@ -167,7 +167,7 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
 }
 
 void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
-                      const float *lorigin, float *dispImg)
+                      const float *lorigin, float *aggregDSI, float *dispImg)
 {
   DSIDim dsiDim(DSIDimCreate(tdv_dsiDim));
 
@@ -195,14 +195,10 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
 
   tdv::CudaConstraits constraits;
 
-  float *aggregDSI;
-  cuerr << cudaMalloc((void**) &aggregDSI, tdv_dsiDim.size()*sizeof(float));
-
   tdv::CudaBenchmarker bm;
   bm.begin();
 
   tdv::WorkSize wsz = constraits.imageWorkSize(tdv_dsiDim);
-
   zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);
 
   cuerr = cudaThreadSynchronize();

@@ -8,6 +8,7 @@
 
 TDV_NAMESPACE_BEGIN
 
+#if 1
 class DSIMemImpl
 {
 public:
@@ -49,6 +50,49 @@ public:
 
     float* mem()
     {
+        if ( m_handle != NULL )
+            return m_handle->mem();
+        else
+            return NULL;
+    }
+    
+    const Dim& dim() const
+    {
+        static Dim zdim(0);
+        if ( m_handle != NULL )
+            return m_handle->dim();
+        else
+            return zdim;
+    }
+    
+    FloatImage leftOrigin()
+    {
+        if ( m_handle != NULL )
+            return m_handle->leftOrigin();
+        else
+            return FloatImage();
+    }
+    
+private:
+    DSIMem(DSIMemImpl *impl)
+        : m_handle(impl)
+    {
+    }
+
+    boost::shared_ptr<DSIMemImpl> m_handle;
+};
+
+#else
+class DSIMem
+{
+public:
+    DSIMem()
+    { mem = NULL; }
+    
+    static DSIMem Create(float *mem, const Dim &dim, FloatImage lorigin);
+
+    float* mem()
+    {
         return m_handle->mem();
     }
     
@@ -63,13 +107,14 @@ public:
     }
     
 private:
-    DSIMem(DSIMemImpl *impl)
-        : m_handle(impl)
+    DSIMem()
     {
+        m_mem = NULL;
     }
 
-    boost::shared_ptr<DSIMemImpl> m_handle;     
+    float *m_mem;
 };
+#endif
 
 TDV_NAMESPACE_END
 

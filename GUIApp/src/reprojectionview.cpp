@@ -48,7 +48,7 @@ void ReprojectionView::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0f, aspect, 1.0f, 100.0f);
+    gluPerspective(45.0f, aspect, 1.0f, 2000.0f);
     glMatrixMode(GL_MODELVIEW);
 }
 

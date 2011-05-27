@@ -37,6 +37,9 @@ public:
 protected:
     virtual void updateImpl(DSIMem mem, FloatImage img) = 0;
 
+    virtual void finished()
+    { }
+
 private:
     ReadPipe<DSIMem> *m_rpipe;
     ReadWritePipe<FloatImage, FloatImage> m_wpipe;

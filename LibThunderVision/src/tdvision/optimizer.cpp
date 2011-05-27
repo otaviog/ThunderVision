@@ -27,8 +27,12 @@ bool AbstractOptimizer::update()
         guard.write(outimg);
     }
 
+    if ( !guard.wasWrite() )
+    {
+        finished();
+    }
+    
     return guard.wasWrite();
-
 }
 
 TDV_NAMESPACE_END

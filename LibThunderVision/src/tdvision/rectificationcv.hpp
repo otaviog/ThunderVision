@@ -99,6 +99,7 @@ public:
         return m_repr.reproject(x, y, disp, imgDim);
     };    
     
+    
     void enableColorRemap() 
     {
         m_enableColorRemap = true;

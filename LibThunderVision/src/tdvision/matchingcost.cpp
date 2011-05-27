@@ -22,13 +22,17 @@ bool AbstractMatchingCost::update()
         const size_t height = std::min(leftImg.dim().height(), 
                                        rightImg.dim().height());
         const size_t depth = m_maxDisparaty;
-                            
         const Dim pktDim(width, height, depth);
-        DSIMem dsi = DSIMem::Create(pktDim, leftImg);
-
-        updateImpl(leftImg, rightImg, dsi);
         
-        wguard.write(dsi);
+        if ( m_dsi.dim().size() != pktDim.size() )
+        {
+            m_dsi = DSIMem();
+            m_dsi = DSIMem::Create(pktDim, leftImg);
+        }
+        
+        updateImpl(leftImg, rightImg, m_dsi);
+        
+        wguard.write(m_dsi);
     }
         
     return wguard.wasWrite();

@@ -43,5 +43,5 @@ void DevWTARun(float *dsi, const tdv::Dim &dsiDim, float *outimg)
   
   wtaKernel<<<wsz.blocks, wsz.threads>>>(ddim, dsi,
                                          dsiDim.width()*dsiDim.height(),
-                                         outimg);
+                                         outimg); 
 }

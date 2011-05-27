@@ -85,14 +85,15 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName,
     if ( profileName == "Device" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
-        matcherFactory.maxDisparity(256);
+        matcherFactory.maxDisparity(400);
         
-        matcherFactory.matchingCost(CommonStereoMatcherFactory::BirchfieldTomasi);
+        //matcherFactory.matchingCost(CommonStereoMatcherFactory::BirchfieldTomasi);
         //matcherFactory.matchingCost(CommonStereoMatcherFactory::CrossCorrelationNorm);
+        matcherFactory.matchingCost(CommonStereoMatcherFactory::SSD);
 
-        //matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
+        matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
         //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);        
-        matcherFactory.optimization(CommonStereoMatcherFactory::SemiGlobal);
+        //matcherFactory.optimization(CommonStereoMatcherFactory::SemiGlobal);
     }
     else if ( profileName == "CPU" )
     {

@@ -17,9 +17,14 @@ public:
 
     void qmatrix(float mtx[16])
     {
-        memcpy(m_qMatrix, mtx, sizeof(float)*16);
+        memcpy(m_qMatrix, mtx, sizeof(float)*16);    
     }
 
+    float* qmatrix() const
+    {
+        return m_qMatrix;
+    }
+    
 private:
     mutable float m_qMatrix[16];
 };

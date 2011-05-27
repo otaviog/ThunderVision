@@ -1,4 +1,5 @@
 #include <iostream>
+#include <tdvbasic/log.hpp>
 #include "process.hpp"
 #include "exceptionreport.hpp"
 #include "processrunner.hpp"
@@ -22,6 +23,7 @@ public:
         }
         catch (const std::exception &ex)
         {            
+            TDV_LOG(warn).printf("%s\n", ex.what());
             m_runner->reportError(ex);
         }
         catch (...)

@@ -39,11 +39,12 @@ public:
 protected:
     virtual void updateImpl(FloatImage left, FloatImage right,
                             DSIMem mem) = 0;
-        
+    
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<DSIMem, DSIMem> m_wpipe;
     size_t m_maxDisparaty;
+    DSIMem m_dsi;
 };
 
 TDV_NAMESPACE_END

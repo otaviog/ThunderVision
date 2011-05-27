@@ -7,12 +7,12 @@
 
 TEST(TestBirchfieldCost, WithWTA)
 {
-    tdv::BirchfieldCostDev bf(64);
+    tdv::BirchfieldCostDev bf(128);
     tdv::WTADev wta;
     runStereoTest(
         "../../res/tsukuba512_L.png",
         "../../res/tsukuba512_R.png",
-        "tsukuba_birchfieldwta.png", &bf, &wta);       
+        "tsukuba_birchfieldwta.png", &bf, &wta);    
 }
 
 TEST(TestBirchfieldCost, WithDynProg)
@@ -22,17 +22,7 @@ TEST(TestBirchfieldCost, WithDynProg)
     runStereoTest(
         "../../res/tsukuba512_L.png",
         "../../res/tsukuba512_R.png",
-        "tsukuba_birchfielddynprog.png", &bf, &dp);   
-}
-
-TEST(TestBirchfieldCost, WithDynCPU)
-{
-    tdv::BirchfieldCostDev bf(128);
-    tdv::DynamicProgCPU dp;
-    runStereoTest(
-        "../../res/tsukuba512_L.png",
-        "../../res/tsukuba512_R.png",
-        "tsukuba_birchfielddynprogcpu.png", &bf, &dp);
+        "tsukuba_birchfielddynprog.png", &bf, &dp, true);   
 }
 
 TEST(TestBirchfieldCost, WithMedianWTA)

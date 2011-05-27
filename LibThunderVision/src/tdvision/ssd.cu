@@ -29,7 +29,7 @@ __device__ float ssdAtDisp(int x, int y, int disp)
 
 __global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity, 
                         float *dsiMem)
-{
+{  
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 

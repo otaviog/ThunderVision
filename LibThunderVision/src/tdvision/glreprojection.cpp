@@ -19,7 +19,8 @@ void GLReprojection::updateMesh()
     
     m_mesh.resize(dim);
     m_mesh.lock();
-    
+
+#if 1    
     const float *disp_c = m_ldisp.cpuMem()->data.fl;   
     const float _1_255 = 1.0f/255.0f;
     
@@ -51,6 +52,11 @@ void GLReprojection::updateMesh()
             dispPtr++;
         }
     }        
+#else
+    RectificationCV *cv = dynamic_cast<RectificationCV*>(m_lrepr);
+    CvMat *Q = cvMat(4, 4, CV_32F, cv->reprojectionMatrix());
+    
+#endif
     
     m_mesh.unlock();
     
