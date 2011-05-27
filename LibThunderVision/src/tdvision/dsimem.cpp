@@ -1,5 +1,5 @@
-#include "cuerr.hpp"
 #include "dsimem.hpp"
+#include "cuerr.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -14,21 +14,23 @@ DSIMemImpl::~DSIMemImpl()
     cudaFree(m_mem);
 }
 
-void DSIMemImpl::init(const Dim &dim)
+void DSIMemImpl::init(const Dim &dim, FloatImage lorigin)
 {
     CUerrExp cuerr;
     m_dim = dim;
     
     cuerr << cudaMalloc((void**) &m_mem, dim.size()*sizeof(float));    
+    
+    m_leftOrigin = lorigin;
 }
 
-DSIMem DSIMem::Create(const Dim &dim)
+DSIMem DSIMem::Create(const Dim &dim, FloatImage lorigin)
 {
     DSIMemImpl *impl = new DSIMemImpl;
         
     try 
     {
-        impl->init(dim);
+        impl->init(dim, lorigin);
         return DSIMem(impl);
     }
     catch (const std::exception &ex)

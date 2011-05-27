@@ -160,7 +160,7 @@ bool MutualInformationCPU::update()
         
         calcDSI(leftImg, rightImg, &dsiMem, &dsiDim);
         
-        DSIMem dsi = DSIMem::Create(dsiDim);
+        DSIMem dsi = DSIMem::Create(dsiDim, leftImg);
         cudaMemcpy(dsi.mem(), dsiMem, dsiDim.size(), cudaMemcpyHostToDevice);
         
         wguard.write(dsi);

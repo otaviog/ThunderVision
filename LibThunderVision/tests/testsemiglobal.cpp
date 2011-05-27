@@ -9,8 +9,8 @@
 #if 1
 TEST(TestSemiGlobalDev, WithSSD)
 {
-    //tdv::SSDDev ssd(64);
-    tdv::BirchfieldCostDev ssd(128);
+    tdv::SSDDev ssd(128);
+    //tdv::BirchfieldCostDev ssd(128);
     tdv::SemiGlobalDev sg;
     
    runStereoTest(
@@ -22,11 +22,11 @@ TEST(TestSemiGlobalDev, WithSSD)
 }
 #endif
 
-#if 1
+#if 0
 TEST(TestSemiGlobalCPU, WithSSD)
 {
-    //tdv::SSDDev ssd(64);
-    tdv::BirchfieldCostDev ssd(64);
+    tdv::SSDDev ssd(128);
+    //tdv::BirchfieldCostDev ssd(128);
     tdv::SemiGlobalOptCPU sg;
     
    runStereoTest(

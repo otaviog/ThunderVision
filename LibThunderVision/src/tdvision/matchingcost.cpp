@@ -24,7 +24,7 @@ bool AbstractMatchingCost::update()
         const size_t depth = m_maxDisparaty;
                             
         const Dim pktDim(width, height, depth);
-        DSIMem dsi = DSIMem::Create(pktDim);            
+        DSIMem dsi = DSIMem::Create(pktDim, leftImg);
 
         updateImpl(leftImg, rightImg, dsi);
         

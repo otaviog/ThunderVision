@@ -1,6 +1,5 @@
 #include <math_constants.h>
 #include "dim.hpp"
-#include "dsimem.hpp"
 #include "dsimemutil.h"
 #include "benchmark.hpp"
 #include "cudaconstraits.hpp"

@@ -3,6 +3,7 @@
 
 #include <tdvbasic/common.hpp>
 #include <boost/shared_ptr.hpp>
+#include "floatimage.hpp"
 #include "dim.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -14,7 +15,7 @@ public:
     
     ~DSIMemImpl();
     
-    void init(const Dim &dim);
+    void init(const Dim &dim, FloatImage lorigin);
     
     float* mem()
     {
@@ -26,9 +27,16 @@ public:
         return m_dim;
     }
     
+    FloatImage leftOrigin()
+    {
+        return m_leftOrigin;
+    }
+    
 private:
     Dim m_dim;
     float *m_mem;
+    
+    FloatImage m_leftOrigin;
 };
 
 class DSIMem
@@ -37,7 +45,7 @@ public:
     DSIMem()
     { }
     
-    static DSIMem Create(const Dim &dim);
+    static DSIMem Create(const Dim &dim, FloatImage lorigin);
 
     float* mem()
     {
@@ -48,6 +56,12 @@ public:
     {
         return m_handle->dim();
     }
+    
+    FloatImage leftOrigin()
+    {
+        return m_handle->leftOrigin();
+    }
+    
 private:
     DSIMem(DSIMemImpl *impl)
         : m_handle(impl)
