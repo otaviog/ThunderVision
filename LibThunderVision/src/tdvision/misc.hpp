@@ -41,7 +41,7 @@ namespace misc
         
     private:
         CvMat *m_mat;
-    };
+    };        
 }
 
 TDV_NAMESPACE_END

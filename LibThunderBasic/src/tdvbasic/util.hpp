@@ -54,6 +54,8 @@ namespace util
     size_t previousPowerOf2(size_t v);
 
     size_t nearestPowerOf2(size_t v);    
+    
+    void logBacktrace();
 }
 
 TDV_NAMESPACE_END

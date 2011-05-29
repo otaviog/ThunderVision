@@ -30,6 +30,8 @@ bool AbstractMatchingCost::update()
             m_dsi = DSIMem::Create(pktDim, leftImg);
         }
         
+        m_dsi.leftOrigin(leftImg);
+        
         updateImpl(leftImg, rightImg, m_dsi);
         
         wguard.write(m_dsi);

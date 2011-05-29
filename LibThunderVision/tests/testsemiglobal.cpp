@@ -10,15 +10,12 @@
 TEST(TestSemiGlobalDev, WithSSD)
 {
     tdv::SSDDev ssd(128);
-    //tdv::BirchfieldCostDev ssd(128);
     tdv::SemiGlobalDev sg;
-    
+
    runStereoTest(
-       //"../../res/tsukuba512_L.png",
-       //"../../res/tsukuba512_R.png",
-       "q_left.png",
-       "q_right.png",
-       "q_ssdsgdev.png",
+       "../../res/tsukuba512_L.png",
+       "../../res/tsukuba512_R.png",
+       "tsukuba_ssdsgdev.png",
        &ssd, &sg, true);
 
 }
@@ -28,7 +25,6 @@ TEST(TestSemiGlobalDev, WithSSD)
 TEST(TestSemiGlobalCPU, WithSSD)
 {
     tdv::SSDDev ssd(128);
-    //tdv::BirchfieldCostDev ssd(128);
     tdv::SemiGlobalOptCPU sg;
     
    runStereoTest(
