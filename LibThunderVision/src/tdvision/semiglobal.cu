@@ -55,8 +55,10 @@ inline __device__ float pathCost(const DSIDim dsiDim, const float *costDSI,
 __constant__ int matrix[6];
 __constant__ int invMatrix[6];
 
+__constant__ int rowsWidths[512];
+
 __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
-                                          const uint width,
+                                          const uint maxRowWidth,
                                           const float *costDSI,
                                           const float *iImage,
                                           float *aggregDSI)
@@ -110,20 +112,20 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
 
   float fLr, iLr;
 
-  for (uint x=1; x<width; x++) {
+  for (uint x=1; x<maxRowWidth; x++) {    
     int i = dsiDim.z >> 1;
     while ( i != 0 ) {
       if ( z < i ) {
         prevDispsMin[0][z] = min(prevDispsMin[0][z],
-                                  prevDispsMin[0][z + i]);
+                                 prevDispsMin[0][z + i]);
         prevDispsMin[1][z] = min(prevDispsMin[1][z],
-                                  prevDispsMin[1][z + i]);
+                                 prevDispsMin[1][z + i]);
       }
       __syncthreads();
       i = i >> 1;
     }
 
-    if ( z == 0 ) {
+    if ( z == 0 && x < rowsWidths[y] ) {
       fMinDisp = prevDispsMin[0][0];
       iMinDisp = prevDispsMin[1][0];
 
@@ -145,19 +147,23 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
 
     __syncthreads();
 
-    fLr = pathCost(dsiDim, costDSI,
-                   prevDisps[0][dz],
-                   prevDisps[0][dz - 1],
-                   prevDisps[0][dz + 1],
-                   fX, fY, z, fMinDisp, fP2Adjust,
-                   aggregDSI);
+    if ( x < rowsWidths[y] ) {
+      fLr = pathCost(dsiDim, costDSI,
+                     prevDisps[0][dz],
+                     prevDisps[0][dz - 1],
+                     prevDisps[0][dz + 1],
+                     fX, fY, z, fMinDisp, fP2Adjust,
+                     aggregDSI);
 
-    iLr = pathCost(dsiDim, costDSI,
-                   prevDisps[1][dz],
-                   prevDisps[1][dz - 1],
-                   prevDisps[1][dz + 1],
-                   iX, iY, z, iMinDisp, iP2Adjust,
-                   aggregDSI);
+#if 0
+      iLr = pathCost(dsiDim, costDSI,
+                     prevDisps[1][dz],
+                     prevDisps[1][dz - 1],
+                     prevDisps[1][dz + 1],
+                     iX, iY, z, iMinDisp, iP2Adjust,
+                     aggregDSI);
+#endif
+    }
 
     __syncthreads();
 
@@ -193,26 +199,47 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
     {-1, 0, dsiDim.y - 1}
   };
 
+  const int leftRightDiagM[2][3] = {
+    { -1, 0, dsiDim.x},
+    {1, 1, 0},
+  };
+  
+  const int rightLeftDiagM[2][3] = {
+    { -1, 0, dsiDim.x},
+    {1, 1, 0},
+  };
+
   tdv::CUerrExp cuerr;
 
   tdv::CudaConstraits constraits;
 
   tdv::CudaBenchmarker bm;
   bm.begin();
-
+    
   tdv::WorkSize wsz = constraits.imageWorkSize(tdv_dsiDim);
-  zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);
-
+  int rowsWidths_h[512];
+  
+  zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);    
   cuerr << cudaThreadSynchronize();
-
+  
+  for (size_t i=0; i<512; i++) {
+    rowsWidths_h[i] = dsiDim.x;
+  }
+  
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*512);
   cuerr << cudaMemcpyToSymbol(matrix, leftRightM, sizeof(int)*6);
   cuerr << cudaMemcpyToSymbol(invMatrix, rightLeftM, sizeof(int)*6);
-
+  
   semiglobalAggregVolKernel<<<dsiDim.y, dsiDim.z>>>(dsiDim, dsiDim.x,
                                                     dsi, lorigin,
-                                                    aggregDSI);
-
+                                                    aggregDSI);  
   cudaThreadSynchronize();
+
+  for (size_t i=0; i<512; i++) {
+    rowsWidths_h[i] = dsiDim.y;
+  }
+  
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*512);
   cuerr << cudaMemcpyToSymbol(matrix, topBottomM, sizeof(int)*6);
   cuerr << cudaMemcpyToSymbol(invMatrix, bottomTopM, sizeof(int)*6);
   
@@ -220,8 +247,24 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
                                                     dsi, lorigin,
                                                     aggregDSI);
   cuerr << cudaThreadSynchronize();
+  
+  for (size_t i=0; i<256; i++) {
+    rowsWidths_h[i] = i + 1;
+  }
+  
+  for (size_t i=256; i<512; i++) {
+    rowsWidths_h[i] = 512 - i;
+  }
 
-
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*512);
+  cuerr << cudaMemcpyToSymbol(matrix, leftRightDiagM, sizeof(int)*6);
+  cuerr << cudaMemcpyToSymbol(invMatrix, rightLeftDiagM, sizeof(int)*6);
+  
+  semiglobalAggregVolKernel<<<dsiDim.x, dsiDim.z>>>(dsiDim, dsiDim.y,
+                                                    dsi, lorigin,
+                                                    aggregDSI);
+  cuerr << cudaThreadSynchronize();
+  
   wtaKernel<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI,
                                          dsiDim.x*dsiDim.y,
                                          dispImg);     

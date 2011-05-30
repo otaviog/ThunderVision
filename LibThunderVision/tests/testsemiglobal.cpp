@@ -9,7 +9,7 @@
 #if 1
 TEST(TestSemiGlobalDev, WithSSD)
 {
-    tdv::SSDDev ssd(128);
+    tdv::SSDDev ssd(64);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
@@ -24,14 +24,14 @@ TEST(TestSemiGlobalDev, WithSSD)
 #if 0
 TEST(TestSemiGlobalCPU, WithSSD)
 {
-    tdv::SSDDev ssd(128);
+    tdv::SSDDev ssd(16);
     tdv::SemiGlobalOptCPU sg;
     
    runStereoTest(
        "../../res/tsukuba512_L.png",
        "../../res/tsukuba512_R.png",
        "tsukuba_ssdsgcpu.png",
-       &ssd, &sg, false);
+       &ssd, &sg, true);
 
 }
 #endif
