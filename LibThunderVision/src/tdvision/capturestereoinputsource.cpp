@@ -3,6 +3,7 @@
 TDV_NAMESPACE_BEGIN
 
 CaptureStereoInputSource::CaptureStereoInputSource()
+//: m_capture2(true)
 {
     m_procs[0] = this;
     m_procs[1] = NULL;    

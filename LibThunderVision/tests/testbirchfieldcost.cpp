@@ -10,8 +10,11 @@ TEST(TestBirchfieldCost, WithWTA)
     tdv::BirchfieldCostDev bf(128);
     tdv::WTADev wta;
     runStereoTest(
-        "../../res/tsukuba512_L.png",
-        "../../res/tsukuba512_R.png",
+        //"../../res/tsukuba512_L.png",
+        //"../../res/tsukuba512_R.png",
+
+        "tsukuba_L.png",
+        "tsukuba_R.png",
         "tsukuba_birchfieldwta.png", &bf, &wta);    
 }
 

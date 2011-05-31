@@ -85,7 +85,7 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName,
     if ( profileName == "Device" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
-        matcherFactory.maxDisparity(300);
+        matcherFactory.maxDisparity(128);
 
         matcherFactory.matchingCost(
             CommonStereoMatcherFactory::BirchfieldTomasi);

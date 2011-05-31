@@ -11,7 +11,7 @@ void runStereoTest(
     const std::string &outputImg, 
     tdv::MatchingCost *mcost, 
     tdv::Optimizer *opt,
-    bool medianFilter = false);
+    bool medianFilter = false, bool endMedianFilter = false);
 
 
 #endif /* TDV_STEREOTEST_HPP */

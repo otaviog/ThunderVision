@@ -12,7 +12,7 @@ void runStereoTest(
     const std::string &outputImg, 
     tdv::MatchingCost *mcost, 
     tdv::Optimizer *opt,
-    bool medianFilter)
+    bool medianFilter, bool endMedianFilter)
 {
     tdv::ImageReader readerL(leftImg);
     tdv::ImageReader readerR(rightImg);
@@ -21,7 +21,7 @@ void runStereoTest(
     tdv::RGBConv rconv;
     
     tdv::ImageWriter writer(outputImg);    
-    tdv::MedianFilterCPU mdFilterL, mdFilterR;
+    tdv::MedianFilterCPU mdFilterL, mdFilterR, mdFinal;
     
     fconvl.input(readerL.output());
     fconvr.input(readerR.output());
@@ -38,8 +38,18 @@ void runStereoTest(
     }   
     
     opt->input(mcost->output());    
-    rconv.input(opt->output());
-    writer.input(rconv.output());
+
+    if ( endMedianFilter )
+    {
+        mdFinal.input(opt->output());     
+        rconv.input(mdFinal.output());
+    }
+    else
+    {
+        rconv.input(opt->output());
+    }
+    
+    writer.input(rconv.output());    
     
     readerL.update();
     readerR.update();
@@ -54,6 +64,11 @@ void runStereoTest(
     
     mcost->update();
     opt->update();
+    if ( endMedianFilter )
+    {
+        mdFinal.update();
+    }
     rconv.update();
-    writer.update();    
+    
+    writer.update();        
 }

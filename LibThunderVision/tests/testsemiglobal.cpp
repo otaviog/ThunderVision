@@ -9,20 +9,25 @@
 #if 1
 TEST(TestSemiGlobalDev, WithSSD)
 {
-    tdv::SSDDev ssd(64);
+    //tdv::SSDDev ssd(64);
+    tdv::BirchfieldCostDev ssd(64);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
-#if 0
+#if 1
        "../../res/tsukuba512_L.png",
        "../../res/tsukuba512_R.png",
        "tsukuba_ssdsgdev.png",
-#else
+#elif 0
        "q_left.png",
        "q_right.png",
        "q_ssdsgdev.png",
+#else
+       "lt2.png",
+       "rt2.png",
+       "rt2_dev.png",
 #endif
-       &ssd, &sg, true);
+       &ssd, &sg, true, true);
 
 }
 #endif

@@ -42,9 +42,11 @@ TEST(TestSSD, WithWTA)
    tdv::WTADev wta;
     
    runStereoTest(
-       "../../res/tsukuba512_L.png",
-       "../../res/tsukuba512_R.png",
-       "tsukuba_ssdwta.png",
+       //"../../res/tsukuba512_L.png",
+       //"../../res/tsukuba512_R.png",       
+        "tsukuba_L.png",
+        "tsukuba_R.png",
+        "tsukuba_ssdwta.png",
        &ssd, &wta);
 
 }

@@ -10,11 +10,9 @@
 #define MAX_LINE_SIZE 1024
 #define BT_N 4
 
-texture<float, 2> texLeftImg;
-texture<float, 2> texRightImg;
-
-__global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity, 
-                               float *dsiMem)
+__global__ void birchfieldKern(const DSIDim dsiDim, 
+                               const float *leftImg, const float *rightImg,
+                               const int maxDisparity, float *dsiMem)
 {
   const uint x = threadIdx.x;
   const uint y = blockIdx.x;
@@ -22,8 +20,8 @@ __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity,
   __shared__ float leftScanLine[MAX_LINE_SIZE + 2];
   __shared__ float rightScanLine[MAX_LINE_SIZE + 2];
   
-  leftScanLine[x] = tex2D(texLeftImg, x, y);
-  rightScanLine[x] = tex2D(texRightImg, x, y);
+  leftScanLine[x] = leftImg[y*dsiDim.x + x];
+  rightScanLine[x] = rightImg[y*dsiDim.x + x];
   
   if ( x == 0 ) {
     leftScanLine[0] = 0.0f;
@@ -75,25 +73,10 @@ void BirchfieldCostRun(int maxDisparity,
                        float *dsiMem)
 {
   CUerrExp err;
-    
-  err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
-                           cudaCreateChannelDesc<float>(),
-                           dsiDim.width(), dsiDim.height(),
-                           dsiDim.width()*sizeof(float));
-  
-  err << cudaBindTexture2D(NULL, texRightImg, rightImg_d, 
-                           cudaCreateChannelDesc<float>(),
-                           dsiDim.width(), dsiDim.height(),
-                           dsiDim.width()*sizeof(float));
-  
-  texLeftImg.addressMode[0] = texRightImg.addressMode[0] = cudaAddressModeWrap;
-  texLeftImg.addressMode[1] = texRightImg.addressMode[1] = cudaAddressModeWrap;
-  texLeftImg.normalized = texRightImg.normalized = false;
-  texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;
-    
   DSIDim ddim(DSIDimCreate(dsiDim));      
   
-  birchfieldKern<<<ddim.y, ddim.x>>>(ddim, maxDisparity, dsiMem); 
+  birchfieldKern<<<ddim.y, ddim.x>>>(ddim, leftImg_d, rightImg_d,
+                                     maxDisparity, dsiMem); 
 
   cudaThreadSynchronize();
 }

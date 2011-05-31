@@ -4,8 +4,8 @@
 #include "cudaconstraits.hpp"
 
 texture<float, 2> imageTex;
-const int KernelSize = 25;
-const int KernelDim = 5;
+const int KernelSize = 49;
+const int KernelDim = 7;
 const int KernelDimH = KernelDim/2;
 const int KernelSizeH = KernelSize/2;
 

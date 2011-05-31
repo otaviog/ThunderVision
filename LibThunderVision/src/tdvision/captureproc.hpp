@@ -15,7 +15,7 @@ TDV_NAMESPACE_BEGIN
 class Capture
 {
 public:
-    Capture();
+    Capture(bool invert=false);
     
     void init(const std::string  &filename);
     
@@ -42,13 +42,15 @@ private:
     float m_fps;
     
     UpdateCount m_updateCount;
+    
+    bool m_invert;
 };
 
 
 class CaptureProc: public Process
 {
 public:    
-    CaptureProc();
+    CaptureProc(bool invert=false);
     
     void init(const std::string  &filename)
     {
