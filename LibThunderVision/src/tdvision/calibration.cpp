@@ -2,10 +2,6 @@
 #include "sink.hpp"
 #include "calibration.hpp"
 
-#include <iostream>
-#include <boost/format.hpp>
-#include <highgui.h>
-
 TDV_NAMESPACE_BEGIN
 
 Calibration::Calibration(size_t numFrames)
@@ -151,16 +147,6 @@ void Calibration::updateCalibration(const CvSize &imgSize)
     m_camDesc.extrinsics(c_R, c_T);
 }
 
-static inline std::string tmpName(const size_t frame, const std::string &base)
-{
-    if ( frame > 9 )
-        return 
-            (boost::format("%1%%2%.jpg") % base % frame).str();
-    else
-        return 
-            (boost::format("%1%0%2%.jpg") % base % frame).str();
-}
-
 bool Calibration::update()
 {        
     WriteGuard<ReadWritePipe<CvMat*> > wg(m_dipipe);
@@ -185,20 +171,6 @@ bool Calibration::update()
     cvCvtColor(limgOrigin, limg, CV_RGB2GRAY);
     cvCvtColor(rimgOrigin, rimg, CV_RGB2GRAY);    
     
-    try 
-    {
-        cvSaveImage(
-            tmpName(m_currFrame + 1, "left").c_str(),
-            limgOrigin);
-    
-        cvSaveImage(
-            tmpName(m_currFrame + 1, "right").c_str(),
-            rimgOrigin);
-    }
-    catch (...)
-    { 
-    }
-
     CvMatSinkPol::sink(rimgOrigin);        
     const CvSize imgSz = cvGetSize(limg);
 

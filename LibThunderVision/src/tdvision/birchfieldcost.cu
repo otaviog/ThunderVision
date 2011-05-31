@@ -43,11 +43,11 @@ __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity,
       for (uint v=sx; v < sx + BT_N; v++) {  
         const uint vd = v - disp;
           
-        const float lI = leftScanLine[v];
+        const float lI = leftScanLine[sx];
         const float rI = rightScanLine[vd];  
       
-        const float laI = 0.5f*(lI + leftScanLine[v - 1]);
-        const float lbI = 0.5f*(lI + leftScanLine[v + 1]);
+        const float laI = 0.5f*(lI + leftScanLine[sx - 1]);
+        const float lbI = 0.5f*(lI + leftScanLine[sx + 1]);
   
         const float raI = 0.5f*(rI + rightScanLine[vd - 1]);
         const float rbI = 0.5f*(rI + rightScanLine[vd + 1]);

@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include "util.hpp"
 
+#include "log.hpp"
+
+#ifdef __GNUC__
+#include <execinfo.h>
+#endif
+
 TDV_NAMESPACE_BEGIN
 
 namespace util
@@ -123,6 +129,27 @@ namespace util
         else 
             return p;
     }
+
+    void logBacktrace()
+    {
+#ifdef __GNUC__
+        void *array[30];
+        size_t size;
+        char **strings;
+        size_t i;
+        
+        size = backtrace (array, 30);
+        strings = backtrace_symbols (array, size);
+     
+        TDV_LOG(fatal).printf("Exception Launched.\n");
+     
+        for (i = 0; i < size; i++)
+            TDV_LOG(fatal).printf("%s\n", strings[i]);
+     
+        free (strings);
+#endif
+    }
+
 }
 
 TDV_NAMESPACE_END

@@ -104,6 +104,7 @@ static void costVolume(const Dim &dsiDim,
             {
                 minDisp = std::min(lastCost[costStep*y + i], minDisp);
             }
+            //minDisp = lastCost[costStep*y + random()%dsiDim.depth()];
             
             const float P2Adjust = P2/
                 std::abs(img1[tY*dsiDim.width() + tX] - lastIntensity); 

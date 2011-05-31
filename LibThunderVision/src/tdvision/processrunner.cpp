@@ -2,6 +2,7 @@
 #include <tdvbasic/log.hpp>
 #include "process.hpp"
 #include "exceptionreport.hpp"
+#include "misc.hpp"
 #include "processrunner.hpp"
 
 TDV_NAMESPACE_BEGIN

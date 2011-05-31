@@ -10,7 +10,8 @@ void SemiGlobalDev::updateImpl(DSIMem dsi, FloatImage outimg)
     float *outimg_d = outimg.devMem();
         
     RunSemiGlobalDev(dsi.dim(), dsi.mem(), dsi.leftOrigin().devMem(), 
-                     m_aggregDSI.mem(dsi.dim().size()), outimg_d);
+                     m_aggregDSI.mem(dsi.dim().size()*sizeof(float)), 
+                     outimg_d);
 }
 
 void SemiGlobalDev::finished()

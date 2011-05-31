@@ -4,6 +4,8 @@
 #include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
+#include <iostream>
+
 #define MAX_DISP 768
 
 #define min4(a, b, c, d) min(a, min(b, min(c, d)))
@@ -14,7 +16,7 @@ __global__ void wtaKernel(const DSIDim dim,
                           float *outimg);
 
 __global__ void zeroDSIVolume(const DSIDim dsiDim,
-                           float *dsiVol)
+                              float *dsiVol)
 {
   const uint x = blockDim.x*blockIdx.x + threadIdx.x;
   const uint y = blockDim.y*blockIdx.y + threadIdx.y;
@@ -53,10 +55,17 @@ inline __device__ float pathCost(const DSIDim dsiDim, const float *costDSI,
 __constant__ int matrix[6];
 __constant__ int invMatrix[6];
 
+#define MAX_ROWS 2048
+
+__constant__ int rowsWidths[MAX_ROWS];
+__constant__ int rowsStart[MAX_ROWS][2];
+__constant__ int rowsEnd[MAX_ROWS][2];
+
 __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
-                                          const uint width,
+                                          const uint maxRowWidth,
                                           const float *costDSI,
                                           const float *iImage,
+                                          uint pathDirX, uint pathDirY,
                                           float *aggregDSI)
 {
   const uint z = threadIdx.x;
@@ -64,7 +73,7 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
   const uint dz = z + 1;
 
   __shared__ float prevDisps[2][MAX_DISP + 2];
-  __shared__ float prevDispsMin[2][MAX_DISP + 2];
+  __shared__ float prevDispsMin[2][MAX_DISP];
   __shared__ float fMinDisp, iMinDisp;
   __shared__ float fP2Adjust, iP2Adjust,
     fLastIntesity, iLastIntesity;
@@ -72,11 +81,11 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
   __shared__ int fX, fY, iX, iY;
 
   if ( z == 0 ) {
-    fX = matrix[1]*y + matrix[2];
-    fY = matrix[4]*y + matrix[5];
+    fX = rowsStart[y][0];
+    fY = rowsStart[y][1];
 
-    iX = invMatrix[1]*y + invMatrix[2];
-    iY = invMatrix[4]*y + invMatrix[5];
+    iX = rowsEnd[y][0];
+    iY = rowsEnd[y][1];
 
     prevDisps[0][0] = CUDART_INF_F;
     prevDisps[0][dsiDim.z + 1] = CUDART_INF_F;
@@ -94,40 +103,42 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
   float initialCost = costDSI[initialOff];
 
   prevDisps[0][dz] = initialCost;
+  prevDispsMin[0][z] = initialCost;
   aggregDSI[initialOff] = initialCost;
 
   initialOff = dsiOffset(dsiDim, iX, iY, z);
   initialCost = costDSI[initialOff];
 
   prevDisps[1][dz] = initialCost;
+  prevDispsMin[1][z] = initialCost;
   aggregDSI[initialOff] = initialCost;
 
   __syncthreads();
 
   float fLr, iLr;
 
-  for (uint x=1; x<width; x++) {
+  for (uint x=1; x<maxRowWidth; x++) {    
     int i = dsiDim.z >> 1;
     while ( i != 0 ) {
       if ( z < i ) {
-        prevDispsMin[0][dz] = min(prevDispsMin[0][dz],
-                                  prevDispsMin[0][dz + i]);
-        prevDispsMin[1][dz] = min(prevDispsMin[1][dz],
-                                  prevDispsMin[1][dz + i]);
+        prevDispsMin[0][z] = min(prevDispsMin[0][z],
+                                 prevDispsMin[0][z + i]);
+        prevDispsMin[1][z] = min(prevDispsMin[1][z],
+                                 prevDispsMin[1][z + i]);
       }
       __syncthreads();
       i = i >> 1;
     }
 
-    if ( z == 0 ) {
-      fMinDisp = prevDispsMin[0][1];
-      iMinDisp = prevDispsMin[1][1];
+    if ( z == 0 && x < rowsWidths[y] ) {
+      fMinDisp = prevDispsMin[0][0];
+      iMinDisp = prevDispsMin[1][0];
 
-      fX = matrix[0]*x + matrix[1]*y + matrix[2];
-      fY = matrix[3]*x + matrix[4]*y + matrix[5];
+      fX = fX + pathDirX;
+      fY = fY + pathDirY;
 
-      iX = invMatrix[0]*x + invMatrix[1]*y + invMatrix[2];
-      iY = invMatrix[3]*x + invMatrix[4]*y + invMatrix[5];
+      iX = iX - pathDirX;
+      iY = iY - pathDirY;
 
       const float fI = iImage[fY*dsiDim.x + fX];
       const float iI = iImage[iY*dsiDim.x + iX];
@@ -141,27 +152,29 @@ __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
 
     __syncthreads();
 
-    fLr = pathCost(dsiDim, costDSI,
-                   prevDisps[0][dz],
-                   prevDisps[0][dz - 1],
-                   prevDisps[0][dz + 1],
-                   fX, fY, z, fMinDisp, fP2Adjust,
-                   aggregDSI);
+    if ( x < rowsWidths[y] ) {
+      fLr = pathCost(dsiDim, costDSI,
+                     prevDisps[0][dz],
+                     prevDisps[0][dz - 1],
+                     prevDisps[0][dz + 1],
+                     fX, fY, z, fMinDisp, fP2Adjust,
+                     aggregDSI);
 
-    iLr = pathCost(dsiDim, costDSI,
-                   prevDisps[1][dz],
-                   prevDisps[1][dz - 1],
-                   prevDisps[1][dz + 1],
-                   iX, iY, z, iMinDisp, iP2Adjust,
-                   aggregDSI);
+#if 1
+      iLr = pathCost(dsiDim, costDSI,
+                     prevDisps[1][dz],
+                     prevDisps[1][dz - 1],
+                     prevDisps[1][dz + 1],
+                     iX, iY, z, iMinDisp, iP2Adjust,
+                     aggregDSI);
+#endif
+    }
 
     __syncthreads();
 
-    prevDisps[0][dz] = fLr;
-    prevDisps[1][dz] = iLr;
-    prevDispsMin[0][dz] = fLr;
-    prevDispsMin[0][dz] = iLr;
-    
+    prevDisps[0][dz] = prevDispsMin[0][z] = fLr;
+    prevDisps[1][dz] = prevDispsMin[1][z] = iLr;
+
     __syncthreads();
   }
 }
@@ -171,71 +184,95 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
 {
   DSIDim dsiDim(DSIDimCreate(tdv_dsiDim));
 
-  const int leftRightM[2][3] = {
-    {1, 0, 0},
-    {0, 1, 0},
-  };
-
-  const int rightLeftM[2][3] = {
-    {-1, 0, dsiDim.x - 1},
-    {0, 1, 0},
-  };
-
-  const int topBottomM[2][3] = {
-    {0, 1, 0},
-    {1, 0, 0}
-  };
-
-  const int bottomTopM[2][3] = {
-    {0, -1, dsiDim.y - 1},
-    {1, 0, 0}
-  };
-
   tdv::CUerrExp cuerr;
 
   tdv::CudaConstraits constraits;
 
   tdv::CudaBenchmarker bm;
   bm.begin();
-
+    
   tdv::WorkSize wsz = constraits.imageWorkSize(tdv_dsiDim);
-  zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);
-
-  cuerr = cudaThreadSynchronize();
-
-  if ( !cuerr.good() ) {
-    cudaFree(aggregDSI);
-    cuerr.checkErr();
+  int rowsWidths_h[MAX_ROWS];
+  int rowsStart_h[MAX_ROWS][2];
+  int rowsEnd_h[MAX_ROWS][2];
+  
+  zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);    
+  cuerr << cudaThreadSynchronize();
+  
+  for (size_t i=0; i<dsiDim.y; i++) {
+    rowsWidths_h[i] = dsiDim.x;
+    
+    rowsStart_h[i][0] = 0;
+    rowsStart_h[i][1] = i;
+    
+    rowsEnd_h[i][0] = dsiDim.x - 1;
+    rowsEnd_h[i][1] = i;    
   }
-
-  cuerr << cudaMemcpyToSymbol(matrix, leftRightM, sizeof(int)*6);
-  cuerr << cudaMemcpyToSymbol(invMatrix, rightLeftM, sizeof(int)*6);
-
-  cudaThreadSynchronize();
+  
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
+  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
+  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
   semiglobalAggregVolKernel<<<dsiDim.y, dsiDim.z>>>(dsiDim, dsiDim.x,
                                                     dsi, lorigin,
-                                                    aggregDSI);
+                                                    1, 0,
+                                                    aggregDSI);  
+  cuerr << cudaThreadSynchronize();
 
-  cuerr << cudaMemcpyToSymbol(matrix, topBottomM, sizeof(int)*6);
-  cuerr << cudaMemcpyToSymbol(invMatrix, bottomTopM, sizeof(int)*6);
+  for (size_t i=0; i<dsiDim.x; i++) {
+    rowsWidths_h[i] = dsiDim.y;
 
-  cudaThreadSynchronize();
-  semiglobalAggregVolKernel<<<dsiDim.y, dsiDim.z>>>(dsiDim, dsiDim.x,
-                                                    dsi, lorigin,
-                                                    aggregDSI);
-
-  cuerr = cudaThreadSynchronize();
-
-  if ( !cuerr.good() ) {
-    cudaFree(aggregDSI);
-    cuerr.checkErr();
+    rowsStart_h[i][0] = i;
+    rowsStart_h[i][1] = 0;
+    
+    rowsEnd_h[i][0] = i;
+    rowsEnd_h[i][1] = dsiDim.y - 1;    
   }
+  
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
+  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
+  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
+#if 1
+  semiglobalAggregVolKernel<<<dsiDim.x, dsiDim.z>>>(dsiDim, dsiDim.y,
+                                                    dsi, lorigin,
+                                                    0, 1,
+                                                    aggregDSI);
+#endif
+  cuerr << cudaThreadSynchronize();
+  
+  for (size_t i=0; i<dsiDim.x; i++) {
+    rowsWidths_h[i] = i + 1;
+    
+    rowsStart_h[i][0] = dsiDim.x - 1 - i;
+    rowsStart_h[i][1] = 0;
+    
+    rowsEnd_h[i][0] = dsiDim.x - 1;
+    rowsEnd_h[i][1] = i;
+  }
+  
+  for (size_t i=dsiDim.x; i<dsiDim.x*2 - 1; i++) {
+    rowsWidths_h[i] = dsiDim.x*2 - i - 1;
 
+    rowsStart_h[i][0] = 0;
+    rowsStart_h[i][1] = i - dsiDim.x + 1;    
+    
+    rowsEnd_h[i][0] = i - dsiDim.x - 1;
+    rowsEnd_h[i][1] = dsiDim.y - 1;
+  }
+  
+#if 1
+  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
+  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
+  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
+  semiglobalAggregVolKernel<<<dsiDim.x*2 - 1, dsiDim.z>>>(dsiDim, dsiDim.x,
+                                                          dsi, lorigin,
+                                                          1, 1,
+                                                          aggregDSI);
+#endif
+  cuerr << cudaThreadSynchronize();
+  
   wtaKernel<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI,
                                          dsiDim.x*dsiDim.y,
-                                         dispImg);
-  bm.end();
-
-  cuerr = cudaFree(aggregDSI);
-  cuerr.checkErr();
+                                         dispImg);     
+  
+  std::cout<<bm.end()<<std::endl;
 }

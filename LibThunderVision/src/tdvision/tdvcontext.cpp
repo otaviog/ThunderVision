@@ -25,9 +25,9 @@ TDVContext::TDVContext()
     m_errHandler = NULL;
     m_matcher = NULL;
     spec(NULL);
-    
+
     m_inputTees[0].workName("Input Tee 0");
-    m_inputTees[1].workName("Input Tee 1");    
+    m_inputTees[1].workName("Input Tee 1");
 }
 
 void TDVContext::spec(tdv::ThunderSpec *spec)
@@ -37,7 +37,7 @@ void TDVContext::spec(tdv::ThunderSpec *spec)
         m_spec = &g_defaultSpec;
         return ;
     }
-    
+
     m_spec = spec;
 }
 
@@ -50,7 +50,7 @@ void TDVContext::start(StereoInputSource *inputSrc)
 
         m_inputTees[0].input(m_inputSrc->leftImgOutput());
         m_inputTees[1].input(m_inputSrc->rightImgOutput());
-        
+
         ArrayProcessGroup pgrp;
         pgrp.addProcess(*m_inputSrc);
         pgrp.addProcess(&m_inputTees[0]);
@@ -72,49 +72,51 @@ void TDVContext::dispose()
     }
 }
 
-Reconstruction* TDVContext::runReconstruction(const std::string &profileName, 
+Reconstruction* TDVContext::runReconstruction(const std::string &profileName,
                                               Reprojection *reproj)
-{    
+{
     if ( m_reconstRunner != NULL )
     {
         return NULL;
     }
-    
+
     CommonStereoMatcherFactory matcherFactory;
-    
+
     if ( profileName == "Device" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
-        matcherFactory.maxDisparity(400);
-        
-        //matcherFactory.matchingCost(CommonStereoMatcherFactory::BirchfieldTomasi);
-        //matcherFactory.matchingCost(CommonStereoMatcherFactory::CrossCorrelationNorm);
-        matcherFactory.matchingCost(CommonStereoMatcherFactory::SSD);
+        matcherFactory.maxDisparity(300);
 
-        matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
-        //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);        
-        //matcherFactory.optimization(CommonStereoMatcherFactory::SemiGlobal);
+        matcherFactory.matchingCost(
+            CommonStereoMatcherFactory::BirchfieldTomasi);
+        //matcherFactory.matchingCost(
+        //CommonStereoMatcherFactory::CrossCorrelationNorm);
+        //matcherFactory.matchingCost(CommonStereoMatcherFactory::SSD);
+
+        //matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
+        //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);
+        matcherFactory.optimization(CommonStereoMatcherFactory::SemiGlobal);
     }
     else if ( profileName == "CPU" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::CPU);
     }
-            
+
     m_matcher = matcherFactory.createStereoMatcher();
 
     m_inputTees[0].enable(RECONSTRUCTION_TEE_ID);
-    m_inputTees[1].enable(RECONSTRUCTION_TEE_ID);    
-    
+    m_inputTees[1].enable(RECONSTRUCTION_TEE_ID);
+
     m_reconst = new Reconstruction(m_matcher,
                                  m_inputTees[0].output(RECONSTRUCTION_TEE_ID),
                                  m_inputTees[1].output(RECONSTRUCTION_TEE_ID),
                                  reproj);
-    
+
     m_reconst->camerasDesc(m_spec->camerasDesc("default"));
     m_reconst->benchmarkCallback(this);
     m_reconstRunner = new ProcessRunner(*m_reconst, this);
     m_reconstRunner->run();
-    
+
     return m_reconst;
 }
 
@@ -124,12 +126,12 @@ void TDVContext::releaseReconstruction(Reconstruction *reconst)
     {
         m_inputTees[0].disable(RECONSTRUCTION_TEE_ID);
         m_inputTees[1].disable(RECONSTRUCTION_TEE_ID);
-    
+
         m_reconstRunner->join();
 
         delete m_reconstRunner;
         m_reconstRunner = NULL;
-        delete m_reconst;        
+        delete m_reconst;
         m_reconst = NULL;
     }
 }
@@ -138,22 +140,22 @@ Calibration* TDVContext::runCalibration()
 {
     CalibrationProc *calib = NULL;
     if ( m_calibRunner == NULL )
-    {                
+    {
         calib = new CalibrationProc(13);
-        
+
         m_inputTees[0].enable(CALIBRATION_TEE_ID);
         m_inputTees[1].enable(CALIBRATION_TEE_ID);
-        
+
         calib->input(m_inputTees[0].output(CALIBRATION_TEE_ID),
                      m_inputTees[1].output(CALIBRATION_TEE_ID));
         calib->workName("Calibration");
-        
+
         ArrayProcessGroup grp;
         grp.addProcess(calib);
         m_calibRunner = new ProcessRunner(grp, this);
-        m_calibRunner->run();                
+        m_calibRunner->run();
     }
-    
+
     return calib;
 }
 
@@ -161,22 +163,22 @@ void TDVContext::releaseCalibration(Calibration *calib)
 {
     assert(calib != NULL);
     if ( m_calibRunner != NULL )
-    {        
+    {
         m_inputTees[0].disable(CALIBRATION_TEE_ID);
         m_inputTees[1].disable(CALIBRATION_TEE_ID);
-        
+
         m_calibRunner->join();
         if ( calib->isComplete() )
-        {            
+        {
             m_spec->camerasDesc("default") = calib->camerasDesc();
             if ( m_reconst != NULL )
             {
                 m_reconst->camerasDesc(calib->camerasDesc());
             }
         }
-        
+
         delete calib;
-        
+
         m_calibRunner = NULL;
     }
 }
@@ -210,13 +212,13 @@ void TDVContext::switchCameras()
 {
     m_inputTees[0].waitPauseProc();
     m_inputTees[1].waitPauseProc();
-    
+
     ReadPipe<CvMat*> *aux = m_inputTees[0].input();
     m_inputTees[0].input(m_inputTees[1].input());
-    m_inputTees[1].input(aux);    
+    m_inputTees[1].input(aux);
 
     m_inputTees[0].resumeProc();
-    m_inputTees[1].resumeProc();    
+    m_inputTees[1].resumeProc();
 }
 
 void TDVContext::reconstructionDone(float framesSec)

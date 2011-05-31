@@ -5,6 +5,7 @@
 #include <string>
 #include <boost/format.hpp>
 #include "common.hpp"
+#include "util.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -14,6 +15,7 @@ public:
     Exception(const std::string &msg)
         : m_msg(msg)
     {
+        util::logBacktrace();
     }
 
     Exception(const boost::format &format)

@@ -19,16 +19,20 @@ TmpCudaMem::~TmpCudaMem()
 }
 
 float* TmpCudaMem::mem(size_t memSize)
-{
-    CUerrExp cuerr;
-    
+{    
     if ( m_csize != memSize )
     {
-        cudaFree(m_mem);
-        m_mem = NULL;
-    }
+        if ( m_mem != NULL )
+        {
+            cudaFree(m_mem);
+            m_mem = NULL;
+        }
+        
+        CUerrExp cuerr;
+        cuerr << cudaMalloc((void**) &m_mem, memSize);
+        m_csize = memSize;
+    }    
     
-    cuerr << cudaMalloc((void**) &m_mem, memSize);
     return m_mem;
 }
 

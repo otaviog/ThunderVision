@@ -27,14 +27,17 @@ void ReprojectionView::paintGL()
         const ud::Vec3f &mi = box.getMin();
         const ud::Vec3f &ma = box.getMax();
 
+#if 0
         glScalef(2.0f/(ma[0] - mi[0]),
                  2.0f/(ma[1] - mi[1]),
-                 1.0f);
+                 2.0f/(ma[2] - mi[2]));
 
         glTranslatef((ma[0] - mi[0])*-0.5f,
                      (ma[1] - mi[1])*-0.5f,
-                     -2.0f);
-
+                     (ma[2] - mi[2])*0.5f);
+#endif
+        const float zcenter = (ma[2] + mi[2])*0.5f;
+        glTranslatef(0.0f, 0.0f, -(zcenter + (ma[2] - zcenter)));
         m_reproj->draw();
     }
 }
@@ -59,8 +62,8 @@ void ReprojectionView::keyPressEvent(QKeyEvent *event)
     
     const ud::Aabb &box = m_reproj->box();
 
-    const float xmove = (box.getMax()[0] - box.getMin()[0])*0.0005f;
-    const float ymove = (box.getMax()[1] - box.getMin()[1])*0.0005f;
+    const float xmove = (box.getMax()[0] - box.getMin()[0])*0.1f;
+    const float ymove = (box.getMax()[1] - box.getMin()[1])*0.1f;
     const float zmove = (box.getMax()[2] - box.getMin()[2])*0.1f;
     
     switch ( event->key() )

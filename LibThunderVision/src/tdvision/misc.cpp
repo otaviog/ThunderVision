@@ -1,3 +1,5 @@
+#include <tdvbasic/log.hpp>
+
 #include "misc.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -16,14 +18,25 @@ namespace misc
     {                        
         CvSize sz(cvGetSize(src));
         CvMat *dst = cvCreateMat(sz.height, sz.width, CV_32F);
+#if 0
         
         CvMat *grayTmp = create8UGray(src);
         cvConvertScale(grayTmp, dst, 1.0/255.0);
         cvReleaseMat(&grayTmp);
         
         return dst;
-    }
+#else
 
+        CvMat *tmp = cvCreateMat(sz.height, sz.width, CV_32FC3);
+
+        cvConvertScale(src, tmp, 1.0/255.0);        
+        cvCvtColor(tmp, dst, CV_RGB2GRAY);
+        cvReleaseMat(&tmp);
+        
+        return dst;
+#endif
+    }
+    
     void convert8UC3To32FC1Gray(const CvArr *src, CvArr *dst, CvArr *tmpGray)
     {
         bool inTmpGrayNull = tmpGray == NULL;
@@ -40,7 +53,7 @@ namespace misc
         
         if ( inTmpGrayNull )
             cvReleaseMat((CvMat**) &tmpGray);
-    }
+    }    
 }
 
 TDV_NAMESPACE_END
