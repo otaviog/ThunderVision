@@ -15,8 +15,8 @@ TEST(TestSemiGlobalDev, WithSSD)
 
    runStereoTest(
 #if 1
-       "../../res/tsukuba512_L.png",
-       "../../res/tsukuba512_R.png",
+       "../../res/tsukuba_L.png",
+       "../../res/tsukuba_R.png",
        "tsukuba_ssdsgdev.png",
 #elif 0
        "q_left.png",
