@@ -7,12 +7,26 @@
 #include <iostream>
 
 #define MAX_DISP 768
-#define MMIN(a, b) (a < b) ? a : b
 
+#define MMIN(a, b) (a < b) ? a : b
 #define min4(a, b, c, d) min(a, min(b, min(c, d)))
 
+
+static inline size_t diagRSizeX(int h, int x)
+{
+  return MMIN(x + 1, h);
+}
+
+static inline size_t diagRSizeY(int w, int h, int y)
+{
+  return MMIN(h - y, w);    
+}                              
+
+void showDiagImg(int w, int h, int *st, int *ed);
+                        
 __global__ void wtaKernel(const DSIDim dim,
                           const float *dsi,
+                          const uint width,
                           const uint maxOffset,
                           float *outimg);
 
@@ -245,15 +259,15 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
   }
   
   for (size_t i=0; i<dsiDim.y - 1; i++) {    
-    const size_t pos = dsiDim.x + i;
+    const size_t offset = dsiDim.x + i;
     
-    rowsStart_h[pos][0] = 0;
-    rowsStart_h[pos][1] = i + 1;    
+    rowsStart_h[offset][0] = 0;
+    rowsStart_h[offset][1] = i + 1;    
     
-    rowsEnd_h[pos][0] = lastX - i;
-    rowsEnd_h[pos][1] = lastY;
+    rowsEnd_h[offset][0] = MMIN(lastY - (i + 1), lastX);
+    rowsEnd_h[offset][1] = lastY;
 
-    rowsWidths_h[pos] = rowsEnd_h[pos][1] - rowsStart_h[pos][1] + 1;
+    rowsWidths_h[offset] = rowsEnd_h[offset][1] - rowsStart_h[offset][1] + 1;
   }
   
 
@@ -269,25 +283,33 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
 #endif
   
   for (size_t i=0; i<dsiDim.x; i++) {         
-    rowsStart_h[i][0] = i;
-    rowsStart_h[i][1] = 0;
+    const int sX = i;
+    const int sY = 0;
+    const int diagSize = diagRSizeX(dsiDim.y, i);
     
+    rowsStart_h[i][0] = sX;
+    rowsStart_h[i][1] = sY;
+    
+    rowsWidths_h[i] = diagSize;
+      
     rowsEnd_h[i][0] = 0;
-    rowsEnd_h[i][1] = i;   
-    
-    rowsWidths_h[i] = i + 1;        
+    rowsEnd_h[i][1] = diagSize - 1;
   }
   
-  for (size_t i=0; i<dsiDim.x - 1; i++) {        
-    const size_t pos = dsiDim.x + i;
+  for (size_t i=0; i<dsiDim.y - 1; i++) {        
+    const size_t offset = dsiDim.x + i;
     
-    rowsStart_h[pos][0] = lastX;
-    rowsStart_h[pos][1] = i + 1;    
+    const int sX = lastX;
+    const int sY = i + 1;
+    const int diagSize = diagRSizeY(dsiDim.x, dsiDim.y, i);
     
-    rowsEnd_h[pos][0] = i + 1;
-    rowsEnd_h[pos][1] = lastY;
+    rowsStart_h[offset][0] = sX;
+    rowsStart_h[offset][1] = sY;
 
-    rowsWidths_h[pos] = abs(rowsStart_h[pos][0] - rowsEnd_h[pos][0]) + 1; 
+    rowsEnd_h[offset][0] = sX - diagSize - 1;
+    rowsEnd_h[offset][1] = sY - diagSize - 1;
+    
+    rowsWidths_h[offset] = diagSize;                    
   }
   
   cuerr << cudaThreadSynchronize();
@@ -295,12 +317,15 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
   cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
   cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
   cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
-#if 0
+  
+  showDiagImg(dsiDim.x, dsiDim.y, &rowsStart_h[0][0], &rowsEnd_h[0][0]);
+#if 1
   semiglobalAggregVolKernel<<<dsiDim.x + dsiDim.y - 1, dsiDim.z>>>(dsiDim, dsi, lorigin,
                                                                    -1, 1, aggregDSI);
 #endif
   cuerr << cudaThreadSynchronize();      
   wtaKernel<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI,
+                                         dsiDim.x,
                                          dsiDim.x*dsiDim.y,
                                          dispImg);     
   

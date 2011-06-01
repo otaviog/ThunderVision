@@ -6,13 +6,14 @@
 
 __global__ void wtaKernel(const DSIDim dim, 
                           const float *dsi, 
+                          const uint width,
                           const uint maxOffset, 
                           float *outimg)
 {
   const uint x = blockDim.x*blockIdx.x + threadIdx.x;
   const uint y = blockDim.y*blockIdx.y + threadIdx.y;
 
-  const uint offset = blockDim.x*gridDim.x*y + x;
+  const uint offset = width*y + x;
   
   if ( offset < maxOffset ) {
     float leastDiff = CUDART_INF_F;
@@ -28,20 +29,19 @@ __global__ void wtaKernel(const DSIDim dim,
     }
     
     outimg[offset] = float(wonDisparity)/float(dim.z);            
+    //outimg[offset] = 1.0f;
   }
 }
 
 void DevWTARun(float *dsi, const tdv::Dim &dsiDim, float *outimg)
 {  
-  dim3 dsiDim_c(dsiDim.width(), 
-                dsiDim.height(), 
-                dsiDim.depth());
   DSIDim ddim(DSIDimCreate(dsiDim));
 
   tdv::CudaConstraits constraits;
   tdv::WorkSize wsz = constraits.imageWorkSize(dsiDim);
   
-  wtaKernel<<<wsz.blocks, wsz.threads>>>(ddim, dsi,
+  wtaKernel<<<wsz.blocks, wsz.threads>>>(ddim, dsi, 
+                                         dsiDim.width(),
                                          dsiDim.width()*dsiDim.height(),
                                          outimg); 
 }

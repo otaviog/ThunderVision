@@ -9,9 +9,29 @@
 #include "cmdline.hpp"
 #include "mainwindow.hpp"
 
+#include <iostream>
+
+static void printCUDAInfo()
+{
+    using namespace std;
+    
+    cudaDeviceProp prop;    
+    cudaGetDeviceProperties(&prop, 0);
+    
+    cout << "Name: " << prop.name << endl
+         << "Global Mem: " << prop.totalGlobalMem/1024 << "Kib" << endl
+         << "Shared Mem: " << prop.sharedMemPerBlock/1024 << "Kib" << endl
+         << "Regs Block: " << prop.regsPerBlock << endl
+         << "Max Threads Block:" << prop.maxThreadsPerBlock << endl
+         << "Const Mem: " << prop.totalConstMem << endl
+         << "Multi Proc: " << prop.multiProcessorCount << endl;        
+}
+
 int main(int argc, char *argv[])
 {    
     tdv::TdvGlobalLogDefaultOutputs();    
+    
+    printCUDAInfo();
     
     QApplication qapp(argc, argv);        
     Q_INIT_RESOURCE(resources);

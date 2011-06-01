@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <tdvision/birchfieldcostdev.hpp>
 #include <tdvision/wtadev.hpp>
+#include <tdvision/wtacpu.hpp>
 #include <tdvision/dynamicprogdev.hpp>
 #include <tdvision/dynamicprogcpu.hpp>
 #include "stereotest.hpp"
@@ -8,14 +9,13 @@
 TEST(TestBirchfieldCost, WithWTA)
 {
     tdv::BirchfieldCostDev bf(128);
-    tdv::WTADev wta;
-    runStereoTest(
+    tdv::WTACPU wta;
+    runStereoTest(        
         //"../../res/tsukuba512_L.png",
         //"../../res/tsukuba512_R.png",
-
         "tsukuba_L.png",
         "tsukuba_R.png",
-        "tsukuba_birchfieldwta.png", &bf, &wta);    
+        "tsukuba_birchfieldwta.png", &bf, &wta, false, false);    
 }
 
 TEST(TestBirchfieldCost, WithDynProg)

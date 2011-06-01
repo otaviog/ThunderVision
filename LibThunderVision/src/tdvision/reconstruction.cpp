@@ -13,6 +13,8 @@ TDV_NAMESPACE_BEGIN
  *
  */
 
+#define TDV_RESIZE_STEREO 
+
 Reconstruction::Reconstruction(StereoMatcher *matcher,
                                ReadPipe<CvMat*> *leftImgIn,
                                ReadPipe<CvMat*> *rightImgIn,
@@ -33,11 +35,15 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_rectTee[0].enable(RECT_MATCHER_ID);
     m_rectTee[1].enable(RECT_MATCHER_ID);
 
+#ifdef TDV_RESIZE_STEREO
     m_resize[0].input(m_rectTee[0].output(RECT_MATCHER_ID));
     m_resize[1].input(m_rectTee[1].output(RECT_MATCHER_ID));
-
+    
     m_matcher->inputs(m_resize[0].output(), m_resize[1].output());
-
+#else
+    m_matcher->inputs(m_rectTee[0].output(RECT_MATCHER_ID), m_rectTee[1].output(RECT_MATCHER_ID));
+#endif
+    
     m_dispTee.input(m_matcher->output());
     m_dispTee.enable(DISP_REP_ID);
 
@@ -56,8 +62,10 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
     m_procs.addProcess(&m_rectify);
     m_procs.addProcess(&m_rectTee[0]);
     m_procs.addProcess(&m_rectTee[1]);
+#ifdef TDV_RESIZE_STEREO
     m_procs.addProcess(&m_resize[0]);
     m_procs.addProcess(&m_resize[1]);
+#endif
     m_procs.addProcess(*m_matcher);
     m_procs.addProcess(&m_dispTee);
     m_procs.addProcess(&m_reprojectProc);

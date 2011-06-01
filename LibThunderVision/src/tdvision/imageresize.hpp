@@ -24,7 +24,7 @@ public:
         : m_newDim(-1)
     {     
         workName("Image resize");
-        m_mode = ClosestPowerOf2;
+        m_mode = NextPowerOf2;
         m_rpipe = NULL;         
     }
         

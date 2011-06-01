@@ -82,7 +82,7 @@ float* FloatImageImpl::devMem()
         }
         else // On the cpu
         {
-            for (int row=0; row<m_cpuMem->height; row++)
+            for (int row=0; row<m_cpuMem->rows; row++)
             {
                 cuerr << cudaMemcpy(devMem + row*m_cpuMem->width, 
                                     m_cpuMem->data.ptr + row*m_cpuMem->step,
