@@ -18,12 +18,15 @@ bool AbstractOptimizer::update()
         FloatImage outimg = FloatImage::CreateDev(
             Dim(dsi.dim().width(), dsi.dim().height()));
                 
-        CudaBenchmarker bm;
-        bm.begin();
-        
+        CudaBenchmarker bMarker;
+        bMarker.begin();
+                
         updateImpl(dsi, outimg);
         
-        bm.end();        
+        bMarker.end();        
+        
+        m_mark.addProbe(bMarker.elapsedTime());
+        
         guard.write(outimg);
     }
 

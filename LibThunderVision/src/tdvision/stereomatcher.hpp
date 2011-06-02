@@ -5,6 +5,7 @@
 #include "processgroup.hpp"
 #include "pipe.hpp"
 #include "floatimage.hpp"
+#include "benchmark.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -13,10 +14,14 @@ class StereoMatcher: public ProcessGroup
 public:
     virtual void inputs(ReadPipe<FloatImage> *leftInput,
                         ReadPipe<FloatImage> *rightInput) = 0;
-    
+        
     virtual ReadPipe<FloatImage>* output() = 0;
     
     virtual std::string name() const = 0;
+    
+    virtual Benchmark matchcostBenchmark() const = 0;    
+    
+    virtual Benchmark optimizationBenchmark() const = 0;
 };
 
 TDV_NAMESPACE_END

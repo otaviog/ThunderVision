@@ -12,11 +12,17 @@ public:
     CrossCorrelationDev(int disparityMax)
         : AbstractMatchingCost(disparityMax)
     { workName("CrossCorrelation"); }
-
+    
+    Benchmark benchmark() 
+    {
+        return m_mark;
+    }
+    
 protected:    
     void updateImpl(FloatImage leftImg, FloatImage rightImg,
                     DSIMem dsi);
-
+private:
+    Benchmark m_mark;
 };
 
 TDV_NAMESPACE_END

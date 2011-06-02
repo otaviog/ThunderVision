@@ -29,7 +29,6 @@ __global__ void wtaKernel(const DSIDim dim,
     }
     
     outimg[offset] = float(wonDisparity)/float(dim.z);            
-    //outimg[offset] = 1.0f;
   }
 }
 
@@ -43,5 +42,5 @@ void DevWTARun(float *dsi, const tdv::Dim &dsiDim, float *outimg)
   wtaKernel<<<wsz.blocks, wsz.threads>>>(ddim, dsi, 
                                          dsiDim.width(),
                                          dsiDim.width()*dsiDim.height(),
-                                         outimg); 
+                                         outimg);   
 }

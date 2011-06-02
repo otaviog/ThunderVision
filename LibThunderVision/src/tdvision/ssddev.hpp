@@ -12,7 +12,7 @@ public:
     SSDDev(int disparityMax)
         : AbstractMatchingCost(disparityMax)
     { workName("SSD"); }
-
+    
 protected:    
     void updateImpl(FloatImage leftImg, FloatImage rightImg,
                     DSIMem dsi);

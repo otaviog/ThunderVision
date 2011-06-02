@@ -32,15 +32,13 @@ CUDA_ADD_LIBRARY(tdvision
   matchingcost.hpp matchingcost.cpp
   ssddev.hpp ssddev.cpp ssd.cu  
   crosscorrelationdev.hpp crosscorrelationdev.cpp crosscorrelation.cu
-  mutualinformationdev.hpp mutualinformationdev.cpp mutualinformation.cu
-  mutualinformationcpu.hpp mutualinformationcpu.cpp mutualinformation.cu
   birchfieldcostdev.hpp birchfieldcostdev.cpp birchfieldcost.cu
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   wtacpu.hpp wtacpu.cpp
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
   dynamicprogcpu.hpp dynamicprogcpu.cpp
-  semiglobaloptcpu.hpp semiglobaloptcpu.cpp
+  semiglobalcpu.hpp semiglobalcpu.cpp
   semiglobaldev.hpp semiglobaldev.cpp semiglobal.cu
   benchmark.hpp benchmark.cpp  
   captureproc.hpp captureproc.cpp
@@ -73,5 +71,4 @@ CUDA_ADD_LIBRARY(tdvision
   directreprojector.hpp
   gridglmesh.hpp gridglmesh.cpp
   glreprojection.hpp glreprojection.cpp
-  reprojectprocess.hpp reprojectprocess.cpp  
-  )
+  reprojectprocess.hpp reprojectprocess.cpp)

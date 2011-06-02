@@ -43,12 +43,12 @@ __global__ void ccorrelationKern(const DSIDim dsiDim, const int maxDisparity, fl
 
 TDV_NAMESPACE_BEGIN
 
-void DevCrossCorrelationRun(int maxDisparity,
-               Dim dsiDim, float *leftImg_d, float *rightImg_d,
-               float *dsiMem)
+void DevCrossCorrelationRun(Dim dsiDim, int maxDisparity,
+                            float *leftImg_d, float *rightImg_d,
+                            float *dsiMem)
 {
   CUerrExp err;
-
+  
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d,
                            cudaCreateChannelDesc<float>(),
                            dsiDim.width(), dsiDim.height(),
@@ -62,12 +62,12 @@ void DevCrossCorrelationRun(int maxDisparity,
   texLeftImg.addressMode[0] = texRightImg.addressMode[0] = cudaAddressModeWrap;
   texLeftImg.addressMode[1] = texRightImg.addressMode[1] = cudaAddressModeWrap;
   texLeftImg.normalized = texRightImg.normalized = false;
-  texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;
-
+  texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;    
+  
   DSIDim ddim(DSIDimCreate(dsiDim));
   CudaConstraits constraits;
   WorkSize ws = constraits.imageWorkSize(dsiDim);
-  ccorrelationKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);
+  ccorrelationKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);   
 }
 
 TDV_NAMESPACE_END

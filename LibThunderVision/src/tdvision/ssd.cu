@@ -49,12 +49,12 @@ __global__ void ssdKern(const DSIDim dsiDim, const int maxDisparity,
 
 TDV_NAMESPACE_BEGIN
 
-void DevSSDRun(int maxDisparity,
-               Dim dsiDim, float *leftImg_d, float *rightImg_d,
+void DevSSDRun(Dim dsiDim, int maxDisparity, 
+               float *leftImg_d, float *rightImg_d,
                float *dsiMem)
 {
   CUerrExp err;
-    
+  
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
                            cudaCreateChannelDesc<float>(),
                            dsiDim.width(), dsiDim.height(),
@@ -73,7 +73,7 @@ void DevSSDRun(int maxDisparity,
   DSIDim ddim(DSIDimCreate(dsiDim));  
   CudaConstraits constraits;  
   WorkSize ws = constraits.imageWorkSize(dsiDim);  
-  ssdKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem); 
+  ssdKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);     
 }
 
 TDV_NAMESPACE_END

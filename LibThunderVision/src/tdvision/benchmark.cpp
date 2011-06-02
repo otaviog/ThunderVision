@@ -12,7 +12,7 @@ void CudaBenchmarker::begin()
     CUerrDB(cudaEventRecord(m_evStart, 0));
 }
 
-TimeDbl CudaBenchmarker::end()
+void CudaBenchmarker::end()
 {
     CUerrExp err;
     
@@ -27,7 +27,7 @@ TimeDbl CudaBenchmarker::end()
     err<<cudaEventDestroy(m_evStart);
     CUerrDB(cudaEventDestroy(stop));
 
-    return time;
+    m_elapsed.addProbeSec(time);
 }
 
 void BenchmarkSuite::set(const std::string &name, const Benchmark &mark)

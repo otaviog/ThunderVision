@@ -1,4 +1,3 @@
-
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include "cuerr.hpp"
@@ -65,12 +64,11 @@ __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity,
 
 TDV_NAMESPACE_BEGIN
 
-void BirchfieldCostRun(int maxDisparity,
-                       Dim dsiDim, float *leftImg_d, float *rightImg_d,
-                       float *dsiMem)
+void BirchfieldCostRun(Dim dsiDim, int maxDisparity,
+                            float *leftImg_d, float *rightImg_d,
+                            float *dsiMem)
 {
-  CUerrExp err;
-    
+  CUerrExp err;  
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
                            cudaCreateChannelDesc<float>(),
                            dsiDim.width(), dsiDim.height(),
@@ -90,7 +88,7 @@ void BirchfieldCostRun(int maxDisparity,
   
   CudaConstraits constraits;  
   WorkSize ws = constraits.imageWorkSize(dsiDim);  
-  birchfieldKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem); 
+  birchfieldKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);  
 }
 
 TDV_NAMESPACE_END

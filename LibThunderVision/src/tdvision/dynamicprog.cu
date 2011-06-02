@@ -1,12 +1,9 @@
 #include <math_constants.h>
 #include "dim.hpp"
 #include "dsimemutil.h"
-#include "benchmark.hpp"
 #include "cudaconstraits.hpp"
 
-const int Nm = 12;
-const float kOcc = 5;
-const float kR = 25;
+#define MAX_DISP 2048
 
 __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
                             float *lastSumCost, char *pathDSI)
@@ -17,12 +14,10 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
   if ( z >= dim.z || y >= dim.y  )
     return ;
   
-  __shared__ float sharedCost[128];
-  __shared__ int occs[128];
+  __shared__ float sharedCost[MAX_DISP];
   
   const uint initialOff = dsiOffset(dim, 0, y, z);
   sharedCost[z] = costDSI[initialOff];
-  occs[z] = 0;
   pathDSI[initialOff] = 0;      
 
   __syncthreads();  
@@ -46,23 +41,15 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
       p = -1;
-      occs[z] += 1;
     } else if ( c2 < c3 ) {
       m = c2;
       p = 0;
     } else {
       m = c3;
       p = 1;
-      occs[z] += 1;
     } 
           
-    pathDSI[c0Offset] = p;
-    
-    //sharedCost[z] = c0 + m + occs[z]*kOcc + Nm*kR;
-
-    if ( x % 24 == 0 ) {      
-        occs[z] = 0;
-      }
+    pathDSI[c0Offset] = p;    
     
     sharedCost[z] = c0 + m;
 
@@ -109,8 +96,7 @@ __global__ void reduceImage(const DSIDim dim, const float *lastSumCost,
 
 void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
 {  
-  tdv::CUerrExp cuerr;
-  
+  tdv::CUerrExp cuerr;  
   DSIDim dsiDim(DSIDimCreate(tdv_dsiDim));  
   float *lastSumCost = NULL;
   
@@ -128,9 +114,6 @@ void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
     cuerr.checkErr();
     return ;
   }
-
-  tdv::CudaBenchmarker bm;
-  bm.begin();
   
   dynamicprog<<<tdv_dsiDim.height(), tdv_dsiDim.depth()>>>(dsiDim, dsi, lastSumCost, pathDSI);
   
@@ -143,11 +126,9 @@ void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
     return ;
   }
   
-  reduceImage<<<tdv_dsiDim.height(), 1>>>(dsiDim, lastSumCost, pathDSI, dispImg);
-  
-  bm.end();
+  reduceImage<<<tdv_dsiDim.height(), 1>>>(dsiDim, lastSumCost, pathDSI, dispImg);  
   
   cuerr = cudaFree(lastSumCost);  
   cuerr = cudaFree(pathDSI);  
-  cuerr.checkErr();  
+  cuerr.checkErr();        
 }

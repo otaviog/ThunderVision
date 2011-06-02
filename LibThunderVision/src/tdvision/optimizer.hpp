@@ -6,6 +6,7 @@
 #include "pipe.hpp"
 #include "dsimem.hpp"
 #include "floatimage.hpp"
+#include "benchmark.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -15,6 +16,8 @@ public:
     virtual void input(ReadPipe<DSIMem> *rpipe) = 0;
 
     virtual ReadPipe<FloatImage>* output() = 0;
+    
+    virtual Benchmark benchmark() const = 0;
 };
 
 class AbstractOptimizer: public Optimizer
@@ -32,6 +35,11 @@ public:
         return &m_wpipe;
     }
     
+    virtual Benchmark benchmark() const
+    {
+        return m_mark;
+    }
+
     bool update();
     
 protected:
@@ -43,6 +51,7 @@ protected:
 private:
     ReadPipe<DSIMem> *m_rpipe;
     ReadWritePipe<FloatImage, FloatImage> m_wpipe;
+    Benchmark m_mark;
 };
 
 TDV_NAMESPACE_END

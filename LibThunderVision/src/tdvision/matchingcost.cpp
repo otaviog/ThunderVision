@@ -32,7 +32,14 @@ bool AbstractMatchingCost::update()
         
         m_dsi.leftOrigin(leftImg);
         
+        CudaBenchmarker bMarker;       
+        bMarker.begin();
+        
         updateImpl(leftImg, rightImg, m_dsi);
+        
+        bMarker.end();
+        
+        m_mark.addProbe(bMarker.elapsedTime());
         
         wguard.write(m_dsi);
     }

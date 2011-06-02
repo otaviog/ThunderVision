@@ -5,14 +5,13 @@
 #include <tdvbasic/common.hpp>
 #include "cudaprocess.hpp"
 #include "stereomatcher.hpp"
+#include "matchingcost.hpp"
 #include "optimizer.hpp"
 #include "cpyimagetocpu.hpp"
 #include "medianfilterdev.hpp"
 #include "medianfiltercpu.hpp"
 
 TDV_NAMESPACE_BEGIN
-
-class MatchingCost;
 
 class DevStereoMatcher: public StereoMatcher
 {
@@ -43,10 +42,25 @@ public:
     }
         
     std::string name() const;
+    
+    Benchmark matchcostBenchmark() const    
+    {        
+        return (m_matchCost != NULL)
+            ? m_matchCost->benchmark()
+            : Benchmark();                    
+    }
+    
+    Benchmark optimizationBenchmark() const
+    {
+        return (m_optimizer != NULL)
+            ? m_optimizer->benchmark()
+            : Benchmark();
+    }
 
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
-    //MedianFilterDev m_medianFilter[2];
+    // TODO: Use device median filter.
+    //MedianFilterDev m_medianFilter[2];    
     MedianFilterCPU m_medianFilter[2];
     boost::shared_ptr<MatchingCost> m_matchCost;
     boost::shared_ptr<Optimizer> m_optimizer;

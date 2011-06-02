@@ -140,6 +140,11 @@ public:
         m_maxSize = maxSize;
     }
     
+    ~ReadWritePipe()
+    {
+        finish();
+    }
+    
     /**
      * Enqueues a value for futher read.
      */ 

@@ -20,7 +20,7 @@ void runStereoTest(
     tdv::FloatConv fconvl, fconvr;
     tdv::RGBConv rconv;
     
-    tdv::ImageWriter writer(outputImg);    
+    tdv::ImageWriter writer(outputImg);
     tdv::MedianFilterCPU mdFilterL, mdFilterR, mdFinal;
     
     fconvl.input(readerL.output());
