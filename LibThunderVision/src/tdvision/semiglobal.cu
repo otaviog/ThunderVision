@@ -199,7 +199,6 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
   tdv::CudaConstraits constraits;
 
   tdv::CudaBenchmarker bm;
-  bm.begin();
     
   tdv::WorkSize wsz = constraits.imageWorkSize(tdv_dsiDim);
   int rowsWidths_h[MAX_ROWS];
@@ -208,6 +207,7 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
   
   zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);      
   
+  bm.begin();
   for (size_t i=0; i<dsiDim.y; i++) {
     rowsWidths_h[i] = dsiDim.x;
     
@@ -276,6 +276,7 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
   cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
   cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
   cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
+
 #if 1
   semiglobalAggregVolKernel<<<dsiDim.x + dsiDim.y - 1, dsiDim.z>>>(dsiDim, dsi, lorigin,
                                                                    1, 1, aggregDSI);
@@ -301,33 +302,35 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
     
     const int sX = lastX;
     const int sY = i + 1;
-    const int diagSize = diagRSizeY(dsiDim.x, dsiDim.y, i);
+    const int diagSize = diagRSizeY(dsiDim.x, dsiDim.y, i + 1);
     
     rowsStart_h[offset][0] = sX;
     rowsStart_h[offset][1] = sY;
 
-    rowsEnd_h[offset][0] = sX - diagSize - 1;
-    rowsEnd_h[offset][1] = sY - diagSize - 1;
+    rowsEnd_h[offset][0] = sX - diagSize + 1;
+    rowsEnd_h[offset][1] = sY + diagSize - 1;
     
     rowsWidths_h[offset] = diagSize;                    
   }
   
-  cuerr << cudaThreadSynchronize();
+  cuerr << cudaThreadSynchronize();  
   
   cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
   cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
-  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
-  
-  showDiagImg(dsiDim.x, dsiDim.y, &rowsStart_h[0][0], &rowsEnd_h[0][0]);
+  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);    
+
 #if 1
   semiglobalAggregVolKernel<<<dsiDim.x + dsiDim.y - 1, dsiDim.z>>>(dsiDim, dsi, lorigin,
                                                                    -1, 1, aggregDSI);
 #endif
+
   cuerr << cudaThreadSynchronize();      
+#if 1
   wtaKernel<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI,
                                          dsiDim.x,
                                          dsiDim.x*dsiDim.y,
                                          dispImg);     
-  
-  std::cout<<bm.end()<<std::endl;
+#endif  
+
+    std::cout<<bm.end()<<std::endl;
 }

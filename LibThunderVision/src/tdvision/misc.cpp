@@ -86,8 +86,8 @@ TDV_NAMESPACE_END
             cvDrawLine(mat, cvPoint(st[offset]*scale, st[offset + 1]*scale),
                        cvPoint(ed[offset]*scale, ed[offset + 1]*scale), CV_RGB(255, 0, 0));
         }
-        cvShowImage("Diags", mat);
+        //cvShowImage("Diags", mat);
         cvSaveImage("diags.png", mat);
-        cvWaitKey(0);
+
         cvReleaseMat(&mat);
     }

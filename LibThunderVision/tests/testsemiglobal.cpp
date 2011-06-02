@@ -14,11 +14,11 @@ TEST(TestSemiGlobalDev, WithSSD)
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
-#if 1
+#if 0
        "../../res/tsukuba512_L.png",
        "../../res/tsukuba512_R.png",
        "tsukuba_ssdsgdev.png",
-#elif 0
+#elif 1
        "q_left.png",
        "q_right.png",
        "q_ssdsgdev.png",

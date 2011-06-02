@@ -37,7 +37,7 @@ CUDA_ADD_LIBRARY(tdvision
   birchfieldcostdev.hpp birchfieldcostdev.cpp birchfieldcost.cu
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
-  wtacpu.hpp wtacpu.cpp
+  #wtacpu.hpp wtacpu.cpp
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
   dynamicprogcpu.hpp dynamicprogcpu.cpp
   semiglobaloptcpu.hpp semiglobaloptcpu.cpp
