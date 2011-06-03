@@ -33,7 +33,6 @@ StereoCorrespondenceCV::~StereoCorrespondenceCV()
 
 bool StereoCorrespondenceCV::update()
 {
-#if 1
     WriteGuard<ReadWritePipe<FloatImage> > wguard(m_wpipe);
     FloatImage limg, rimg;
 
@@ -51,13 +50,18 @@ bool StereoCorrespondenceCV::update()
         FloatImage output = FloatImage::CreateCPU(
             Dim::minDim(limg.dim(), rimg.dim()));
         CvMat *out_c = output.cpuMem();
-
+        
+        CudaBenchmarker bMarker;
+        bMarker.begin();
+        
         if ( m_mode == LocalMatching )
             cvFindStereoCorrespondenceBM(limg8u_c, rimg8u_c, out_c, m_bmState);
         else
             cvFindStereoCorrespondenceGC(limg8u_c, rimg8u_c, out_c, NULL,
                                          m_gcState);
-
+        
+        bMarker.end();
+        m_mark.addProbe(bMarker.elapsedTime());
         wguard.write(output);
 
         FloatImageSinkPol::sink(limg);
@@ -65,18 +69,6 @@ bool StereoCorrespondenceCV::update()
     }
 
     return wguard.wasWrite();
-#else
-    FloatImage limg, rimg;
-    if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
-    {
-        FloatImageSinkPol::sink(limg);
-        FloatImageSinkPol::sink(rimg);
-
-        return true;
-    }
-
-    return false;
-#endif
 }
 
 TDV_NAMESPACE_END

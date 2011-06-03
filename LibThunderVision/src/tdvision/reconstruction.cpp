@@ -13,7 +13,7 @@ TDV_NAMESPACE_BEGIN
  *
  */
 
-#define TDV_RESIZE_STEREO 
+//#define TDV_RESIZE_STEREO 
 
 Reconstruction::Reconstruction(StereoMatcher *matcher,
                                ReadPipe<CvMat*> *leftImgIn,

@@ -6,7 +6,7 @@
 
 TDV_NAMESPACE_BEGIN
 
-class SemiGlobalOptCPU: public AbstractOptimizer
+class SemiGlobalCPU: public AbstractOptimizer
 {
 public:
     

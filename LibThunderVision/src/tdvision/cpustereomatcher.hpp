@@ -36,6 +36,16 @@ public:
         return "CPU+" + m_corresp.workName();
     }
     
+    Benchmark matchcostBenchmark() const
+    {
+        return m_corresp.benchmark();
+    }
+    
+    Benchmark optimizationBenchmark() const
+    {
+        return m_corresp.benchmark();
+    }
+
 private:
     StereoCorrespondenceCV m_corresp;
     PWorkUnitProcess m_correspProc;

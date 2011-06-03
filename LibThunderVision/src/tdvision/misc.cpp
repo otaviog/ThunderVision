@@ -36,7 +36,7 @@ namespace misc
         CvMat *tmp = cvCreateMat(sz.height, sz.width, CV_8U);
         
         cvCvtColor(src, hsv, CV_RGB2HSV);
-        cvSplit(hsv, NULL, tmp, NULL, NULL);        
+        cvSplit(hsv, NULL, NULL, tmp, NULL);        
                 
         cvConvertScale(tmp, dst, 1.0/255.0);
             
@@ -86,8 +86,6 @@ TDV_NAMESPACE_END
             cvDrawLine(mat, cvPoint(st[offset]*scale, st[offset + 1]*scale),
                        cvPoint(ed[offset]*scale, ed[offset + 1]*scale), CV_RGB(255, 0, 0));
         }
-        //cvShowImage("Diags", mat);
         cvSaveImage("diags.png", mat);
-
         cvReleaseMat(&mat);
     }

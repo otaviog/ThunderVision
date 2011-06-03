@@ -5,7 +5,7 @@
 
 TEST(TestFloatImage, Copy)
 {
-    IplImage *img = cvLoadImage("tsukuba_L.png");
+    IplImage *img = cvLoadImage("img.png");
     ASSERT_TRUE(img != NULL);
     
     cvShowImage("Origin", img);

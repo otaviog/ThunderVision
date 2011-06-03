@@ -2,9 +2,9 @@
 
 TDV_NAMESPACE_BEGIN
 
-void BirchfieldCostRun(int maxDisparity,
-                       Dim dsiDim, float *leftImg, float *rightImg,
-                       float *dsiMem);
+Benchmark BirchfieldCostRun(Dim dsiDim, int maxDisparity,
+                            float *leftImg, float *rightImg,
+                            float *dsiMem);
 
 void BirchfieldCostDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
                                    DSIMem dsi)
@@ -12,9 +12,10 @@ void BirchfieldCostDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
     float *leftImg_d = leftImg.devMem();
     float *rightImg_d = rightImg.devMem();
 
-    BirchfieldCostRun(dsi.dim().depth(), dsi.dim(),
-                      leftImg_d, rightImg_d, dsi.mem());
-
+    Benchmark mark = BirchfieldCostRun(dsi.dim(), dsi.dim().depth(),
+                                       leftImg_d, rightImg_d, dsi.mem());
+    
+    m_benchmark.addProbe(mark);
 }
 
 TDV_NAMESPACE_END

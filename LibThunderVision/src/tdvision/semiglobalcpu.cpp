@@ -1,7 +1,7 @@
 #include <boost/scoped_array.hpp>
 #include <cassert>
 #include "cuerr.hpp"
-#include "semiglobaloptcpu.hpp"
+#include "semiglobalcpu.hpp"
 
 #include <highgui.h>
 
@@ -180,7 +180,7 @@ static void wta(const Dim &dsiDim,
     }
 }
 
-void SemiGlobalOptCPU::updateImpl(DSIMem mem, FloatImage img)
+void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
 {
     CUerrExp cuerr;
     const Dim &dim = mem.dim();

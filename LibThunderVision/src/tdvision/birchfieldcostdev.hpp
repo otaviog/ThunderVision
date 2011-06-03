@@ -15,11 +15,18 @@ public:
     BirchfieldCostDev(int disparityMax)
         : AbstractMatchingCost(disparityMax)
     { workName("Birchfield Cost"); }
-
+    
+    Benchmark benchmark() const 
+    {
+        return m_benchmark;
+    }
+    
 protected:    
     void updateImpl(FloatImage leftImg, FloatImage rightImg,
                     DSIMem dsi);
-
+    
+private:
+    Benchmark m_benchmark;
 };
 
 TDV_NAMESPACE_END

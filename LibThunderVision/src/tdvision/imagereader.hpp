@@ -39,6 +39,11 @@ public:
         m_wpipe.reset();
     }
     
+    void close()
+    {
+        m_wpipe.finish();
+    }
+    
     bool update();
 
 private:

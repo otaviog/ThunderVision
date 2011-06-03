@@ -7,6 +7,7 @@
 #include "workunit.hpp"
 #include "tmpbufferimage.hpp"
 #include "floatimage.hpp"
+#include "benchmark.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -38,6 +39,10 @@ public:
         return &m_wpipe;
     }
 
+    Benchmark benchmark() const
+    {
+        return m_mark;
+    }
 private:
     ReadPipe<FloatImage> *m_lrpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wpipe;
@@ -49,6 +54,8 @@ private:
         CvStereoBMState *m_bmState;
         CvStereoGCState *m_gcState;
     };
+    
+    Benchmark m_mark;
 };
 
 TDV_NAMESPACE_END

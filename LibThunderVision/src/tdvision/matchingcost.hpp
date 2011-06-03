@@ -6,6 +6,7 @@
 #include "pipe.hpp"
 #include "dsimem.hpp"
 #include "floatimage.hpp"
+#include "benchmark.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -16,6 +17,8 @@ public:
                         ReadPipe<FloatImage> *rightInput) = 0;
     
     virtual ReadPipe<DSIMem>* output() = 0;
+    
+    virtual Benchmark benchmark() const = 0;
 };
 
 class AbstractMatchingCost: public MatchingCost
@@ -33,8 +36,13 @@ public:
     {
         return &m_wpipe;
     }
-        
-    bool update();    
+    
+    bool update();        
+    
+    virtual Benchmark benchmark() const
+    {
+        return m_mark;
+    }
     
 protected:
     virtual void updateImpl(FloatImage left, FloatImage right,
@@ -45,6 +53,7 @@ private:
     ReadWritePipe<DSIMem, DSIMem> m_wpipe;
     size_t m_maxDisparaty;
     DSIMem m_dsi;
+    Benchmark m_mark;
 };
 
 TDV_NAMESPACE_END
