@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <tdvision/ssddev.hpp>
 #include <tdvision/dynamicprogdev.hpp>
-#include <tdvision/semiglobaloptcpu.hpp>
+#include <tdvision/semiglobalcpu.hpp>
 #include <tdvision/semiglobaldev.hpp>
 #include <tdvision/birchfieldcostdev.hpp>
 #include "stereotest.hpp"

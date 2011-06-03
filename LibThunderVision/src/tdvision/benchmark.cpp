@@ -27,7 +27,7 @@ void CudaBenchmarker::end()
     err<<cudaEventDestroy(m_evStart);
     CUerrDB(cudaEventDestroy(stop));
 
-    m_elapsed.addProbeSec(time);
+    m_elapsed.addProbeSec(time/1000.0f);
 }
 
 void BenchmarkSuite::set(const std::string &name, const Benchmark &mark)

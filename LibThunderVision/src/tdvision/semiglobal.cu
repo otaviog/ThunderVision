@@ -7,17 +7,16 @@
 
 #define MAX_DISP 768
 
-#define MMIN(a, b) (a < b) ? a : b
 #define min4(a, b, c, d) min(a, min(b, min(c, d)))
 
 static inline size_t diagRSizeX(int h, int x)
 {
-  return MMIN(x + 1, h);
+  return std::min(x + 1, h);
 }
 
 static inline size_t diagRSizeY(int w, int h, int y)
 {
-  return MMIN(h - y, w);    
+  return std::min(h - y, w);    
 }                              
 
 void showDiagImg(int w, int h, int *st, int *ed);
@@ -247,7 +246,7 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
     rowsStart_h[i][1] = 0;
     
     rowsEnd_h[i][0] = lastX;
-    rowsEnd_h[i][1] = MMIN(i, lastY);   
+    rowsEnd_h[i][1] = std::min(i, lastY);   
     
     rowsWidths_h[i] = rowsEnd_h[i][1] - rowsStart_h[i][1] + 1;
   }
@@ -258,7 +257,7 @@ void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
     rowsStart_h[offset][0] = 0;
     rowsStart_h[offset][1] = i + 1;    
     
-    rowsEnd_h[offset][0] = MMIN(lastY - (i + 1), lastX);
+    rowsEnd_h[offset][0] = std::min(lastY - (i + 1), lastX);
     rowsEnd_h[offset][1] = lastY;
 
     rowsWidths_h[offset] = rowsEnd_h[offset][1] - rowsStart_h[offset][1] + 1;

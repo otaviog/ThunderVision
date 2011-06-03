@@ -1,6 +1,8 @@
 #include "benchmark.hpp"
 #include "optimizer.hpp"
 
+#include <iostream>
+
 TDV_NAMESPACE_BEGIN
 
 AbstractOptimizer::AbstractOptimizer()
@@ -26,6 +28,8 @@ bool AbstractOptimizer::update()
         bMarker.end();        
         
         m_mark.addProbe(bMarker.elapsedTime());
+        
+        std::cout << m_mark.secs() << std::endl;
         
         guard.write(outimg);
     }
