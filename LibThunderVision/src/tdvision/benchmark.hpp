@@ -21,6 +21,7 @@ public:
     Benchmark()
     {
         m_secs = 0.0;
+        m_timeCount = 0;
     }
 
     void addProbeSec(double s)

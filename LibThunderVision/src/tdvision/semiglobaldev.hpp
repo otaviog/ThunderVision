@@ -4,6 +4,7 @@
 #include <tdvbasic/common.hpp>
 #include "tmpcudamem.hpp"
 #include "optimizer.hpp"
+#include "semiglobal.h"
 
 TDV_NAMESPACE_BEGIN
 
@@ -13,6 +14,7 @@ public:
     SemiGlobalDev()
     {
         workName("Semi-global device");
+        m_zeroAggregDSI = true;
     }
     
 protected:
@@ -22,6 +24,8 @@ protected:
     
 private:
     TmpCudaMem m_aggregDSI;
+    bool m_zeroAggregDSI;    
+    SGPaths m_sgPaths;
 };
     
 TDV_NAMESPACE_END

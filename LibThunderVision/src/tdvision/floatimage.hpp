@@ -54,7 +54,7 @@ public:
         return m_cpuMem == NULL && m_devmap.empty();
     }
 
-    void dispose();
+    void disposeFromDev();
     
 private:
     FloatImageImpl(const FloatImageImpl &cpy)
@@ -67,6 +67,8 @@ private:
         return *this;
     }
 
+    void dispose();
+    
     float *createDevMem();    
     
     DevMemMap m_devmap;
@@ -123,10 +125,10 @@ public:
     {
         return m_impl->sizeb();
     }
-
-    void dispose()
+    
+    void disposeFromDev()
     {
-        m_impl->dispose();
+        m_impl->disposeFromDev();
     }
 private:
     FloatImage(FloatImageImpl *p)

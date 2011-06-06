@@ -41,13 +41,15 @@ __device__ float costAtDisp(int x, int y, int disp)
   return sum;
 }
 
-__global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity, 
-                               float *dsiMem)
+__global__ void birchfieldKernTexture(const DSIDim dsiDim, 
+                                      const int maxDisparity, 
+                                      float *dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
+    const uint baseOffset = dsiDim.z*dsiDim.y*x + dsiDim.z*y;
     
     for (int disp=0; (disp < maxDisparity); disp++) {   
       float value = CUDART_INF_F;
@@ -56,17 +58,81 @@ __global__ void birchfieldKern(const DSIDim dsiDim, const int maxDisparity,
         value = costAtDisp(x, y, disp); 
       }
       
-      dsiSetIntensity(dsiDim, x, y, disp, value, dsiMem);
+      dsiMem[baseOffset + disp] = value;      
     }    
     
   }
 }
 
+#define min3(a, b, c) min(a, min(b, c))
+#define max3(a, b, c) max(a, max(b, c))
+
+#define MAX_LINE_SIZE 1024
+#define BT_N 4
+
+__global__ void birchfieldKernSharedMem(const DSIDim dsiDim, 
+                               const float *leftImg, const float *rightImg,
+                               const int maxDisparity, float *dsiMem)
+{
+  const uint x = threadIdx.x;
+  const uint y = blockIdx.x;
+  
+  __shared__ float leftScanLine[MAX_LINE_SIZE + 2];
+  __shared__ float rightScanLine[MAX_LINE_SIZE + 2];
+  
+  const uint cPixelOffset = y*dsiDim.x + x;
+  const uint dx = x + 1;
+  
+  leftScanLine[dx] = leftImg[cPixelOffset];
+  rightScanLine[dx] = rightImg[cPixelOffset];
+  
+  if ( x == 0 ) {
+    leftScanLine[0] = 0.0f;
+    rightScanLine[0] = 0.0f;    
+  }
+  
+  __syncthreads();
+    
+  const uint dsiBaseOffset = dsiDim.z*dsiDim.y*x + dsiDim.z*y;
+  
+  for (int disp=0; disp < maxDisparity; disp++) {   
+    float costValue = CUDART_INF_F;    
+    
+    if ( static_cast<int>(x) - disp >= 0 ) {       
+      costValue = 0.0f;      
+      
+      for (uint v=dx; v < dx + BT_N; v++) {  
+        const uint vd = v - disp;
+          
+        const float lI = leftScanLine[dx];
+        const float rI = rightScanLine[vd];  
+      
+        const float laI = 0.5f*(lI + leftScanLine[dx - 1]);
+        const float lbI = 0.5f*(lI + leftScanLine[dx + 1]);
+  
+        const float raI = 0.5f*(rI + rightScanLine[vd - 1]);
+        const float rbI = 0.5f*(rI + rightScanLine[vd + 1]);
+
+        const float lImi = min3(laI, lbI, lI);
+        const float lIma = max3(laI, lbI, lI);
+
+        const float rImi = min3(raI, rbI, rI);
+        const float rIma = max3(raI, rbI, rI);
+    
+        costValue += min(max3(0.0f, lI - rIma, rImi - lI),
+                         max3(0.0f, rI - lIma, lImi - rI));              
+      }            
+    }
+    
+    dsiMem[dsiBaseOffset + disp] = costValue;
+  }          
+}
+
 TDV_NAMESPACE_BEGIN
 
-void BirchfieldCostRun(Dim dsiDim, int maxDisparity,
-                            float *leftImg_d, float *rightImg_d,
-                            float *dsiMem)
+static void TextureBirchfieldRun(Dim dsiDim, int maxDisparity,
+                                 float *leftImg_d, float *rightImg_d,
+                                 float *dsiMem)
 {
   CUerrExp err;  
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
@@ -88,7 +154,41 @@ void BirchfieldCostRun(Dim dsiDim, int maxDisparity,
   
   CudaConstraits constraits;  
   WorkSize ws = constraits.imageWorkSize(dsiDim);  
-  birchfieldKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);  
+  birchfieldKernTexture<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, 
+                                                   dsiMem);  
+
+}
+
+static void SharedMemBirchfieldRun(Dim dsiDim, int maxDisparity,
+                                   float *leftImg_d, float *rightImg_d,
+                                   float *dsiMem)
+{
+  CUerrExp err;
+  DSIDim ddim(DSIDimCreate(dsiDim));      
+  
+  birchfieldKernSharedMem<<<ddim.y, ddim.x>>>(ddim, leftImg_d, rightImg_d,
+                                              maxDisparity, dsiMem); 
+}
+
+void BirchfieldCostRun(Dim dsiDim, int maxDisparity,
+                       float *leftImg_d, float *rightImg_d,
+                       float *dsiMem)
+{
+    cudaDeviceProp prop;    
+    cudaGetDeviceProperties(&prop, 0);
+    
+    if ( dsiDim.width() <= prop.maxThreadsPerBlock ) {
+      SharedMemBirchfieldRun(dsiDim, maxDisparity,
+                             leftImg_d, rightImg_d,
+                             dsiMem);      
+    }
+    else {
+      TextureBirchfieldRun(dsiDim, maxDisparity,
+                           leftImg_d, rightImg_d,
+                           dsiMem);
+    }
+
+    cudaThreadSynchronize();
 }
 
 TDV_NAMESPACE_END

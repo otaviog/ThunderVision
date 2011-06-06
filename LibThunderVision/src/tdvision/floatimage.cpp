@@ -140,10 +140,30 @@ void FloatImageImpl::dispose()
     for (DevMemMap::iterator dIt = m_devmap.begin(); dIt != m_devmap.end();
          dIt++)
     {
-        cudaFree(dIt->second);
+        TDV_LOG(dev).printf("Freeing FloatImage in CUDA");
+        CUerrDB(cudaFree(dIt->second));
     }
     
     m_devmap.clear();
+}
+
+void FloatImageImpl::disposeFromDev()
+{
+    CudaDevId device;
+    cudaGetDevice(&device);
+     
+    DevMemMap::iterator found = m_devmap.find(device);
+    
+    if ( found != m_devmap.end() )
+    {
+        if ( m_syncDev == device )
+        {
+            cpuMem();
+        }
+        
+        CUerrDB(cudaFree(found->second));
+        m_devmap.erase(found);
+    }
 }
 
 TDV_NAMESPACE_END

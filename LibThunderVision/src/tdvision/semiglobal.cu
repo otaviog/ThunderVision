@@ -2,27 +2,13 @@
 #include "dim.hpp"
 #include "dsimemutil.h"
 #include "cudaconstraits.hpp"
+#include "semiglobal.h"
 
-#include <iostream>
-
-#define MAX_DISP 768
-
-#define min4(a, b, c, d) min(a, min(b, min(c, d)))
-
-static inline size_t diagRSizeX(int h, int x)
-{
-  return std::min(x + 1, h);
-}
-
-static inline size_t diagRSizeY(int w, int h, int y)
-{
-  return std::min(h - y, w);    
-}                              
 
 void showDiagImg(int w, int h, int *st, int *ed);
-                        
+
 __global__ void wtaKernel(const DSIDim dim,
-                          const float *dsi,
+                          float *dsi,
                           const uint width,
                           const uint maxOffset,
                           float *outimg);
@@ -40,18 +26,217 @@ __global__ void zeroDSIVolume(const DSIDim dsiDim,
   }
 }
 
+#define SG_MAX_DISP 512
+
+TDV_NAMESPACE_BEGIN
+
+static void sg_rowsWidthsFill(int value, uint ntimes, int *rowsWidths_h)
+{
+  for (uint i=0; i<ntimes; i++) {
+    rowsWidths_h[i] = value;
+  }
+}
+
+SGPaths::SGPaths()
+: m_imgDim(0)
+{
+  m_desc_d = NULL;
+}
+
+SGPathsDesc* SGPaths::getDesc(const Dim &imgDim)
+{
+  if ( imgDim == m_imgDim )
+    return m_desc_d;
+
+  unalloc();
+
+  m_imgDim = imgDim;
+
+  const uint maxPathsPerPass = m_imgDim.width() + m_imgDim.height() - 1;
+
+  CUerrExp cuerr;
+  cuerr << cudaMalloc((void**) &m_desc_d, sizeof(SGPathsDesc));
+
+  SGPathsDesc *desc = new SGPathsDesc;
+
+  horizontalPathsDesc(maxPathsPerPass, desc->pathsSizes[0],
+                      desc->pathsStarts[0], desc->pathsEnds[0]);
+
+  verticalPathsDesc(maxPathsPerPass, desc->pathsSizes[1],
+                    desc->pathsStarts[1], desc->pathsEnds[1]);
+
+  bottomTopDiagonalDesc(desc->pathsSizes[2], desc->pathsStarts[2],
+                        desc->pathsEnds[2]);
+
+  topBottomDiagonaDesc(desc->pathsSizes[3], desc->pathsStarts[3],
+                       desc->pathsEnds[3]);
+
+
+  for (size_t i=0; i<SG_MAX_PATHS; i++) {
+    desc->maxPathsSizes[i] = desc->pathsSizes[0][i];
+
+    for (size_t p=1; p<SG_MAX_PASSES; p++) {
+      desc->maxPathsSizes[i] = std::max(desc->pathsSizes[p][i],
+                                        desc->maxPathsSizes[i]);
+    }
+  }
+
+  cuerr = cudaMemcpy(m_desc_d, desc, sizeof(SGPathsDesc),
+                      cudaMemcpyHostToDevice);
+  delete [] desc;
+
+  cuerr.checkErr();
+
+  return m_desc_d;
+}
+
+void SGPaths::unalloc()
+{
+  CUerrExp cuerr;
+
+  cuerr << cudaFree(m_desc_d);
+
+  m_desc_d = NULL;
+  m_imgDim = Dim(0);
+}
+
+void SGPaths::horizontalPathsDesc(uint totalPaths, int *pathsSizes,
+                                  SGPoint *pathsStarts, SGPoint *pathsEnds)
+{
+  for (size_t i=0; i<m_imgDim.height(); i++) {
+    pathsSizes[i] = m_imgDim.width();
+
+    pathsStarts[i].x = 0;
+    pathsStarts[i].y = i;
+
+    pathsEnds[i].x = m_imgDim.width() - 1;
+    pathsEnds[i].y = i;
+  }
+
+  sg_rowsWidthsFill(0, SG_MAX_PATHS - m_imgDim.height(), &pathsSizes[m_imgDim.height()]);
+}
+
+void SGPaths::verticalPathsDesc(uint totalPaths, int *pathSizes, SGPoint *pathsStarts,
+                                SGPoint *pathsEnds)
+{
+  for (size_t i=0; i<m_imgDim.width(); i++) {
+    pathSizes[i] = m_imgDim.height();
+
+    pathsStarts[i].x = i;
+    pathsStarts[i].y = 0;
+
+    pathsEnds[i].x = i;
+    pathsEnds[i].y = m_imgDim.height() - 1;
+  }
+
+  sg_rowsWidthsFill(0, SG_MAX_PATHS - m_imgDim.width(), &pathSizes[m_imgDim.width()]);
+}
+
+/**
+ *   /
+ *  /
+ * /
+ *
+ */
+void SGPaths::bottomTopDiagonalDesc(int *pathSizes, SGPoint *pathsStarts, SGPoint *pathsEnds)
+{
+  const size_t lastX = m_imgDim.width() - 1;
+  const size_t lastY = m_imgDim.height() - 1;
+
+  for (size_t i=0; i<m_imgDim.width(); i++) {
+    pathsStarts[i].x = lastX - i;
+    pathsStarts[i].y = 0;
+
+    pathsEnds[i].x = lastX;
+    pathsEnds[i].y = std::min(i, lastY);
+
+    pathSizes[i] = pathsEnds[i].y - pathsStarts[i].y + 1;
+  }
+
+  for (size_t i=0; i<m_imgDim.height() - 1; i++) {
+    const size_t offset = m_imgDim.width() + i;
+
+    pathsStarts[offset].x = 0;
+    pathsStarts[offset].y = i + 1;
+
+    pathsEnds[offset].x = std::min(lastY - (i + 1), lastX);
+    pathsEnds[offset].y = lastY;
+
+    pathSizes[offset] = pathsEnds[offset].x - pathsStarts[offset].x + 1;
+  }
+}
+
+/**
+ * \
+ *  \
+ */
+
+void SGPaths::topBottomDiagonaDesc(int *pathSizes, SGPoint *pathsStarts, SGPoint *pathsEnds)
+{
+  const size_t lastX = m_imgDim.width() - 1;
+  for (size_t i=0; i<m_imgDim.width(); i++) {
+    const int sX = i;
+    const int sY = 0;
+    const int diagSize = std::min((int) i + 1, (int) m_imgDim.height());
+
+    pathsStarts[i].x = sX;
+    pathsStarts[i].y = sY;
+
+    pathSizes[i] = diagSize;
+
+    pathsEnds[i].x = 0;
+    pathsEnds[i].y = diagSize - 1;
+  }
+
+  for (size_t i=0; i<m_imgDim.height() - 1; i++) {
+    const size_t offset = m_imgDim.width() + i;
+
+    const int sX = lastX;
+    const int sY = i + 1;
+    const int diagSize = std::min(static_cast<int>(((int) m_imgDim.height()) - (i + 1)),
+                                  static_cast<int>(m_imgDim.width()));
+
+    pathsStarts[offset].x = sX;
+    pathsStarts[offset].y = sY;
+
+    pathsEnds[offset].x = sX - diagSize + 1;
+    pathsEnds[offset].y = sY + diagSize - 1;
+
+    pathSizes[offset] = diagSize;
+  }
+}
+
+TDV_NAMESPACE_END
+
+struct fPTuple
+{
+  float forward, backward;
+};
+
+struct uPTuple
+{
+  uint forward, backward;
+};
+
+#define N_PASSES 2
+
 const float P1 = 40.0f/255.0f;
 const float P2 = 180.0f/255.0f;
 
-inline __device__ float pathCost(const DSIDim dsiDim, const float *costDSI,
-                                 float lcD, float lcDm1, float lcDp1,
-                                 uint x, uint y, uint z,
-                                 float minDisp,
-                                 float P2Adjust,
-                                 float *aggregVol)
+#define min4(a, b, c, d) min(a, min(b, min(c, d)))
+
+using tdv::SGPoint;
+using tdv::SGPathsDesc;
+
+__constant__ SGPoint g_pathsDirections_d[SG_MAX_PASSES];
+
+__device__ float pathCost(const float *costDSI, uint dsiOff,
+                          float lcD, float lcDm1, float lcDp1,
+                          float minDisp, float P2Adjust,
+                          float *aggregVol)
 {
-  const uint dsiOff = dsiOffset(dsiDim, x, y, z);
-  const float cost = costDSI[dsiOff];
+  const float cost = 
+    costDSI[dsiOff];
 
   const float Lr = cost
     + min4(lcD,
@@ -64,259 +249,202 @@ inline __device__ float pathCost(const DSIDim dsiDim, const float *costDSI,
   return Lr;
 }
 
-__constant__ int matrix[6];
-__constant__ int invMatrix[6];
-
-#define MAX_ROWS 2048
-
-__constant__ int rowsWidths[MAX_ROWS];
-__constant__ int rowsStart[MAX_ROWS][2];
-__constant__ int rowsEnd[MAX_ROWS][2];
-
 __global__ void semiglobalAggregVolKernel(const DSIDim dsiDim,
+                                          const SGPathsDesc *pathsDesc,
                                           const float *costDSI,
                                           const float *iImage,
-                                          int pathDirX, int pathDirY,
                                           float *aggregDSI)
 {
-  const uint z = threadIdx.x;
-  const uint y = blockIdx.x;
-  const uint dz = z + 1;
+  const ushort z = threadIdx.x;
+  const ushort y = blockIdx.x;
+  const ushort dz = z + 1;
 
-  __shared__ float prevDisps[2][MAX_DISP + 2];
-  __shared__ float prevDispsMin[2][MAX_DISP];
-  __shared__ float fMinDisp, iMinDisp;
-  __shared__ float fP2Adjust, iP2Adjust,
-    fLastIntesity, iLastIntesity;
+  __shared__ fPTuple sPrevCost[SG_MAX_PASSES][SG_MAX_DISP + 2];
+  __shared__ fPTuple sPrevMinCost[SG_MAX_PASSES][SG_MAX_DISP];
+  __shared__ fPTuple sMinCost[SG_MAX_PASSES];
+  __shared__ fPTuple sP2Adjust[SG_MAX_PASSES];
+  __shared__ fPTuple sLastIntensity[SG_MAX_PASSES];
+  __shared__ SGPoint forwardCPt[SG_MAX_PASSES], backwardCPt[SG_MAX_PASSES];
+  __shared__ uPTuple sDsiBaseOff[SG_MAX_PASSES];  
+  __shared__ ushort pathSizes[SG_MAX_PASSES];
+  
+  const ushort maxPathSize = pathsDesc->maxPathsSizes[y];
+  if ( z < N_PASSES ) {
+    const short p = z;
+    
+    pathSizes[z] = pathsDesc->pathsSizes[z][y];
+    
+    if ( pathSizes[z] > 0 ) {
+      
+      forwardCPt[p].x = pathsDesc->pathsStarts[p][y].x;
+      forwardCPt[p].y = pathsDesc->pathsStarts[p][y].y;
 
-  __shared__ int fX, fY, iX, iY;
-
-  if ( z == 0 ) {
-    fX = rowsStart[y][0];
-    fY = rowsStart[y][1];
-
-    iX = rowsEnd[y][0];
-    iY = rowsEnd[y][1];
-
-    prevDisps[0][0] = CUDART_INF_F;
-    prevDisps[0][dsiDim.z + 1] = CUDART_INF_F;
-
-    prevDisps[1][0] = CUDART_INF_F;
-    prevDisps[1][dsiDim.z + 1] = CUDART_INF_F;
-
-    fLastIntesity = iImage[fY*dsiDim.x + fX];
-    iLastIntesity = iImage[iY*dsiDim.x + iX];
+      backwardCPt[p].x = pathsDesc->pathsEnds[p][y].x;
+      backwardCPt[p].y = pathsDesc->pathsEnds[p][y].y;
+      
+      sPrevCost[p][0].forward = sPrevCost[p][0].backward = CUDART_INF_F;
+      sPrevCost[p][dsiDim.z + 1].forward =
+      sPrevCost[p][dsiDim.z + 1].backward = CUDART_INF_F;
+      
+      sLastIntensity[p].forward = 
+        iImage[forwardCPt[p].y*dsiDim.x + forwardCPt[p].x];
+      sLastIntensity[p].backward =
+        iImage[backwardCPt[p].y*dsiDim.x + backwardCPt[p].x];
+    }
   }
 
   __syncthreads();
 
-  uint initialOff = dsiOffset(dsiDim, fX, fY, z);
-  float initialCost = costDSI[initialOff];
+  for (char p=0; p<N_PASSES; p++) {
+    if ( pathSizes[p] > 0 ) {
+      uint initialOff = dsiOffset(dsiDim, forwardCPt[p].x, forwardCPt[p].y, z);
+      float initialCost = 
+        costDSI[initialOff];
 
-  prevDisps[0][dz] = initialCost;
-  prevDispsMin[0][z] = initialCost;
-  aggregDSI[initialOff] = initialCost;
+      sPrevCost[p][dz].forward = initialCost;
+      sPrevMinCost[p][z].forward = initialCost;
+      aggregDSI[initialOff] += initialCost;
 
-  initialOff = dsiOffset(dsiDim, iX, iY, z);
-  initialCost = costDSI[initialOff];
+      initialOff = dsiOffset(dsiDim, backwardCPt[p].x, backwardCPt[p].y, z);
+      initialCost = 
+        costDSI[initialOff];
 
-  prevDisps[1][dz] = initialCost;
-  prevDispsMin[1][z] = initialCost;
-  aggregDSI[initialOff] = initialCost;
+      sPrevCost[p][dz].backward = initialCost;
+      sPrevMinCost[p][z].backward = initialCost;
+      aggregDSI[initialOff] += initialCost;
+    }
+  }
 
   __syncthreads();
 
-  float fLr, iLr;
-
-  for (uint x=1; x<rowsWidths[y]; x++) {    
-    int i = dsiDim.z >> 1;
+  float fLr[N_PASSES], bLr[N_PASSES];
+  for (uint x=1; x<maxPathSize; x++) {
+    ushort i = dsiDim.z >> 1;
     while ( i != 0 ) {
       if ( z < i ) {
-        prevDispsMin[0][z] = min(prevDispsMin[0][z],
-                                 prevDispsMin[0][z + i]);
-        prevDispsMin[1][z] = min(prevDispsMin[1][z],
-                                 prevDispsMin[1][z + i]);
+        for (char p=0; p<N_PASSES; p++) {
+          if ( x >= pathSizes[p] )
+            continue;
+
+          sPrevMinCost[p][z].forward = min(sPrevMinCost[p][z].forward,
+                                           sPrevMinCost[p][z + i].forward);
+          sPrevMinCost[p][z].backward = min(sPrevMinCost[p][z].backward,
+                                            sPrevMinCost[p][z + i].backward);
+        }
       }
+
       __syncthreads();
       i = i >> 1;
     }
 
-    if ( z == 0 ) {
-      fMinDisp = prevDispsMin[0][0];
-      iMinDisp = prevDispsMin[1][0];
+    if ( z < N_PASSES && x < pathSizes[z] ) {
+      const char p = z;
 
-      fX = fX + pathDirX;
-      fY = fY + pathDirY;
+      sMinCost[p].forward = sPrevMinCost[p][0].forward;
 
-      iX = iX - pathDirX;
-      iY = iY - pathDirY;
+      forwardCPt[p].x += g_pathsDirections_d[p].x;
+      forwardCPt[p].y += g_pathsDirections_d[p].y;
 
-      const float fI = iImage[fY*dsiDim.x + fX];
-      const float iI = iImage[iY*dsiDim.x + iX];
+      const float fI = iImage[forwardCPt[p].y*dsiDim.x + forwardCPt[p].x];
 
-      fP2Adjust = P2/abs(fI - fLastIntesity);
-      iP2Adjust = P2/abs(iI - iLastIntesity);
+      sP2Adjust[p].forward = P2/abs(fI - sLastIntensity[p].forward);
 
-      fLastIntesity = fI;
-      iLastIntesity = iI;
+      sLastIntensity[p].forward = fI;
+
+      sDsiBaseOff[p].forward = dsiDim.z*dsiDim.y*forwardCPt[p].x
+        + dsiDim.z*forwardCPt[p].y;
+    }
+    else if ( z < N_PASSES*2 && x < pathSizes[z - N_PASSES]) {
+      const char p = z - N_PASSES;
+
+      sMinCost[p].backward = sPrevMinCost[p][0].backward;
+
+      backwardCPt[p].x -= g_pathsDirections_d[p].x;
+      backwardCPt[p].y -= g_pathsDirections_d[p].y;
+
+      const float iI =
+        iImage[backwardCPt[p].y*dsiDim.x + backwardCPt[p].x];
+
+      sP2Adjust[p].backward = P2/abs(iI - sLastIntensity[p].backward);
+
+      sLastIntensity[p].backward = iI;
+
+      sDsiBaseOff[p].backward = dsiDim.z*dsiDim.y*backwardCPt[p].x
+        + dsiDim.z*backwardCPt[p].y;
     }
 
     __syncthreads();
 
-    fLr = pathCost(dsiDim, costDSI,
-                   prevDisps[0][dz],
-                   prevDisps[0][dz - 1],
-                   prevDisps[0][dz + 1],
-                   fX, fY, z, fMinDisp, fP2Adjust,
-                   aggregDSI);
+    for (char p=0; p<N_PASSES; p++) {
+      if ( x >= pathSizes[p] )
+        continue;
 
-    iLr = pathCost(dsiDim, costDSI,
-                   prevDisps[1][dz],
-                   prevDisps[1][dz - 1],
-                   prevDisps[1][dz + 1],
-                   iX, iY, z, iMinDisp, iP2Adjust,
-                   aggregDSI);    
+      fLr[p] = pathCost(costDSI, sDsiBaseOff[p].forward + z,
+                        sPrevCost[p][dz].forward,
+                        sPrevCost[p][dz - 1].forward,
+                        sPrevCost[p][dz + 1].forward,
+                        sMinCost[p].forward, sP2Adjust[p].forward,
+                        aggregDSI);
+#if 1
+      bLr[p] = pathCost(costDSI, sDsiBaseOff[p].backward + z,
+                        sPrevCost[p][dz].backward,
+                        sPrevCost[p][dz - 1].backward,
+                        sPrevCost[p][dz + 1].backward,
+                        sMinCost[p].backward, sP2Adjust[p].backward,
+                        aggregDSI);
+#endif
+    }
 
     __syncthreads();
 
-    prevDisps[0][dz] = prevDispsMin[0][z] = fLr;
-    prevDisps[1][dz] = prevDispsMin[1][z] = iLr;
+    for (char p=0; p<N_PASSES; p++) {
+      if ( x >= pathSizes[p] )
+        continue;
+
+      sPrevCost[p][dz].forward = sPrevMinCost[p][z].forward = fLr[p];
+      sPrevCost[p][dz].backward = sPrevMinCost[p][z].backward = bLr[p];
+    }
 
     __syncthreads();
   }
 }
 
 void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi,
-                      const float *lorigin, float *aggregDSI, float *dispImg)
+                      const tdv::SGPathsDesc *pathsDesc,
+                      const float *lorigin, bool zeroAggregDSI,
+                      float *aggregDSI, float *dispImg)
 {
   DSIDim dsiDim(DSIDimCreate(tdv_dsiDim));
-  
+
   tdv::CUerrExp cuerr;
   tdv::CudaConstraits constraits;
-    
+
   tdv::WorkSize wsz = constraits.imageWorkSize(tdv_dsiDim);
-  int rowsWidths_h[MAX_ROWS];
-  int rowsStart_h[MAX_ROWS][2];
-  int rowsEnd_h[MAX_ROWS][2];
-  
-  zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);      
-  
-  for (size_t i=0; i<dsiDim.y; i++) {
-    rowsWidths_h[i] = dsiDim.x;
-    
-    rowsStart_h[i][0] = 0;
-    rowsStart_h[i][1] = i;
-    
-    rowsEnd_h[i][0] = dsiDim.x - 1;
-    rowsEnd_h[i][1] = i;    
-  }
-  
-  cuerr << cudaThreadSynchronize();
-  
-  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
-  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
-  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
 
-  semiglobalAggregVolKernel<<<dsiDim.y, dsiDim.z>>>(dsiDim, dsi, lorigin,
-                                                    1, 0, aggregDSI);    
+  static const SGPoint pathsDirections_h[SG_MAX_PASSES] = {
+    {1, 0},
+    {0, 1},
+    {1, 1},
+    {-1, 1}
+  };
 
-  for (size_t i=0; i<dsiDim.x; i++) {
-    rowsWidths_h[i] = dsiDim.y;
+  if ( zeroAggregDSI )
+    zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI);
 
-    rowsStart_h[i][0] = i;
-    rowsStart_h[i][1] = 0;
-    
-    rowsEnd_h[i][0] = i;
-    rowsEnd_h[i][1] = dsiDim.y - 1;    
-  }
-  
-  cuerr << cudaThreadSynchronize();
-  
-  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
-  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
-  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
+  cuerr << cudaMemcpyToSymbol(g_pathsDirections_d, pathsDirections_h, sizeof(SGPoint)*SG_MAX_PASSES);
 
-  semiglobalAggregVolKernel<<<dsiDim.x, dsiDim.z>>>(dsiDim, dsi, lorigin,
-                                                    0, 1, aggregDSI);
-  const size_t lastX = dsiDim.x - 1;
-  const size_t lastY = dsiDim.y - 1;
-  
-  for (size_t i=0; i<dsiDim.x; i++) {        
-    rowsStart_h[i][0] = lastX - i;
-    rowsStart_h[i][1] = 0;
-    
-    rowsEnd_h[i][0] = lastX;
-    rowsEnd_h[i][1] = std::min(i, lastY);   
-    
-    rowsWidths_h[i] = rowsEnd_h[i][1] - rowsStart_h[i][1] + 1;
-  }
-  
-  for (size_t i=0; i<dsiDim.y - 1; i++) {    
-    const size_t offset = dsiDim.x + i;
-    
-    rowsStart_h[offset][0] = 0;
-    rowsStart_h[offset][1] = i + 1;    
-    
-    rowsEnd_h[offset][0] = std::min(lastY - (i + 1), lastX);
-    rowsEnd_h[offset][1] = lastY;
+#if 1
+  semiglobalAggregVolKernel<<<dsiDim.x, dsiDim.z>>>(dsiDim, pathsDesc,
+                                                    dsi, lorigin,
+                                                    aggregDSI);
+#endif
 
-    rowsWidths_h[offset] = rowsEnd_h[offset][1] - rowsStart_h[offset][1] + 1;
-  }
-  
-
-  cuerr << cudaThreadSynchronize();
-  
-  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
-  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
-  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
-
-  semiglobalAggregVolKernel<<<dsiDim.x + dsiDim.y - 1, dsiDim.z>>>(dsiDim, dsi, lorigin,
-                                                                   1, 1, aggregDSI);  
-  
-  for (size_t i=0; i<dsiDim.x; i++) {         
-    const int sX = i;
-    const int sY = 0;
-    const int diagSize = diagRSizeX(dsiDim.y, i);
-    
-    rowsStart_h[i][0] = sX;
-    rowsStart_h[i][1] = sY;
-    
-    rowsWidths_h[i] = diagSize;
-      
-    rowsEnd_h[i][0] = 0;
-    rowsEnd_h[i][1] = diagSize - 1;
-  }
-  
-  for (size_t i=0; i<dsiDim.y - 1; i++) {        
-    const size_t offset = dsiDim.x + i;
-    
-    const int sX = lastX;
-    const int sY = i + 1;
-    const int diagSize = diagRSizeY(dsiDim.x, dsiDim.y, i + 1);
-    
-    rowsStart_h[offset][0] = sX;
-    rowsStart_h[offset][1] = sY;
-
-    rowsEnd_h[offset][0] = sX - diagSize + 1;
-    rowsEnd_h[offset][1] = sY + diagSize - 1;
-    
-    rowsWidths_h[offset] = diagSize;                    
-  }
-  
-  cuerr << cudaThreadSynchronize();  
-  
-  cuerr << cudaMemcpyToSymbol(rowsWidths, rowsWidths_h, sizeof(int)*MAX_ROWS);
-  cuerr << cudaMemcpyToSymbol(rowsStart, rowsStart_h, sizeof(int)*MAX_ROWS*2);
-
-  cuerr << cudaMemcpyToSymbol(rowsEnd, rowsEnd_h, sizeof(int)*MAX_ROWS*2);
-  
-  semiglobalAggregVolKernel<<<dsiDim.x + dsiDim.y - 1, dsiDim.z>>>(dsiDim, dsi, lorigin,
-                                                                   -1, 1, aggregDSI);
-
-  cuerr << cudaThreadSynchronize();      
-
+#if 1
   wtaKernel<<<wsz.blocks, wsz.threads>>>(dsiDim, aggregDSI,
                                          dsiDim.x,
                                          dsiDim.x*dsiDim.y,
                                          dispImg);
+#endif
+
+  cuerr << cudaThreadSynchronize();
 }

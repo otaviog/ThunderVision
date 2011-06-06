@@ -5,7 +5,7 @@
 #include "dsimemutil.h"
 
 __global__ void wtaKernel(const DSIDim dim, 
-                          const float *dsi, 
+                          float *dsi, 
                           const uint width,
                           const uint maxOffset, 
                           float *outimg)
@@ -19,16 +19,21 @@ __global__ void wtaKernel(const DSIDim dim,
     float leastDiff = CUDART_INF_F;
     uint wonDisparity = 0;
     
+    const uint dsiOffsetBase = dim.z*dim.y*x + dim.z*y;
+    
     for (uint d=0; d<dim.z && (d + x) < dim.x; d++) {      
-      const float diff = dsiIntensity(dim, x, y, d, dsi);
-            
+      const uint dsiOff = dsiOffsetBase + d;
+      const float diff = dsi[dsiOff]; 
+
       if ( diff < leastDiff ) {
         leastDiff = diff;
-        wonDisparity = d;
+        wonDisparity = d;        
       }
+      
+      dsi[dsiOff] = 0.0f;
     }
     
-    outimg[offset] = float(wonDisparity)/float(dim.z);            
+    outimg[offset] = float(wonDisparity)/float(dim.z);
   }
 }
 

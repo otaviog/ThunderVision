@@ -29,6 +29,14 @@ TEST(TestSemiGlobalDev, WithSSD)
 #endif
        &ssd, &sg, true, true);
 
+#if 1
+   runStereoTest(
+       "../../res/tsukuba512_L.png",
+       "../../res/tsukuba512_R.png",
+       "tsukuba_ssdsgdev.png",
+       &ssd, &sg);
+#endif
+
 }
 #endif
 

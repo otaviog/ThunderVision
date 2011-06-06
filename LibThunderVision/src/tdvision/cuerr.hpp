@@ -81,6 +81,7 @@ public:
     {
         return m_lastErr == cudaSuccess;
     }
+    
 private:
     cudaError_t m_lastErr;
 };

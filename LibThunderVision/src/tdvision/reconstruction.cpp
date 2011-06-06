@@ -4,15 +4,6 @@
 
 TDV_NAMESPACE_BEGIN
 
-/**
- * leftImgIn-|
- *           |-leftOriginTee
- *
- *
- * rightImgIn-|
- *
- */
-
 //#define TDV_RESIZE_STEREO 
 
 Reconstruction::Reconstruction(StereoMatcher *matcher,
