@@ -2,6 +2,8 @@
 #define TDV_TMPCUDAMEM_HPP
 
 #include <tdvbasic/common.hpp>
+#include <cuda_runtime.h>
+#include "dim.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -12,13 +14,13 @@ public:
     
     ~TmpCudaMem();
     
-    float* mem(size_t size);
+    void* mem(size_t bsize);
     
     void unalloc();
     
 private:
-    float *m_mem;
-    size_t m_csize;
+    void* m_mem_d;
+    size_t m_bsize;
 };
 
 TDV_NAMESPACE_END

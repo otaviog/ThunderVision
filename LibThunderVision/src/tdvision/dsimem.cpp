@@ -1,34 +1,65 @@
 #include "dsimem.hpp"
 #include "cuerr.hpp"
 
+#define DSIMEM_USE_ALIGNED 
+
 TDV_NAMESPACE_BEGIN
 
-DSIMemImpl::DSIMemImpl()
-    : m_dim(-1)
+LocalDSIMem::LocalDSIMem(size_t typeSize)
+    : m_dim(0)
 {
-    m_mem = NULL;
+    m_mem.ptr = NULL;
+    m_typeSize = typeSize;
 }
 
-DSIMemImpl::~DSIMemImpl()
+LocalDSIMem::~LocalDSIMem()
 {
-    cudaFree(m_mem);
+    unalloc();
+}
+
+cudaPitchedPtr LocalDSIMem::mem(const Dim &dim)
+{
+    CUerrExp cuerr;
+    if ( m_dim != dim )
+    {
+        unalloc();
+
+#ifdef DSIMEM_USE_ALIGNED
+        cudaExtent extent = make_cudaExtent(dim.depth()*m_typeSize,
+                                            dim.width(), dim.height());
+        cuerr << cudaMalloc3D(&m_mem, extent);
+#else
+        cuerr << cudaMalloc(&m_mem.ptr, dim.size()*m_typeSize);
+        m_mem.pitch = dim.depth()*m_typeSize;
+#endif
+
+        m_dim = dim;
+    }
+
+    return m_mem;
+}
+
+void LocalDSIMem::unalloc()
+{
+    CUerrExp cuerr;
+    if ( m_mem.ptr != NULL )
+    {
+        cuerr << cudaFree(m_mem.ptr);
+        m_mem.ptr = NULL;
+    }
 }
 
 void DSIMemImpl::init(const Dim &dim, FloatImage lorigin)
 {
-    CUerrExp cuerr;
-    m_dim = dim;
-    
-    cuerr << cudaMalloc((void**) &m_mem, dim.size()*sizeof(float));    
-    
+    m_dsiMem.mem(dim);
     m_leftOrigin = lorigin;
 }
 
 DSIMem DSIMem::Create(const Dim &dim, FloatImage lorigin)
 {
     DSIMemImpl *impl = new DSIMemImpl;
-        
-    try 
+
+    try
     {
         impl->init(dim, lorigin);
         return DSIMem(impl);
@@ -37,7 +68,7 @@ DSIMem DSIMem::Create(const Dim &dim, FloatImage lorigin)
     {
         delete impl;
         throw ex;
-    }                
+    }
 }
 
 TDV_NAMESPACE_END

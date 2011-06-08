@@ -1,51 +1,45 @@
 #include <cuda.h>
+#include <math_constants.h>
 #include "cudaconstraits.hpp"
 #include "dim.hpp"
 #include "cuerr.hpp"
 #include "dsimemutil.h"
 
-__global__ void wtaKernel(const DSIDim dim, 
-                          float *dsi, 
-                          const uint width,
-                          const uint maxOffset, 
+__global__ void wtaKernel(const dim3 dsiDim, 
+                          cudaPitchedPtr dsiMem,
                           float *outimg)
 {
   const uint x = blockDim.x*blockIdx.x + threadIdx.x;
   const uint y = blockDim.y*blockIdx.y + threadIdx.y;
-
-  const uint offset = width*y + x;
   
-  if ( offset < maxOffset ) {
+  if ( x < dsiDim.x && y < dsiDim.y ) {
+    float *dsiRow = dsiGetRow(dsiMem, dsiDim.x, x, y);
+    
     float leastDiff = CUDART_INF_F;
-    uint wonDisparity = 0;
-    
-    const uint dsiOffsetBase = dim.z*dim.y*x + dim.z*y;
-    
-    for (uint d=0; d<dim.z && (d + x) < dim.x; d++) {      
-      const uint dsiOff = dsiOffsetBase + d;
-      const float diff = dsi[dsiOff]; 
+    uint wonDisparity = 0;            
+                  
+    for (uint d=0; d<dsiDim.z && (d + x) < dsiDim.x; d++) {      
+      const float diff = dsiRow[d]; 
 
       if ( diff < leastDiff ) {
         leastDiff = diff;
         wonDisparity = d;        
       }
       
-      dsi[dsiOff] = 0.0f;
+      dsiRow[d] = 0.0f;
     }
-    
-    outimg[offset] = float(wonDisparity)/float(dim.z);
+    outimg[dsiDim.x*y + x] = float(wonDisparity)/float(dsiDim.z);
   }
 }
 
-void DevWTARun(float *dsi, const tdv::Dim &dsiDim, float *outimg)
-{  
-  DSIDim ddim(DSIDimCreate(dsiDim));
+TDV_NAMESPACE_BEGIN
 
+void WTARunDev(const tdv::Dim &dsiDim, cudaPitchedPtr dsiMem, float *outimg)
+{  
   tdv::CudaConstraits constraits;
   tdv::WorkSize wsz = constraits.imageWorkSize(dsiDim);
   
-  wtaKernel<<<wsz.blocks, wsz.threads>>>(ddim, dsi, 
-                                         dsiDim.width(),
-                                         dsiDim.width()*dsiDim.height(),
-                                         outimg);   
+  wtaKernel<<<wsz.blocks, wsz.threads>>>(tdvDimTo(dsiDim), dsiMem, outimg);   
 }
+
+TDV_NAMESPACE_END

@@ -34,8 +34,19 @@ bool CtrlWork::update()
         {
             if ( testFlow() )
             {
-                m_lwpipe.write(limg);
-                m_rwpipe.write(rimg);
+                if ( (mode() == Continuous 
+                      && !m_lwpipe.isFull() 
+                      && !m_rwpipe.isFull()) 
+                     || mode() != Continuous )
+                {
+                        m_lwpipe.write(limg);
+                        m_rwpipe.write(rimg);                    
+                }
+                else
+                {
+                    CvMatSinkPol::sink(limg);
+                    CvMatSinkPol::sink(rimg);
+                }
             }
             else
             {

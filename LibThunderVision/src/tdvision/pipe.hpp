@@ -134,7 +134,7 @@ public:
      * When the queue reach this size, then the next writes
      * will wait, according to the bounded-buffer logic.
      */
-    ReadWritePipe(size_t maxSize = 100)
+    ReadWritePipe(size_t maxSize = 1)
     {
         m_end = false;
         m_maxSize = maxSize;
@@ -169,6 +169,11 @@ public:
         m_end = true;
         m_queueCond.notify_one();
     }
+    
+    size_t isFull() const
+    {
+        return m_queue.size() == m_maxSize;
+    }        
     
     /**
      * Unsets the end of data in this pipe.

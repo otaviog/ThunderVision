@@ -1,40 +1,40 @@
 #include <math_constants.h>
+#include "cuerr.hpp"
 #include "dim.hpp"
 #include "dsimemutil.h"
 #include "cudaconstraits.hpp"
 
 #define MAX_DISP 2048
 
-__global__ void dynamicprog(const DSIDim dim, const float *costDSI,
-                            float *lastSumCost, char *pathDSI)
+__global__ void dynamicprog(const dim3 dsiDim, cudaPitchedPtr costDSI,
+                            cudaPitchedPtr pathDSI, float *lastSumCost)
 {
-  const uint z = threadIdx.x;
-  const uint y = blockIdx.x;
+  const ushort z = threadIdx.x;
+  const ushort y = blockIdx.x;
+  const ushort dz = z + 1;
+  
+  __shared__ float sharedCost[MAX_DISP + 2];
+  __shared__ float *costDsiRow, *pathDsiRow;
+      
+  sharedCost[z] = dsiGetRow(costDSI, dsiDim.x, 0, y)[z];
+  dsiGetRow(pathDSI, dsiDim.x, 0, y)[z] = 0;
 
-  if ( z >= dim.z || y >= dim.y  )
-    return ;
-  
-  __shared__ float sharedCost[MAX_DISP];
-  
-  const uint initialOff = dsiOffset(dim, 0, y, z);
-  sharedCost[z] = costDSI[initialOff];
-  pathDSI[initialOff] = 0;      
+  if ( z == 0 ) {
+    costDsiRow = dsiGetRow(costDSI, dsiDim.x, y, z);
+    pathDsiRow = dsiGetRow(pathDSI, dsiDim.x, y, z);
+    
+    sharedCost[0] = CUDART_INF_F;
+    sharedCost[dsiDim.z + 1] = CUDART_INF_F;
+  }
 
   __syncthreads();  
   
-  for (uint x=1; x<dim.x; x++) {        
-    const uint c0Offset = dsiOffset(dim, x, y, z);  
+  for (ushort x=1; x<dsiDim.x; x++) {                
+    const float c0 = costDsiRow[z];
     
-    const float c0 = costDSI[c0Offset];    
-    const float c2 = sharedCost[z];    
-        
-    const float c1 = (z > 0)
-      ? sharedCost[z - 1]
-      : CUDART_INF_F;
-    
-    const float c3 = ( z < (dim.z - 1) ) 
-      ? sharedCost[z + 1]
-      : CUDART_INF_F;
+    const float c2 = sharedCost[dz];            
+    const float c1 = sharedCost[dz - 1];    
+    const float c3 = sharedCost[dz + 1];
       
     float m;      
     char p;  
@@ -48,87 +48,70 @@ __global__ void dynamicprog(const DSIDim dim, const float *costDSI,
       m = c3;
       p = 1;
     } 
-          
-    pathDSI[c0Offset] = p;    
     
-    sharedCost[z] = c0 + m;
+    pathDsiRow[z] = p;
+    sharedCost[dz] = c0 + m;
 
     __syncthreads();
   }
   
-  lastSumCost[dim.z*y + z] = sharedCost[z];
+  lastSumCost[dsiDim.z*y + z] = sharedCost[dz];
 }
 
-__global__ void reduceImage(const DSIDim dim, const float *lastSumCost, 
-                            const char *pathDSI, float *dispImg)
+__global__ void reduceImage(const dim3 dsiDim, 
+                            const cudaPitchedPtr pathDSI, 
+                            const float *lastSumCost,
+                            float *dispImg)
 {
   const uint y = blockIdx.x;
-  if ( y >= dim.y )
-    return ;
     
   int lastMinZ = 0;
   float min = lastSumCost[0];
   
-  const uint lscBaseOff = y*dim.z;
-  for (uint z=1; z < dim.z; z++) {
+  const uint lscBaseOff = y*dsiDim.z;
+  for (uint z=1; z < dsiDim.z; z++) {
     const float sc = lastSumCost[lscBaseOff*y + z];
+    
     if ( sc < min ) {
       lastMinZ = z;
       min = sc;
     }          
   }
   
-  uint imgOffset = y*dim.x + (dim.x - 1);
-  dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
+  float *imgRow = &dispImg[y*dsiDim.x];  
+  imgRow[dsiDim.x - 1] = float(lastMinZ)/float(dsiDim.z);  
   
-  for (int x = dim.x - 1; x >= 0; x--) {    
-    const uint offset = dsiOffset(dim, x, y, lastMinZ);
-    const char p = pathDSI[offset];
-    const uint nz = lastMinZ + p;
+  for (int x = dsiDim.x - 1; x >= 0; x--) {            
+    const char p = dsiGetValueB(pathDSI, dsiDim.x, x, y, lastMinZ);        
+    const int nz = lastMinZ + p;
     
-    if ( nz < dim.maxOffset )
-      lastMinZ = nz;
+    if ( nz >= 0 && nz < dsiDim.z ) {
+      lastMinZ = nz;  
+    }        
     
-    imgOffset = y*dim.x + x;    
-    dispImg[imgOffset] = float(lastMinZ)/float(dim.z);
+    imgRow[x] = float(lastMinZ)/float(dsiDim.z);
   }
+  
 }
 
-void RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg)
+TDV_NAMESPACE_BEGIN
+
+void DynamicProgDevRun(const tdv::Dim &dsiDim, 
+                       const cudaPitchedPtr costDSI,
+                       cudaPitchedPtr pathDSI,
+                       float *lastSumCosts,
+                       float *dispImg)
 {  
-  tdv::CUerrExp cuerr;  
-  DSIDim dsiDim(DSIDimCreate(tdv_dsiDim));  
-  float *lastSumCost = NULL;
-  
-  cuerr << cudaMalloc((void**) &lastSumCost, 
-                      sizeof(float)
-                      *tdv_dsiDim.depth()
-                      *tdv_dsiDim.height());
+  CUerrExp cuerr;  
                       
-  char *pathDSI = NULL;
-  size_t pathSize = tdv_dsiDim.size();  
-  
-  cuerr = cudaMalloc((void**) &pathDSI, pathSize*sizeof(int));  
-  if ( !cuerr.good() ) {
-    cudaFree(lastSumCost);
-    cuerr.checkErr();
-    return ;
-  }
-  
-  dynamicprog<<<tdv_dsiDim.height(), tdv_dsiDim.depth()>>>(dsiDim, dsi, lastSumCost, pathDSI);
+  dynamicprog<<<dsiDim.height(), 
+    dsiDim.depth()>>>(tdvDimTo(dsiDim), costDSI, pathDSI, lastSumCosts);
   
   cuerr = cudaThreadSynchronize();
-  
-  if ( !cuerr.good() ) {
-    cudaFree(lastSumCost);
-    cudaFree(pathDSI);
-    cuerr.checkErr();
-    return ;
-  }
-  
-  reduceImage<<<tdv_dsiDim.height(), 1>>>(dsiDim, lastSumCost, pathDSI, dispImg);  
-  
-  cuerr = cudaFree(lastSumCost);  
-  cuerr = cudaFree(pathDSI);  
-  cuerr.checkErr();        
+    
+  reduceImage<<<dsiDim.height(), 1>>>(tdvDimTo(dsiDim), 
+                                      pathDSI, lastSumCosts, 
+                                      dispImg);      
 }
+
+TDV_NAMESPACE_END

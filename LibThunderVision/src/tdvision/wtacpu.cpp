@@ -12,6 +12,7 @@ inline size_t dsiOffset(
 
 void WTACPU::updateImpl(DSIMem mem, FloatImage outimg)
 {   
+#if 0
     CUerrExp cuerr;         
     const Dim &dim = mem.dim();
     
@@ -41,6 +42,8 @@ void WTACPU::updateImpl(DSIMem mem, FloatImage outimg)
             imgData_h[row*dim.width() + col] = float(minDisp)/float(dim.depth());            
         }
     }
+#endif
 }
+
 
 TDV_NAMESPACE_END

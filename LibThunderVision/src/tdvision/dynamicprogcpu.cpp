@@ -93,6 +93,7 @@ static void reducePath(const Dim &dim, size_t y, const float *cost,
 
 void DynamicProgCPU::updateImpl(DSIMem mem, FloatImage img)
 {
+#if 0 
     CUerrExp cuerr;
     const Dim &dim = mem.dim();
     boost::scoped_array<float> dsi(new float[dim.size()]);
@@ -108,6 +109,7 @@ void DynamicProgCPU::updateImpl(DSIMem mem, FloatImage img)
         dynamicProg(dim, dsi.get(), y, cost.get(), path.get());
         reducePath(dim, y, cost.get(), path.get(), img.cpuMem()->data.fl);
     }
+#endif
 }
 
 TDV_NAMESPACE_END

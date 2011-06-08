@@ -3,9 +3,8 @@
 
 TDV_NAMESPACE_BEGIN
 
-void DevSSDRun(Dim dsiDim, int maxDisparity,
-               float *leftImg, float *rightImg,
-               float *dsiMem);
+void SSDDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
+               cudaPitchedPtr dsiMem);
 
 void SSDDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
                         DSIMem dsi)
@@ -13,8 +12,7 @@ void SSDDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
     float *leftImg_d = leftImg.devMem();
     float *rightImg_d = rightImg.devMem();
 
-    DevSSDRun(dsi.dim(), dsi.dim().depth(),
-              leftImg_d, rightImg_d, dsi.mem());    
+    SSDDevRun(dsi.dim(), leftImg_d, rightImg_d, dsi.mem());    
         
 }
 

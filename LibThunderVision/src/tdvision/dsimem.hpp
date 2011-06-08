@@ -3,28 +3,58 @@
 
 #include <tdvbasic/common.hpp>
 #include <boost/shared_ptr.hpp>
+#include <cuda.h>
 #include "floatimage.hpp"
 #include "dim.hpp"
 
 TDV_NAMESPACE_BEGIN
 
-class DSIMemImpl
+class LocalDSIMem
 {
-public:
-    DSIMemImpl();    
+public:    
+    LocalDSIMem(size_t typeSize = sizeof(float));
     
-    ~DSIMemImpl();
+    ~LocalDSIMem();
+
+    const Dim& dim() const
+    {
+        return m_dim;
+    }
     
-    void init(const Dim &dim, FloatImage lorigin);
-    
-    float* mem()
+    cudaPitchedPtr mem()
     {
         return m_mem;
     }
     
+    cudaPitchedPtr mem(const Dim &dim);
+    
+    void unalloc();
+    
+private:
+    Dim m_dim;
+    cudaPitchedPtr m_mem;
+    size_t m_typeSize;
+};
+
+class DSIMemImpl
+{
+public:
+    DSIMemImpl()
+    { }
+    
+    ~DSIMemImpl()
+    { }
+    
+    void init(const Dim &dim, FloatImage lorigin);
+    
+    cudaPitchedPtr mem()
+    {
+        return m_dsiMem.mem();
+    }
+    
     const Dim& dim() const
     {
-        return m_dim;
+        return m_dsiMem.dim();
     }
     
     FloatImage leftOrigin()
@@ -38,9 +68,7 @@ public:
     }
 
 private:
-    Dim m_dim;
-    float *m_mem;
-    
+    LocalDSIMem m_dsiMem;
     FloatImage m_leftOrigin;
 };
 
@@ -52,12 +80,12 @@ public:
     
     static DSIMem Create(const Dim &dim, FloatImage lorigin);
 
-    float* mem()
+    cudaPitchedPtr mem()
     {
         if ( m_handle != NULL )
             return m_handle->mem();
         else
-            return NULL;
+            return cudaPitchedPtr();
     }
     
     const Dim& dim() const

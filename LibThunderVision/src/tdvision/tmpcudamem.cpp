@@ -4,44 +4,37 @@
 TDV_NAMESPACE_BEGIN
 
 TmpCudaMem::TmpCudaMem()
-{
-    m_csize = 0;
-    m_mem = NULL;
+{    
+    m_mem_d = NULL;
+    m_bsize = 0;
 }
     
 TmpCudaMem::~TmpCudaMem()
 {
-    if ( m_mem != NULL )
-    {
-        cudaFree(m_mem);
-        m_mem = NULL;
-    }
+    unalloc();
 }
 
-float* TmpCudaMem::mem(size_t memSize)
+void* TmpCudaMem::mem(size_t bsize)
 {    
-    if ( m_csize != memSize )
+    if ( m_bsize != bsize )
     {
-        if ( m_mem != NULL )
-        {
-            cudaFree(m_mem);
-            m_mem = NULL;
-        }
+        unalloc();
         
         CUerrExp cuerr;
-        cuerr << cudaMalloc((void**) &m_mem, memSize);
-        m_csize = memSize;
+        
+        cuerr << cudaMalloc((void**) &m_mem_d, bsize);
+        m_bsize = bsize;
     }    
     
-    return m_mem;
+    return m_mem_d;
 }
 
 void TmpCudaMem::unalloc()
 {
-    if ( m_mem != NULL )
+    if ( m_mem_d != NULL )
     {
-        cudaFree(m_mem);
-        m_mem = NULL;
+        cudaFree(m_mem_d);
+        m_mem_d = NULL;
     }
 }
 

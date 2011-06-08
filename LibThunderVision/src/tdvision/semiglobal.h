@@ -6,20 +6,21 @@
 
 TDV_NAMESPACE_BEGIN
 
-#define SG_MAX_PASSES 4
-#define SG_MAX_PATHS 2048
-
 struct SGPoint
 {
-    int x, y;
+    unsigned short x, y;
 };
 
-struct SGPathsDesc
-{      
-    int maxPathsSizes[SG_MAX_PATHS];
-    int pathsSizes[SG_MAX_PASSES][SG_MAX_PATHS];
-    SGPoint pathsStarts[SG_MAX_PASSES][SG_MAX_PATHS];
-    SGPoint pathsEnds[SG_MAX_PASSES][SG_MAX_PATHS];
+struct sSGPoint
+{
+    short x, y;
+};
+
+struct SGPath
+{
+    SGPoint start, end;
+    sSGPoint dir;
+    unsigned short size;    
 };
 
 class SGPaths
@@ -27,26 +28,33 @@ class SGPaths
 public:
     SGPaths();
   
-    SGPathsDesc* getDesc(const Dim &imgDim);
+    SGPath* getDesc(const Dim &imgDim);
   
+    size_t pathCount() const
+    {
+        return m_pathCount;
+    }
+    
     void unalloc();
   
 private: 
-    void horizontalPathsDesc(uint totalPaths, int *pathSizes, 
-                             SGPoint *pathsStarts, SGPoint *pathsEnds);
+    void horizontalPathsDesc(SGPath *paths);
 
-    void verticalPathsDesc(uint totalPaths, int *pathSizes, 
-                           SGPoint *pathsStarts, SGPoint *pathsEnds);
+    void verticalPathsDesc(SGPath *paths);
 
-    void topBottomDiagonaDesc(int *pathSizes, SGPoint *pathsStarts, 
-                              SGPoint *pathsEnds);
+    void topBottomDiagonaDesc(SGPath *paths);
   
-    void bottomTopDiagonalDesc(int *pathSizes, SGPoint *pathsStarts, 
-                               SGPoint *pathsEnds);
+    void bottomTopDiagonalDesc(SGPath *paths);
 
-    SGPathsDesc *m_desc_d;
+    SGPath *m_paths_d;
     tdv::Dim m_imgDim;
+    size_t m_pathCount;
 };
+
+void SemiGlobalRunDev(const tdv::Dim &dsiDim, cudaPitchedPtr dsi,
+                      const tdv::SGPath *pathsArray, size_t pathCount,
+                      const float *lorigin, cudaPitchedPtr aggregDSI, 
+                      float *dispImg, bool zeroAggregDSI);
 
 TDV_NAMESPACE_END
 

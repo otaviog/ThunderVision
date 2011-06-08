@@ -3,9 +3,8 @@
 
 TDV_NAMESPACE_BEGIN
 
-void DevCrossCorrelationRun(Dim dsiDim, int maxDisparity,
-                            float *leftImg_d, float *rightImg_d,
-                            float *dsiMem);
+void CrossCorrelationDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
+                            cudaPitchedPtr dsiMem);
 
 void CrossCorrelationDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
                                      DSIMem dsi)
@@ -13,8 +12,8 @@ void CrossCorrelationDev::updateImpl(FloatImage leftImg, FloatImage rightImg,
     float *leftImg_d = leftImg.devMem();
     float *rightImg_d = rightImg.devMem();
 
-    DevCrossCorrelationRun(dsi.dim(), dsi.dim().depth(),
-                                  leftImg_d, rightImg_d, dsi.mem());    
+    CrossCorrelationDevRun(dsi.dim(), leftImg_d, rightImg_d, 
+                           dsi.mem());    
 }
 
 TDV_NAMESPACE_END

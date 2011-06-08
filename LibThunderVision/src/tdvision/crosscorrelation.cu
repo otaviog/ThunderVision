@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <math_constants.h>
 #include <cuda.h>
 #include "cuerr.hpp"
 #include "cudaconstraits.hpp"
@@ -26,26 +27,28 @@ __device__ float ccAtDisp(int x, int y, int disp)
   return abs(1.0f - domSum/sqrt(lSum*rSum));
 }
 
-__global__ void ccorrelationKern(const DSIDim dsiDim, const int maxDisparity, float *dsiMem)
+__global__ void ccorrelationKern(const dim3 dsiDim, cudaPitchedPtr dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
-
-    for (int disp=0; (disp < maxDisparity) && (x - disp) >= 0; disp++) {
-      float ccValue = ccAtDisp(x, y, disp);
-      dsiSetIntensity(dsiDim, x, y, disp, ccValue, dsiMem);
+    float *dsiRow = dsiGetRow(dsiMem, dsiDim.x, x, y);
+    
+    for (int disp=0; disp < dsiDim.z; disp++) {
+      float ccValue = CUDART_INF_F;
+      if ( x - disp >= 0)
+        ccValue = ccAtDisp(x, y, disp);
+      dsiRow[disp] = ccValue;
     }
-
+    
   }
 }
 
 TDV_NAMESPACE_BEGIN
 
-void DevCrossCorrelationRun(Dim dsiDim, int maxDisparity,
-                            float *leftImg_d, float *rightImg_d,
-                            float *dsiMem)
+void CrossCorrelationDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
+                            cudaPitchedPtr dsiMem)
 {
   CUerrExp err;
   
@@ -64,10 +67,9 @@ void DevCrossCorrelationRun(Dim dsiDim, int maxDisparity,
   texLeftImg.normalized = texRightImg.normalized = false;
   texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;    
   
-  DSIDim ddim(DSIDimCreate(dsiDim));
   CudaConstraits constraits;
   WorkSize ws = constraits.imageWorkSize(dsiDim);
-  ccorrelationKern<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, dsiMem);   
+  ccorrelationKern<<<ws.blocks, ws.threads>>>(tdvDimTo(dsiDim), dsiMem);   
 }
 
 TDV_NAMESPACE_END

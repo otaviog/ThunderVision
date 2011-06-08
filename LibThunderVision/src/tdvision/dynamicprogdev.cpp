@@ -1,15 +1,30 @@
 #include "dynamicprogdev.hpp"
 
-tdv::Benchmark RunDynamicProgDev(const tdv::Dim &tdv_dsiDim, float *dsi, float *dispImg);
-
 TDV_NAMESPACE_BEGIN
+
+void DynamicProgDevRun(const tdv::Dim &dsiDim, 
+                       const cudaPitchedPtr costDSI,
+                       cudaPitchedPtr pathDSI,
+                       float *lastSumCosts,
+                       float *dispImg);
 
 void DynamicProgDev::updateImpl(DSIMem dsi, FloatImage outimg)
 {
     float *outimg_d = outimg.devMem();    
-    Benchmark marker = RunDynamicProgDev(dsi.dim(), dsi.mem(), outimg_d);
+    const Dim dsiDim = dsi.dim();
     
-    m_marker.addProbe(marker);
+    DynamicProgDevRun(dsiDim, 
+                      dsi.mem(),
+                      m_pathDSI.mem(dsiDim),
+                      (float*) m_lastCostsMem.mem(
+                          dsiDim.depth()*dsiDim.height()*sizeof(float)),
+                      outimg_d);        
+}
+
+void DynamicProgDev::finished()
+{
+    m_pathDSI.unalloc();
+    m_lastCostsMem.unalloc();
 }
 
 TDV_NAMESPACE_END

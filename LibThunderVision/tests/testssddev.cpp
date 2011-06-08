@@ -8,6 +8,7 @@
 #include <tdvision/dynamicprogcpu.hpp>
 #include "stereotest.hpp"
 
+#if 0
 TEST(TestSSD, Dev)
 {    
     tdv::ImageReader readerL("../../res/tsukuba_L.png");
@@ -35,22 +36,21 @@ TEST(TestSSD, Dev)
     EXPECT_EQ(288, dsi.dim().height());
     EXPECT_EQ(16, dsi.dim().depth());    
 }
+#endif
 
 TEST(TestSSD, WithWTA)
 {
-   tdv::SSDDev ssd(155);
+   tdv::SSDDev ssd(64);
    tdv::WTADev wta;
     
    runStereoTest(
-       //"../../res/tsukuba512_L.png",
-       //"../../res/tsukuba512_R.png",       
-        "tsukuba_L.png",
-        "tsukuba_R.png",
+       "../../res/tsukuba512_L.png",
+       "../../res/tsukuba512_R.png",       
         "tsukuba_ssdwta.png",
        &ssd, &wta);
-
 }
 
+#if 0
 TEST(TestSSD, WithDynProg)
 {
     tdv::DynamicProgDev dp;    
@@ -84,3 +84,4 @@ TEST(TestSSD, WithMedianWTA)
         "tsukuba_medianssdwta.png",
         &ssd, &wta, true);
 }
+#endif

@@ -182,10 +182,11 @@ static void wta(const Dim &dsiDim,
 
 void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
 {
+#if 0
     CUerrExp cuerr;
     const Dim &dim = mem.dim();
     boost::scoped_array<float> dsi(new float[dim.size()]);
-
+    
     cuerr << cudaMemcpy(dsi.get(), mem.mem(), sizeof(float)*dim.size(),
                         cudaMemcpyDeviceToHost);
 
@@ -244,6 +245,7 @@ void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
 #endif
 
     wta(dim, aggreg.get(), img.cpuMem()->data.fl);
+#endif
 }
 
 TDV_NAMESPACE_END

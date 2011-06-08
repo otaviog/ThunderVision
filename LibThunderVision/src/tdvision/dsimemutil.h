@@ -1,53 +1,42 @@
 #ifndef TDV_DSIUTIL_H
 #define TDV_DSIUTIL_H
 
-#include <math_constants.h>
-#include "dim.hpp"
-#include "cuerr.hpp"
+#include "cudamisc.hpp"
 
-struct DSIDim
+inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort width, 
+                                   ushort x, ushort y)
 {
-    uint x, y, z;
-    uint maxOffset;
-};
+  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*width*y
+                    + pptr.pitch*x);
+}
 
-inline __host__ __device__ uint dsiOffset(
-    const DSIDim &dim, uint x, uint y, uint z)
+inline __device__ const float* dsiGetRow(const cudaPitchedPtr &pptr, 
+                                         ushort width, 
+                                         ushort x, ushort y)
 {
-    return dim.z*dim.y*x + dim.z*y + z;
+  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*width*y
+                    + pptr.pitch*x);
 }
 
-inline __device__ float dsiIntensityClamped(
-    const DSIDim &dim, uint x, uint y, uint z, const float *dsi)
-{    
-    const uint offset = dsiOffset(dim, x, y, z);   
-    return offset < dim.maxOffset ? dsi[offset] : CUDART_INF_F; 
-}
-
-inline __host__ __device__ float dsiIntensity(
-    const DSIDim &dim, uint x, uint y, uint z, const float *dsi)
-{    
-    return dsi[dsiOffset(dim, x, y, z)];
-}
-
-inline __host__ __device__ void dsiSetIntensity(
-    const DSIDim &dim, uint x, uint y, uint z, float value, 
-    float *dsi)
+inline __device__ char* dsiGetRowB(cudaPitchedPtr pptr, ushort width, 
+                                   ushort x, ushort y)
 {
-    dsi[dsiOffset(dim, x, y, z)] = value;
+  return ( ((char*) pptr.ptr) + pptr.pitch*width*y
+           + pptr.pitch*x);
 }
 
-inline DSIDim DSIDimCreate(const tdv::Dim &dim)
+inline __device__ float dsiGetValue(
+    cudaPitchedPtr pptr, ushort w, ushort x, ushort y, ushort z)
 {
-  tdv::CUerrExp err;
-  
-  DSIDim ddim;
-  ddim.x = dim.width();
-  ddim.y = dim.height();
-  ddim.z = dim.depth();
-  ddim.maxOffset = dim.size();
-  
-  return ddim;
+    return dsiGetRow(pptr, w, x, y)[z];
 }
 
+inline __device__ char dsiGetValueB(
+    cudaPitchedPtr pptr, ushort w, ushort x, ushort y, ushort z)
+{
+    return dsiGetRowB(pptr, w, x, y)[z];
+}
+
+
+    
 #endif /* TDV_DSIUTIL_H */

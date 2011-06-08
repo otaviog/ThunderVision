@@ -1,14 +1,13 @@
 #include "wtadev.hpp"
 
-void DevWTARun(float *dsi, const tdv::Dim &dim, 
-               float *outimg);
-
 TDV_NAMESPACE_BEGIN
+
+void WTARunDev(const tdv::Dim &dsiDim, cudaPitchedPtr dsiMem, float *outimg);
 
 void WTADev::updateImpl(DSIMem dsi, FloatImage outimg)
 {            
     float *outimg_d = outimg.devMem();    
-    DevWTARun(dsi.mem(), dsi.dim(), outimg_d);    
+    WTARunDev(dsi.dim(), dsi.mem(), outimg_d);    
 }
 
 TDV_NAMESPACE_END

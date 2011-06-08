@@ -1,15 +1,12 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <math_constants.h>
 #include "cuerr.hpp"
 #include "cudaconstraits.hpp"
 #include "dsimemutil.h"
 
 texture<float, 2> texLeftImg;
 texture<float, 2> texRightImg;
-
-#define SSD_WIND_DIM 5
-#define SSD_WIND_START -3
-#define SSD_WIND_END 4
 
 #define min3(a, b, c) min(a, min(b, c))
 #define max3(a, b, c) max(a, max(b, c))
@@ -41,26 +38,23 @@ __device__ float costAtDisp(int x, int y, int disp)
   return sum;
 }
 
-__global__ void birchfieldKernTexture(const DSIDim dsiDim, 
-                                      const int maxDisparity, 
-                                      float *dsiMem)
+__global__ void birchfieldKernTexture(const dim3 dsiDim, cudaPitchedPtr costDSI)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
-    const uint baseOffset = dsiDim.z*dsiDim.y*x + dsiDim.z*y;
+    float *costDsiRow = dsiGetRow(costDSI, dsiDim.x, x, y);
     
-    for (int disp=0; (disp < maxDisparity); disp++) {   
-      float value = CUDART_INF_F;
+    for (int disp=0; disp < dsiDim.z; disp++) {   
+      float cost = CUDART_INF_F;
       
       if ( x - disp >= 0 ) {       
-        value = costAtDisp(x, y, disp); 
+        cost = costAtDisp(x, y, disp); 
       }
       
-      dsiMem[baseOffset + disp] = value;      
-    }    
-    
+      costDsiRow[disp] = cost;                
+    }        
   }
 }
 
@@ -70,9 +64,9 @@ __global__ void birchfieldKernTexture(const DSIDim dsiDim,
 #define MAX_LINE_SIZE 1024
 #define BT_N 4
 
-__global__ void birchfieldKernSharedMem(const DSIDim dsiDim, 
-                               const float *leftImg, const float *rightImg,
-                               const int maxDisparity, float *dsiMem)
+__global__ void birchfieldKernSharedMem(const dim3 dsiDim, 
+                                        const float *leftImg, const float *rightImg,
+                                        cudaPitchedPtr costDSI)
 {
   const uint x = threadIdx.x;
   const uint y = blockIdx.x;
@@ -91,11 +85,11 @@ __global__ void birchfieldKernSharedMem(const DSIDim dsiDim,
     rightScanLine[0] = 0.0f;    
   }
   
-  __syncthreads();
-    
-  const uint dsiBaseOffset = dsiDim.z*dsiDim.y*x + dsiDim.z*y;
+  __syncthreads();      
   
-  for (int disp=0; disp < maxDisparity; disp++) {   
+  float *costDsiRow = dsiGetRow(costDSI, dsiDim.x, x, y);
+  
+  for (int disp=0; disp < dsiDim.z; disp++) {   
     float costValue = CUDART_INF_F;    
     
     if ( static_cast<int>(x) - disp >= 0 ) {       
@@ -124,15 +118,15 @@ __global__ void birchfieldKernSharedMem(const DSIDim dsiDim,
       }            
     }
     
-    dsiMem[dsiBaseOffset + disp] = costValue;
+    costDsiRow[disp] = costValue;
   }          
 }
 
 TDV_NAMESPACE_BEGIN
 
-static void TextureBirchfieldRun(Dim dsiDim, int maxDisparity,
+static void TextureBirchfieldRun(Dim dsiDim, 
                                  float *leftImg_d, float *rightImg_d,
-                                 float *dsiMem)
+                                 cudaPitchedPtr dsiMem)
 {
   CUerrExp err;  
   err << cudaBindTexture2D(NULL, texLeftImg, leftImg_d, 
@@ -149,43 +143,35 @@ static void TextureBirchfieldRun(Dim dsiDim, int maxDisparity,
   texLeftImg.addressMode[1] = texRightImg.addressMode[1] = cudaAddressModeWrap;
   texLeftImg.normalized = texRightImg.normalized = false;
   texLeftImg.filterMode = texRightImg.filterMode = cudaFilterModePoint;
-    
-  DSIDim ddim(DSIDimCreate(dsiDim));  
-  
+        
   CudaConstraits constraits;  
   WorkSize ws = constraits.imageWorkSize(dsiDim);  
-  birchfieldKernTexture<<<ws.blocks, ws.threads>>>(ddim, maxDisparity, 
-                                                   dsiMem);  
-
+  birchfieldKernTexture<<<ws.blocks, ws.threads>>>(tdvDimTo(dsiDim), dsiMem);
 }
 
-static void SharedMemBirchfieldRun(Dim dsiDim, int maxDisparity,
+static void SharedMemBirchfieldRun(Dim dsiDim,
                                    float *leftImg_d, float *rightImg_d,
-                                   float *dsiMem)
+                                   cudaPitchedPtr dsiMem)
 {
-  CUerrExp err;
-  DSIDim ddim(DSIDimCreate(dsiDim));      
-  
-  birchfieldKernSharedMem<<<ddim.y, ddim.x>>>(ddim, leftImg_d, rightImg_d,
-                                              maxDisparity, dsiMem); 
+  CUerrExp err;  
+  birchfieldKernSharedMem<<<dsiDim.height(), 
+    dsiDim.width()>>>(tdvDimTo(dsiDim), leftImg_d, rightImg_d, dsiMem); 
 }
 
-void BirchfieldCostRun(Dim dsiDim, int maxDisparity,
+void BirchfieldCostRun(Dim dsiDim,
                        float *leftImg_d, float *rightImg_d,
-                       float *dsiMem)
+                       cudaPitchedPtr costDSI)
 {
     cudaDeviceProp prop;    
     cudaGetDeviceProperties(&prop, 0);
     
     if ( dsiDim.width() <= prop.maxThreadsPerBlock ) {
-      SharedMemBirchfieldRun(dsiDim, maxDisparity,
-                             leftImg_d, rightImg_d,
-                             dsiMem);      
+      SharedMemBirchfieldRun(dsiDim, leftImg_d, rightImg_d,
+                             costDSI);      
     }
     else {
-      TextureBirchfieldRun(dsiDim, maxDisparity,
-                           leftImg_d, rightImg_d,
-                           dsiMem);
+      TextureBirchfieldRun(dsiDim, leftImg_d, rightImg_d,
+                           costDSI);
     }
 
     cudaThreadSynchronize();

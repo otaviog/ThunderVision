@@ -2,7 +2,6 @@
 #define TDV_SEMIGLOBALDEV_HPP
 
 #include <tdvbasic/common.hpp>
-#include "tmpcudamem.hpp"
 #include "optimizer.hpp"
 #include "semiglobal.h"
 
@@ -23,7 +22,7 @@ protected:
     void finished();
     
 private:
-    TmpCudaMem m_aggregDSI;
+    LocalDSIMem m_aggregDSI;
     bool m_zeroAggregDSI;    
     SGPaths m_sgPaths;
 };

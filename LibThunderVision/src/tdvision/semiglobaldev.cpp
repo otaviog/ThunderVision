@@ -1,22 +1,23 @@
 #include "semiglobaldev.hpp"
 
-void RunSemiGlobalDev(const tdv::Dim &tdv_dsiDim, const float *dsi, 
-                      const tdv::SGPathsDesc *pathsDesc,
-                      const float *lorigin, bool zeroAggregDSI,
-                      float *aggregDSI, float *dispImg);
-
 TDV_NAMESPACE_BEGIN
+
+void SemiGlobalDevRun(const tdv::Dim &dsiDim, cudaPitchedPtr dsi,
+                      const tdv::SGPath *pathsArray, size_t pathCount,
+                      const float *lorigin, cudaPitchedPtr aggregDSI, 
+                      float *dispImg, bool zeroAggregDSI);
 
 void SemiGlobalDev::updateImpl(DSIMem dsi, FloatImage outimg)
 {
-    float *outimg_d = outimg.devMem();        
-    float *aggregDSI = m_aggregDSI.mem(dsi.dim().size()*sizeof(float));
-    
-    SGPathsDesc *pdesc = m_sgPaths.getDesc(outimg.dim());
-    
-    RunSemiGlobalDev(dsi.dim(), dsi.mem(), 
-                     pdesc, dsi.leftOrigin().devMem(), 
-                     m_zeroAggregDSI, aggregDSI, outimg_d);        
+    float *outimg_d = outimg.devMem();
+    cudaPitchedPtr aggregDSI = m_aggregDSI.mem(dsi.dim());
+    SGPath *paths = m_sgPaths.getDesc(outimg.dim());
+
+    SemiGlobalDevRun(dsi.dim(), dsi.mem(),
+                     paths, m_sgPaths.pathCount(),
+                     dsi.leftOrigin().devMem(), aggregDSI,
+                     outimg_d, m_zeroAggregDSI);
+
     m_zeroAggregDSI = false;
 }
 

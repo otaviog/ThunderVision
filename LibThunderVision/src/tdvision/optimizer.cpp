@@ -27,7 +27,7 @@ bool AbstractOptimizer::update()
         
         bMarker.end();        
         
-        m_mark.addProbe(bMarker.elapsedTime());
+        m_mark = bMarker.elapsedTime();
         
         std::cout << m_mark.secs() << std::endl;
         

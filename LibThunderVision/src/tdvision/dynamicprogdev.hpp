@@ -3,6 +3,7 @@
 
 #include <tdvbasic/common.hpp>
 #include "optimizer.hpp"
+#include "tmpcudamem.hpp"
 
 TDV_NAMESPACE_BEGIN
 
@@ -10,20 +11,19 @@ class DynamicProgDev: public AbstractOptimizer
 {
 public:
     DynamicProgDev()
+        : m_pathDSI(sizeof(int))
     {
         workName("DynamicProg");
     }
-    
-    Benchmark benchmark() const
-    {
-        return m_marker;
-    }
-    
-protected:
+        
+protected:    
     void updateImpl(DSIMem dsi, FloatImage outimg);
-
+    
+    void finished();
+    
 private:
-    Benchmark m_marker;
+    LocalDSIMem m_pathDSI;
+    TmpCudaMem m_lastCostsMem;
 };
     
 TDV_NAMESPACE_END

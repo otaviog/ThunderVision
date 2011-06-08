@@ -68,24 +68,27 @@ namespace misc
 
 }
 
-
-TDV_NAMESPACE_END
-
-    void showDiagImg(int w, int h, int *st, int *ed)
-    {
-        int scale = 8;
-        CvMat *mat = cvCreateMat(h*scale, w*scale, CV_8UC3);
-        cvRectangle(mat, 
-                    cvPoint(0, 0), 
-                    cvPoint((w - 1)*scale, (h - 1)*scale), 
-                    CV_RGB(0, 0, 0), -1);
+#if 0
+void showDiagImg(int w, int h, SGPath *path, size_t pathCount)
+{
+    int scale = 8;
+    CvMat *mat = cvCreateMat(h*scale, w*scale, CV_8UC3);
+    cvRectangle(mat, 
+                cvPoint(0, 0), 
+                cvPoint((w - 1)*scale, (h - 1)*scale), 
+                CV_RGB(0, 0, 0), -1);
           
-        for (int i=0; i < (w + h - 1); i++) 
-        {
-            const int offset = i*2;
-            cvDrawLine(mat, cvPoint(st[offset]*scale, st[offset + 1]*scale),
-                       cvPoint(ed[offset]*scale, ed[offset + 1]*scale), CV_RGB(255, 0, 0));
-        }
-        cvSaveImage("diags.png", mat);
-        cvReleaseMat(&mat);
+    for (int i=0; i < pathCount; i++) 
+    {
+        cvDrawLine(mat, 
+                   cvPoint(path[i].start.x*scale, 
+                           path[i].start.y*scale),
+                   cvPoint(path[i].end.x*scale, 
+                           path[i].end.y*scale), 
+                   CV_RGB(255, 0, 0));
     }
+    cvSaveImage("diags.png", mat);
+    cvReleaseMat(&mat);
+}
+#endif
+TDV_NAMESPACE_END
