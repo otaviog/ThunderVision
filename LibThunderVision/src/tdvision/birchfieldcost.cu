@@ -165,7 +165,7 @@ void BirchfieldCostRun(Dim dsiDim,
     cudaDeviceProp prop;    
     cudaGetDeviceProperties(&prop, 0);
     
-    if ( dsiDim.width() <= prop.maxThreadsPerBlock ) {
+    if ( static_cast<int>(dsiDim.width()) <= prop.maxThreadsPerBlock ) {
       SharedMemBirchfieldRun(dsiDim, leftImg_d, rightImg_d,
                              costDSI);      
     }

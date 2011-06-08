@@ -8,8 +8,8 @@
 
 TEST(TestSemiGlobalDev, WithSSD)
 {    
-    //tdv::BirchfieldCostDev cost(300);
-    tdv::SSDDev cost(256);
+    //tdv::BirchfieldCostDev cost(64);
+    tdv::SSDDev cost(64);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(

@@ -3,11 +3,11 @@
 
 #include "cudamisc.hpp"
 
-inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort width, 
+inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort height, 
                                    ushort x, ushort y)
 {
-  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*width*y
-                    + pptr.pitch*x);
+  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*height*x
+                    + pptr.pitch*y);
 }
 
 inline __device__ const float* dsiGetRow(const cudaPitchedPtr &pptr, 
