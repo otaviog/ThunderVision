@@ -8,8 +8,8 @@
 
 TEST(TestSemiGlobalDev, WithSSD)
 {    
-    //tdv::BirchfieldCostDev cost(300);
-    tdv::SSDDev cost(256);
+    tdv::BirchfieldCostDev cost(256);
+    //tdv::SSDDev cost(256);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
@@ -17,6 +17,13 @@ TEST(TestSemiGlobalDev, WithSSD)
        "../../res/tsukuba512_R.png",
        "tsukuba_btsgdev.png",
        &cost, &sg, true, true);
+
+   runStereoTest(
+       "../../res/tsukuba512_L.png",
+       "../../res/tsukuba512_R.png",
+       "tsukuba_btsgdev.png",
+       &cost, &sg, true, true);
+
 }
 
 #if 0

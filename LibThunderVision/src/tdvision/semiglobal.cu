@@ -236,9 +236,9 @@ using tdv::SGPoint;
 using tdv::SGPath;
 using tdv::sSGPoint;
 
-__device__ float pathCost(float cost, 
-                          float lcD, float lcDm1, float lcDp1,
-                          float minDisp, float P2Adjust)
+inline __device__ float pathCost(float cost, 
+                                 float lcD, float lcDm1, float lcDp1,
+                                 float minDisp, float P2Adjust)
 {
   const float Lr = cost
     + min4(lcD,
@@ -277,7 +277,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
     backwardCPt = path->end;    
       
     sPrevCost[0].forward = sPrevCost[0].backward = CUDART_INF_F;
-    sPrevCost[dsiDim.z + 1].forward = sPrevCost[dsiDim.z + 1].backward = CUDART_INF_F;
+    sPrevCost[dsiDim.z + 1].forward = sPrevCost[dsiDim.z + 1].backward = 
+      CUDART_INF_F;
 
     sLastIntensity.forward = 
       iImage[forwardCPt.y*dsiDim.x + forwardCPt.x];
@@ -320,9 +321,11 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
     ushort i = dimz >> 1;
     while ( i != 0 ) {
       if ( z < i ) {
-        sPrevMinCost[z].forward = min(sPrevMinCost[z].forward, sPrevMinCost[z + i].forward);
+        sPrevMinCost[z].forward = min(sPrevMinCost[z].forward, 
+                                      sPrevMinCost[z + i].forward);
       } else if ( dimz - z <= i ) {
-        sPrevMinCost[z].backward = min(sPrevMinCost[z].backward, sPrevMinCost[z - i].backward);
+        sPrevMinCost[z].backward = min(sPrevMinCost[z].backward, 
+                                       sPrevMinCost[z - i].backward);
       }
       __syncthreads();      
       i = i >> 1;
@@ -335,16 +338,15 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 
       const float fI = iImage[forwardCPt.y*dsiDim.x + forwardCPt.x];
 
-      sP2Adjust.forward = P2/abs(fI - sLastIntensity.forward);
-
+      sP2Adjust.forward = P2/abs(fI - sLastIntensity.forward);      
       sLastIntensity.forward = fI;
 
-      sCostDSIRowsPtr.forward = 
-        dsiGetRow(costDSI, dsiDim.x, forwardCPt.x, forwardCPt.y);
+      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, forwardCPt.x, forwardCPt.y);
       
-      sAggregDSIRowsPtr.forward = 
-        dsiGetRow(aggregDSI, dsiDim.x, forwardCPt.x, forwardCPt.y);
-    } else if ( z == SG_WARP_SIZE ) {
+      sCostDSIRowsPtr.forward = (float*) (((char*) costDSI.ptr) + incr);
+      sAggregDSIRowsPtr.forward = (float*) (((char*) aggregDSI.ptr) + incr);
+
+  } else if ( z == SG_WARP_SIZE ) {
       sMinCost.backward = sPrevMinCost[dimz - 1].backward;
 
       backwardCPt.x -= dir.x;
@@ -356,13 +358,11 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 
       sLastIntensity.backward = iI;
       
-      sCostDSIRowsPtr.backward = 
-        dsiGetRow(costDSI, dsiDim.x, backwardCPt.x, backwardCPt.y);
+      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, backwardCPt.x, backwardCPt.y);
       
-      sAggregDSIRowsPtr.backward = 
-        dsiGetRow(aggregDSI, dsiDim.x, backwardCPt.x, backwardCPt.y);
-
-    }
+      sCostDSIRowsPtr.backward = (float*) (((char*) costDSI.ptr) + incr);
+      sAggregDSIRowsPtr.backward = (float*) (((char*) aggregDSI.ptr) + incr);      
+  }
     
     __syncthreads();
 
@@ -372,8 +372,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
                    sPrevCost[dz + 1].forward,
                    sMinCost.forward, sP2Adjust.forward);
         
-    sAggregDSIRowsPtr.forward[z] += fLr;                        
-    //atomicAdd(&sAggregDSIRowsPtr.forward[z], fLr);
+    //sAggregDSIRowsPtr.forward[z] += fLr;                        
+    atomicAdd(&sAggregDSIRowsPtr.forward[z], fLr);
     
     bLr = pathCost(sCostDSIRowsPtr.backward[z],
                    sPrevCost[dz].backward,
@@ -381,8 +381,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
                    sPrevCost[dz + 1].backward,
                    sMinCost.backward, sP2Adjust.backward);
     
-    sAggregDSIRowsPtr.backward[z] += bLr;
-    //atomicAdd(&sAggregDSIRowsPtr.backward[z], bLr);
+    //sAggregDSIRowsPtr.backward[z] += bLr;
+    atomicAdd(&sAggregDSIRowsPtr.backward[z], bLr);
 
     __syncthreads();
         
@@ -396,6 +396,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 
 TDV_NAMESPACE_BEGIN
 
+void WTARunDev(const tdv::Dim &dsiDim, cudaPitchedPtr dsiMem, float *outimg);
+
 void SemiGlobalDevRun(const tdv::Dim &dsiDim, cudaPitchedPtr dsi,
                       const tdv::SGPath *pathsArray, size_t pathCount,
                       const float *lorigin, cudaPitchedPtr aggregDSI, 
@@ -408,15 +410,17 @@ void SemiGlobalDevRun(const tdv::Dim &dsiDim, cudaPitchedPtr dsi,
 
   if ( zeroAggregDSI )
     zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(tdvDimTo(dsiDim), aggregDSI);
-
+  
   semiglobalAggregVolKernel
     <<<pathCount, dsiDim.depth()>>>(tdvDimTo(dsiDim), pathsArray,
                                     dsi, lorigin,
                                     aggregDSI);   
 
+  WTARunDev(dsiDim, aggregDSI, dispImg);
+  #if 0 
   wtaKernel<<<wsz.blocks, wsz.threads>>>(tdvDimTo(dsiDim), aggregDSI,
                                          dispImg);
-
+#endif
   cuerr << cudaThreadSynchronize();
 }
 

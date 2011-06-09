@@ -26,7 +26,7 @@ cudaPitchedPtr LocalDSIMem::mem(const Dim &dim)
 
 #ifdef DSIMEM_USE_ALIGNED
         cudaExtent extent = make_cudaExtent(dim.depth()*m_typeSize,
-                                            dim.width(), dim.height());
+                                            dim.height(), dim.width());
         cuerr << cudaMalloc3D(&m_mem, extent);
 #else
         cuerr << cudaMalloc(&m_mem.ptr, dim.size()*m_typeSize);
