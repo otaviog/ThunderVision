@@ -1,7 +1,7 @@
 #include "dsimem.hpp"
 #include "cuerr.hpp"
 
-//#define DSIMEM_USE_ALIGNED 
+#define DSIMEM_USE_ALIGNED 
 
 TDV_NAMESPACE_BEGIN
 
