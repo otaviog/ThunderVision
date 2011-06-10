@@ -241,13 +241,15 @@ bool RectificationCV::update()
 
     if ( !m_rlpipe->read(&limg_c)  )
     {
-        m_wcpipe.finish();
+        m_wclpipe.finish();
+        m_wcrpipe.finish();
         return false;
     }
 
     if ( !m_rrpipe->read(&rimg_c) )
     {
-        m_wcpipe.finish();
+        m_wclpipe.finish();
+        m_wcrpipe.finish();
         CvMatSinkPol::sink(limg_c);
         return false;
     }
@@ -266,9 +268,10 @@ bool RectificationCV::update()
     showImage("OR", rimg_c);
 
     if ( !m_enableColorRemap )
-        CvMatSinkPol::sink(limg_c);
-    
-    CvMatSinkPol::sink(rimg_c);
+    {
+        CvMatSinkPol::sink(limg_c);    
+        CvMatSinkPol::sink(rimg_c);
+    }
 
     showImage("GL", limg8u);
     showImage("GR", rimg8u);
@@ -287,7 +290,6 @@ bool RectificationCV::update()
     CvMat *limout_c = limout.cpuMem();
     CvMat *rimout_c = rimout.cpuMem();
     
-#if 1
     cvRemap(limg32f, limout_c, m_mxLeft.get(), m_myLeft.get());
     cvRemap(rimg32f, rimout_c, m_mxRight.get(), m_myRight.get());
     
@@ -295,24 +297,21 @@ bool RectificationCV::update()
     {
         CvMat *nclImg = cvCreateMat(limg_c->rows, limg_c->cols, CV_8UC3);
         cvRemap(limg_c, nclImg, m_mxLeft.get(), m_myLeft.get());
-        m_wcpipe.write(nclImg);
-                    
+        m_wclpipe.write(nclImg);
+        
         CvMatSinkPol::sink(limg_c);
+        
+        CvMat *ncrImg = cvCreateMat(rimg_c->rows, rimg_c->cols, CV_8UC3);
+        cvRemap(rimg_c, ncrImg, m_mxRight.get(), m_myRight.get());
+        m_wcrpipe.write(ncrImg);
+        
+        CvMatSinkPol::sink(rimg_c);
     }
     
     showImage("L", limout_c);
     showImage("R", rimout_c);
     waitKey(0);
-#else
-    
-    cvConvert(limg32f, limout_c);
-    cvConvert(rimg32f, rimout_c);
-    
-    if ( m_enableColorRemap )    
-        m_wcpipe.write(limg_c);
-#endif
-    
-    
+        
     lwg.write(limout);
     rwg.write(rimout);
 

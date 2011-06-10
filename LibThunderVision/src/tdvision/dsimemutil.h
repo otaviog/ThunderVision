@@ -3,6 +3,9 @@
 
 #include "cudamisc.hpp"
 
+#define DSI_GET_ROW_INCR(pptr, dsiDim, px, py) pptr.pitch*dsiDim.y*px + pptr.pitch*py
+#define DSI_GET_ROWF(pptr, dsiDim, px, py) (float*) (((char*) pptr.ptr) + DSI_GET_ROW_INCR(pptr, dsiDim, px, py))
+
 inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort height, 
                                    ushort x, ushort y)
 {
@@ -11,11 +14,11 @@ inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort height,
 }
 
 inline __device__ const float* dsiGetRow(const cudaPitchedPtr &pptr, 
-                                         ushort width, 
+                                         ushort height, 
                                          ushort x, ushort y)
 {
-  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*width*y
-                    + pptr.pitch*x);
+  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*height*x
+                    + pptr.pitch*y);
 }
 
 inline __device__ char* dsiGetRowB(cudaPitchedPtr pptr, ushort width, 

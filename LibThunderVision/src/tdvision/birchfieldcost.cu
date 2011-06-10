@@ -44,7 +44,7 @@ __global__ void birchfieldKernTexture(const dim3 dsiDim, cudaPitchedPtr costDSI)
   int y = blockIdx.y*blockDim.y + threadIdx.y;     
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
-    float *costDsiRow = dsiGetRow(costDSI, dsiDim.x, x, y);
+    float *costDsiRow = dsiGetRow(costDSI, dsiDim.y, x, y);
     
     for (int disp=0; disp < dsiDim.z; disp++) {   
       float cost = CUDART_INF_F;
@@ -87,7 +87,7 @@ __global__ void birchfieldKernSharedMem(const dim3 dsiDim,
   
   __syncthreads();      
   
-  float *costDsiRow = dsiGetRow(costDSI, dsiDim.x, x, y);
+  float *costDsiRow = dsiGetRow(costDSI, dsiDim.y, x, y);
   
   for (int disp=0; disp < dsiDim.z; disp++) {   
     float costValue = CUDART_INF_F;    
@@ -173,8 +173,8 @@ void BirchfieldCostRun(Dim dsiDim,
       TextureBirchfieldRun(dsiDim, leftImg_d, rightImg_d,
                            costDSI);
     }
-
-    cudaThreadSynchronize();
+    CUerrExp err;      
+    err << cudaThreadSynchronize();
 }
 
 TDV_NAMESPACE_END

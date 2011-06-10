@@ -78,11 +78,16 @@ public:
         return &m_wrpipe;
     }
     
-    ReadPipe<CvMat*>* colorImgOutput()
+    ReadPipe<CvMat*>* colorLeftImgOutput()
     {
-        return &m_wcpipe;
+        return &m_wclpipe;
     }
     
+    ReadPipe<CvMat*>* colorRightImgOutput()
+    {
+        return &m_wcrpipe;
+    }
+
     const CamerasDesc& camerasDesc() const
     {
         return m_camsDesc;
@@ -139,7 +144,7 @@ private:
 
     ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wlpipe, m_wrpipe;
-    ReadWritePipe<CvMat*> m_wcpipe;
+    ReadWritePipe<CvMat*> m_wclpipe, m_wcrpipe;
     CamerasDesc m_camsDesc;
     bool m_camsDescChanged, m_enableColorRemap;
 
