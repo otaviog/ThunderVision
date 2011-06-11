@@ -372,8 +372,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
                    sPrevCost[dz + 1].forward,
                    sMinCost.forward, sP2Adjust.forward);
         
-    //sAggregDSIRowsPtr.forward[z] += fLr;                        
-    atomicAdd(&sAggregDSIRowsPtr.forward[z], fLr);
+    sAggregDSIRowsPtr.forward[z] += fLr;                        
+    //atomicAdd(&sAggregDSIRowsPtr.forward[z], fLr);
     
     bLr = pathCost(sCostDSIRowsPtr.backward[z],
                    sPrevCost[dz].backward,
@@ -381,8 +381,8 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
                    sPrevCost[dz + 1].backward,
                    sMinCost.backward, sP2Adjust.backward);
     
-    //sAggregDSIRowsPtr.backward[z] += bLr;
-    atomicAdd(&sAggregDSIRowsPtr.backward[z], bLr);
+    sAggregDSIRowsPtr.backward[z] += bLr;
+    //atomicAdd(&sAggregDSIRowsPtr.backward[z], bLr);
 
     __syncthreads();
         
