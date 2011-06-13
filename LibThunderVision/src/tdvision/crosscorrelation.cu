@@ -8,14 +8,14 @@
 texture<float, 2> texLeftImg;
 texture<float, 2> texRightImg;
 
-__device__ float ccAtDisp(int x, int y, int disp)
+__device__ float ccAtDisp(short x, short y, short disp)
 {
   float domSum = 0.0f,
     lSum = 0.0f,
     rSum = 0.0f;
 
-  for (int row=-1; row<2; row++)
-    for (int col=-1; col<2; col++) {
+  for (short row=-1; row<2; row++)
+    for (short col=-1; col<2; col++) {
       const float lValue = tex2D(texLeftImg, x + col, y + row);
       const float rValue = tex2D(texRightImg, x + col - disp, y + row);
       domSum += lValue*rValue;
@@ -24,24 +24,27 @@ __device__ float ccAtDisp(int x, int y, int disp)
       rSum += rValue*rValue;      
     }
 
-  return abs(1.0f - domSum/sqrt(lSum*rSum));
+  return 1.0f - domSum/sqrt(lSum*rSum);
 }
 
 __global__ void ccorrelationKern(const dim3 dsiDim, cudaPitchedPtr dsiMem)
 {
-  int x = blockIdx.x*blockDim.x + threadIdx.x;
-  int y = blockIdx.y*blockDim.y + threadIdx.y;
+  short x = blockIdx.x*blockDim.x + threadIdx.x;
+  short y = blockIdx.y*blockDim.y + threadIdx.y;
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
-    float *dsiRow = dsiGetRow(dsiMem, dsiDim.x, x, y);
+    float *dsiRow = dsiGetRow(dsiMem, dsiDim.y, x, y);
     
-    for (int disp=0; disp < dsiDim.z; disp++) {
-      float ccValue = CUDART_INF_F;
-      if ( x - disp >= 0)
-        ccValue = ccAtDisp(x, y, disp);
-      dsiRow[disp] = ccValue;
+    const short  nDisps = min(dsiDim.z, x + 1);
+    
+    for (short disp=0; disp < nDisps; disp++) {
+      dsiRow[disp] = ccAtDisp(x, y, disp);
     }
     
+    for (short disp=nDisps; disp<dsiDim.z; disp++) {
+      dsiRow[disp] = CUDART_INF_F;
+    }
+      
   }
 }
 

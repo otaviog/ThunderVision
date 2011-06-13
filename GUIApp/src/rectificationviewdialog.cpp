@@ -16,7 +16,7 @@ RectificationViewDialog::RectificationViewDialog(tdv::Reconstruction *rctx,
 
 void RectificationViewDialog::init()
 {
-    tdv::ReadPipe<tdv::FloatImage> *lpipe, *rpipe;
+    tdv::ReadPipe<CvMat*> *lpipe, *rpipe;
     
     m_rctx->dupRectification(&lpipe, &rpipe);
     

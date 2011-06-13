@@ -45,8 +45,8 @@ private:
     static const int LOGN_RECT_ID = 0;
     static const int LOGN_REP_ID = 1;
     static const int DISP_REP_ID = 0;
-    static const int DISP_VIEW_ID = 1;
-    static const int RECT_MATCHER_ID = 0;
+    static const int DISP_VIEW_ID = 1;   
+    static const int RECT_REPROJ_L_ID = 0;
     static const int RECT_VIEW_ID = 1;
 
 public:
@@ -84,8 +84,8 @@ public:
 
     const Benchmark& benchmark() const;
 
-    void dupRectification(ReadPipe<FloatImage> **leftRectOut,
-                          ReadPipe<FloatImage> **rightRectOut);
+    void dupRectification(ReadPipe<CvMat*> **leftRectOut,
+                          ReadPipe<CvMat*> **rightRectOut);
 
     void undupRectification();
 
@@ -106,7 +106,7 @@ public:
 private:
     CtrlProcess m_ctrlProc;
     TWorkUnitProcess<RectificationCV> m_rectify;    
-    TWorkUnitProcess<TeeWorkUnit<FloatImage> > m_rectTee[2];
+    TWorkUnitProcess<TeeWorkUnit<CvMat*> > m_rectTee[2];
     TWorkUnitProcess<ImageResize> m_resize[2];
     StereoMatcher *m_matcher;
     DispTeeProcess m_dispTee;

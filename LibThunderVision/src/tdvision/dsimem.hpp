@@ -30,6 +30,8 @@ public:
     
     void unalloc();
     
+    void* toCpuMem();
+    
 private:
     Dim m_dim;
     cudaPitchedPtr m_mem;
@@ -50,6 +52,11 @@ public:
     cudaPitchedPtr mem()
     {
         return m_dsiMem.mem();
+    }
+    
+    void* toCpuMem()
+    {
+        m_dsiMem.toCpuMem();
     }
     
     const Dim& dim() const
@@ -86,6 +93,14 @@ public:
             return m_handle->mem();
         else
             return cudaPitchedPtr();
+    }
+    
+    void* toCpuMem() 
+    {
+        if ( m_handle != NULL )
+            return m_handle->toCpuMem();
+        else
+            return NULL;
     }
     
     const Dim& dim() const

@@ -7,13 +7,14 @@
 #include "tmpbufferimage.hpp"
 #include "captureproc.hpp"
 
+#include <iostream>
+
 TDV_NAMESPACE_BEGIN
 
 Capture::Capture(bool invert)
     : m_resizeTmp(CV_8UC3)
 {
-    m_capture = NULL;
-    m_fps = 30;
+    m_capture = NULL;    
     m_invert = invert;
 }
 
@@ -60,13 +61,8 @@ static void InvertImage(const CvMat *src, CvMat *dst)
 
 void Capture::update()
 {
-    if ( m_updateCount.countPerSecsNow() > m_fps )
-        return ;
-
     cvGrabFrame(m_capture);
-    IplImage *frame = cvRetrieveFrame(m_capture);
-
-    m_updateCount.count();
+    IplImage *frame = cvRetrieveFrame(m_capture); 
 
     TmpBufferImage btmp(CV_8UC3);
     

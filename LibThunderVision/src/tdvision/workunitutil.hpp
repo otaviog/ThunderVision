@@ -1,5 +1,5 @@
-#ifndef TDV_MISC_HPP
-#define TDV_MISC_HPP
+#ifndef TDV_WORKUNITUTIL_HPP
+#define TDV_WORKUNITUTIL_HPP
 
 #include "workunit.hpp"
 #include "pipe.hpp"

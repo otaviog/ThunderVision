@@ -46,7 +46,47 @@ void LocalDSIMem::unalloc()
     {
         cuerr << cudaFree(m_mem.ptr);
         m_mem.ptr = NULL;
+        m_dim = Dim(0);
     }
+}
+
+void* LocalDSIMem::toCpuMem()
+{    
+    if ( m_mem.ptr == NULL )    
+        return NULL;    
+    
+    unsigned char *cpuMem = new unsigned char[m_dim.size()*m_typeSize];
+    const size_t pitch = m_mem.pitch;
+    const size_t width = m_dim.width();    
+    const size_t height = m_dim.height();
+    const size_t depth = m_dim.depth();
+    
+    CUerrExp cuerr;
+    try
+    {
+        for ( size_t slice=0; slice<m_dim.width(); slice++)
+        {
+            for (size_t row=0; row<height; row++)
+            {
+                const size_t devOffset = pitch*height*slice + pitch*row;
+                const size_t cpuOffset = depth*height*slice + depth*row;
+                assert(cpuOffset < m_dim.size()*m_typeSize);
+                assert(devOffset < pitch*height*width*m_typeSize);
+                
+                cuerr << cudaMemcpy(cpuMem + cpuOffset*m_typeSize, 
+                                    ((unsigned char*) m_mem.ptr) + devOffset, 
+                                    m_mem.pitch,
+                                    cudaMemcpyDeviceToHost);
+            }
+        }
+    }
+    catch ( const CUException &ex)
+    {
+        delete [] cpuMem;
+        throw ex;
+    }    
+    
+    return cpuMem;
 }
 
 void DSIMemImpl::init(const Dim &dim, FloatImage lorigin)

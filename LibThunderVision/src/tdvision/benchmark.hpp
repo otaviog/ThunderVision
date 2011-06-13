@@ -40,6 +40,11 @@ public:
         return m_secs / double(m_timeCount);
     }
     
+    double millisecs() const
+    {
+        return secs()*1000.0;
+    }
+    
     Benchmark& operator += (TimeDbl tm)
     {
         addProbeSec(tm);        

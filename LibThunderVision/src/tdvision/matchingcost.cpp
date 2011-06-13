@@ -1,7 +1,5 @@
 #include "matchingcost.hpp"
 
-#include <iostream>
-
 TDV_NAMESPACE_BEGIN
 
 AbstractMatchingCost::AbstractMatchingCost(int disparityMax)
@@ -41,9 +39,7 @@ bool AbstractMatchingCost::update()
         
         bMarker.end();
         
-        //m_mark.addProbe(bMarker.elapsedTime());
-        m_mark = bMarker.elapsedTime();
-        std::cout << m_mark.secs() << std::endl;
+        m_mark.addProbe(bMarker.elapsedTime());        
         
         wguard.write(m_dsi);
     }

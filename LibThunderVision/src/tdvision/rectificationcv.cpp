@@ -37,7 +37,8 @@ void ConjugateCorners::findCorners(const CvMat *img, CvPoint2D32f *corners,
                            CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
 }
 
-void ConjugateCorners::updateConjugates(const CvMat *leftImg, const CvMat *rightImg)
+void ConjugateCorners::updateConjugates(const CvMat *leftImg, 
+                                        const CvMat *rightImg)
 {
     static const size_t MAX_CORNERS = 15;
     CvPoint2D32f leftCorners[MAX_CORNERS], rightCorners[MAX_CORNERS];
@@ -76,7 +77,7 @@ void ConjugateCorners::updateConjugates(const CvMat *leftImg, const CvMat *right
 }
 
 RectificationCV::RectificationCV()
-    : m_limg32f(CV_32F), m_rimg32f(CV_32F),
+    : m_limg32f(CV_32F), m_rimg32f(CV_32F),      
       m_limg8u(CV_8U), m_rimg8u(CV_8U),
       m_mxLeft(CV_32F), m_myLeft(CV_32F),
       m_mxRight(CV_32F), m_myRight(CV_32F)
@@ -241,13 +242,15 @@ bool RectificationCV::update()
 
     if ( !m_rlpipe->read(&limg_c)  )
     {
-        m_wcpipe.finish();
+        m_wclpipe.finish();
+        m_wcrpipe.finish();
         return false;
     }
 
     if ( !m_rrpipe->read(&rimg_c) )
     {
-        m_wcpipe.finish();
+        m_wclpipe.finish();
+        m_wcrpipe.finish();
         CvMatSinkPol::sink(limg_c);
         return false;
     }
@@ -256,25 +259,30 @@ bool RectificationCV::update()
     
     CvMat *limg32f = m_limg32f.getImage(cvGetSize(limg_c));
     CvMat *rimg32f = m_rimg32f.getImage(cvGetSize(rimg_c));
-    CvMat *limg8u = m_limg8u.getImage(cvGetSize(limg_c));
-    CvMat *rimg8u = m_rimg8u.getImage(cvGetSize(rimg_c));
 
-    misc::convert8UC3To32FC1Gray(limg_c, limg32f, limg8u);
-    misc::convert8UC3To32FC1Gray(rimg_c, rimg32f, rimg8u);
+    m_convTo32f.convert(limg_c, limg32f);
+    m_convTo32f.convert(rimg_c, rimg32f);
 
     showImage("OL", limg_c);
     showImage("OR", rimg_c);
 
     if ( !m_enableColorRemap )
-        CvMatSinkPol::sink(limg_c);
-    
-    CvMatSinkPol::sink(rimg_c);
+    {
+        CvMatSinkPol::sink(limg_c);    
+        CvMatSinkPol::sink(rimg_c);
+    }
 
     showImage("GL", limg8u);
     showImage("GR", rimg8u);
 
     if ( m_camsDescChanged )
     {
+        CvMat *limg8u = m_limg8u.getImage(cvGetSize(limg_c));
+        CvMat *rimg8u = m_rimg8u.getImage(cvGetSize(rimg_c));
+
+        cvCvtColor(limg_c, limg8u, CV_RGB2GRAY);
+        cvCvtColor(rimg_c, rimg8u, CV_RGB2GRAY);
+        
         updateRectification(limg8u, rimg8u);
         m_camsDescChanged = false;
     }
@@ -287,7 +295,6 @@ bool RectificationCV::update()
     CvMat *limout_c = limout.cpuMem();
     CvMat *rimout_c = rimout.cpuMem();
     
-#if 1
     cvRemap(limg32f, limout_c, m_mxLeft.get(), m_myLeft.get());
     cvRemap(rimg32f, rimout_c, m_mxRight.get(), m_myRight.get());
     
@@ -295,24 +302,21 @@ bool RectificationCV::update()
     {
         CvMat *nclImg = cvCreateMat(limg_c->rows, limg_c->cols, CV_8UC3);
         cvRemap(limg_c, nclImg, m_mxLeft.get(), m_myLeft.get());
-        m_wcpipe.write(nclImg);
-                    
+        m_wclpipe.write(nclImg);
+        
         CvMatSinkPol::sink(limg_c);
+        
+        CvMat *ncrImg = cvCreateMat(rimg_c->rows, rimg_c->cols, CV_8UC3);
+        cvRemap(rimg_c, ncrImg, m_mxRight.get(), m_myRight.get());
+        m_wcrpipe.write(ncrImg);
+        
+        CvMatSinkPol::sink(rimg_c);
     }
     
     showImage("L", limout_c);
     showImage("R", rimout_c);
     waitKey(0);
-#else
-    
-    cvConvert(limg32f, limout_c);
-    cvConvert(rimg32f, rimout_c);
-    
-    if ( m_enableColorRemap )    
-        m_wcpipe.write(limg_c);
-#endif
-    
-    
+        
     lwg.write(limout);
     rwg.write(rimout);
 

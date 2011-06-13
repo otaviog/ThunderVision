@@ -62,7 +62,6 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
             matcher->setOptimizer(boost::shared_ptr<WTADev>(
                                       new WTADev));
             break;
-        case Global:
         case DynamicProg:
             matcher->setOptimizer(boost::shared_ptr<DynamicProgDev>(
                                       new DynamicProgDev));
@@ -71,11 +70,11 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
             matcher->setOptimizer(boost::shared_ptr<DynamicProgCPU>(
                                       new DynamicProgCPU));
             break;
+        case Global:
         case SemiGlobal:
             matcher->setOptimizer(boost::shared_ptr<SemiGlobalDev>(
                                       new SemiGlobalDev));
             break;
-
         default:
             assert(false);
         }
@@ -83,7 +82,8 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
     }
     else
     {        
-        StereoCorrespondenceCV::MatchingMode cvMatchMode = StereoCorrespondenceCV::LocalMatching;
+        StereoCorrespondenceCV::MatchingMode cvMatchMode = 
+            StereoCorrespondenceCV::LocalMatching;
         
         switch ( m_optMode )
         {
@@ -91,6 +91,9 @@ StereoMatcher* CommonStereoMatcherFactory::createStereoMatcher()
         case DynamicProg:
         case DynamicProgOnCPU:
             cvMatchMode = StereoCorrespondenceCV::LocalMatching;
+            break;
+        case SemiGlobal:
+            cvMatchMode = StereoCorrespondenceCV::SemiGlobalMatching;
             break;
         case Global:
             cvMatchMode = StereoCorrespondenceCV::GlobalMatching;

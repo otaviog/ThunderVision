@@ -17,15 +17,9 @@ public:
     virtual ~WTADev()
     {
     }
-    
-    Benchmark benchmark() const
-    {
-        return m_mark;
-    }
-    
+        
 protected:
     void updateImpl(DSIMem mem, FloatImage img);
-    Benchmark m_mark;
 };
 
 TDV_NAMESPACE_END

@@ -10,39 +10,41 @@ inline size_t dsiOffset(
     return z + dim.depth()*y + dim.height()*dim.depth()*x;
 }
 
-void WTACPU::updateImpl(DSIMem mem, FloatImage outimg)
-{   
-#if 0
-    CUerrExp cuerr;         
-    const Dim &dim = mem.dim();
-    
-    boost::scoped_array<float> dsi(new float[dim.size()]);
-    
-    cuerr << cudaMemcpy(dsi.get(), mem.mem(), sizeof(float)*dim.size(),
-                        cudaMemcpyDeviceToHost);
-
-    float *imgData_h = outimg.cpuMem()->data.fl;
-    for (size_t row=0; row<dim.height(); row++)
+void WTACPU::wta(const Dim &dsiDim, const float *dsi, float *dispImg)
+{
+    for (size_t y=0; y<dsiDim.height(); y++)
     {
-        for (size_t col=0; col<dim.width(); col++)
+        for (size_t x=0; x<dsiDim.width(); x++)
         {
-            float minCost = dsi.get()[dsiOffset(dim, col, row, 0)];
-            size_t minDisp = 0;
-            
-            for (size_t d=1; d<dim.depth(); d++)
+            float minAggreg = std::numeric_limits<float>::infinity();
+            int minDisp = 0;
+
+            for (size_t d=0; d<dsiDim.depth(); d++)
             {
-                const float cost = dsi.get()[dsiOffset(dim, col, row, d)];
-                if ( cost < minCost )
+                const size_t dsiOff = dsiOffset(dsiDim, x, y, d);
+                const float value = dsi[dsiOff];
+
+                if ( value < minAggreg )
                 {
-                    minCost = cost;
+                    minAggreg = value;
                     minDisp = d;
                 }
             }
-            
-            imgData_h[row*dim.width() + col] = float(minDisp)/float(dim.depth());            
+
+            dispImg[dsiDim.width()*y + x] =
+                float(minDisp)/float(dsiDim.depth());
         }
     }
-#endif
+}
+
+void WTACPU::updateImpl(DSIMem mem, FloatImage outimg)
+{   
+    const Dim &dim = mem.dim();
+    
+    boost::scoped_array<float> dsi((float*) mem.toCpuMem());    
+    float *imgData_h = outimg.cpuMem()->data.fl;
+    
+    wta(dim, dsi.get(), imgData_h);    
 }
 
 

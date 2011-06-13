@@ -26,12 +26,12 @@ bool FlowCtrl::testFlow()
 
 bool CtrlWork::update()
 {
-    CvMat *limg, *rimg;
+    CvMat *limg = NULL, *rimg = NULL;
     
     try
     {
         if ( m_lrpipe->read(&limg) && m_rrpipe->read(&rimg) )
-        {
+        {            
             if ( testFlow() )
             {
                 if ( (mode() == Continuous 

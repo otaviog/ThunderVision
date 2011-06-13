@@ -18,6 +18,8 @@ public:
     {
     }
 
+    static void wta(const Dim &dsiDim, const float *dsi, float *dispImg);
+    
 protected:
     void updateImpl(DSIMem mem, FloatImage img);
 };

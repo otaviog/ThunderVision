@@ -1,9 +1,16 @@
 #include <boost/scoped_array.hpp>
 #include <cassert>
+#include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/blocked_range.h>
 #include "cuerr.hpp"
 #include "semiglobalcpu.hpp"
-
+#include "semiglobal.h"
+#include "wtacpu.hpp"
 #include <highgui.h>
+
+#include "benchmark.hpp"
+#include <iostream>
 
 TDV_NAMESPACE_BEGIN
 
@@ -13,7 +20,8 @@ inline size_t dsiOffset(
     return z + dim.depth()*y + dim.height()*dim.depth()*x;
 }
 
-inline float dsiValue(const Dim &dim, const float *mem, size_t x, size_t y, size_t z)
+inline float dsiValue(const Dim &dim, const float *mem, size_t x, size_t y, 
+                      size_t z)
 {
     const size_t offset = dsiOffset(dim, x, y, z);
     if ( offset < dim.size() )
@@ -22,12 +30,6 @@ inline float dsiValue(const Dim &dim, const float *mem, size_t x, size_t y, size
     }
 
     return 0.0f;
-}
-
-static void pointMulMtx(const int tmatrix[3][3], int x, int y, int *rX, int *rY)
-{
-    *rX = x*tmatrix[0][0] + y*tmatrix[0][1] + tmatrix[0][2];
-    *rY = x*tmatrix[1][0] + y*tmatrix[1][1] + tmatrix[1][2];
 }
 
 const float P1 = 30.0f/255.0f;
@@ -50,202 +52,151 @@ static void zeroVolume(const Dim &dim,
     }
 }
 
-static float noinf(float v)
+static void costPath(const Dim &dsiDim,
+                     const float *dsi,
+                     const float *img,
+                     const SGPoint &start,
+                     const sSGPoint &dir,
+                     size_t pathLength,
+                     float *aggregVol,
+                     float *lastCost,
+                     float *newCost)
 {
-    //if ( std::isinf(v) )
-    //return 0.0f;
-    return v;
-}
-
-static void costVolume(const Dim &dsiDim,
-                       const Dim &scanDim,
-                       const int tmatrix[3][3],
-                       const float *dsi,
-                       float *aggregVol,
-                       const float *img1, const float *img2)
-{   
-    const size_t costStep = dsiDim.depth();
-    boost::scoped_array<float> lastCost(new float[costStep*scanDim.height()]);
-    boost::scoped_array<float> newCost(new float[costStep*scanDim.height()]);
     
-    for ( int y=0; y < static_cast<int>(scanDim.height()); y++)
+    float lastIntensity;
+    SGPoint pt = start;
+    
+#if 1
+    for (int z=0; z<dsiDim.depth(); z++)
     {
-        int tX, tY;
-        pointMulMtx(tmatrix, 0, y, &tX, &tY);
+        const int X = pt.x;
+        const int Y = pt.y;
+        const int dz = z + 1;
+        
+        const size_t dsiOff = dsiOffset(dsiDim, X, Y, z);
+        assert(dsiOff < dsiDim.size());        
+        const float cost = dsi[dsiOff];
+        
+        aggregVol[dsiOff] = cost;
+        lastCost[dz] = cost;
+        lastIntensity = img[Y*dsiDim.width() + X];        
+    }
+#endif
 
-        assert(tX < scanDim.width());
-        assert(tY < scanDim.height());
+    for (int x=1; x<pathLength; x++)
+    {        
+        pt.x += dir.x;
+        pt.y += dir.y;
 
-        for (int d=0; d<static_cast<int>(dsiDim.depth()); d++)
+        const int X = pt.x;
+        const int Y = pt.y;
+
+        float minCost = lastCost[0];
+        for (int z=1; z<dsiDim.depth(); z++)
+            minCost = min(lastCost[z], minCost);
+
+        const float intensity = img[Y*dsiDim.width() + X];
+        const float P2Adjust = P2/std::abs(intensity - lastIntensity);
+
+        lastIntensity = intensity;
+
+        for (int z=0; z<dsiDim.depth(); z++)
         {
-            const size_t dsiOff = dsiOffset(dsiDim, tX, tY, d);
+            const size_t dsiOff =
+                dsiOffset(dsiDim, X, Y, z);
+            
             assert(dsiOff < dsiDim.size());
-
-            const float cost = noinf(dsi[dsiOff]);
-
-            lastCost[costStep*y + d] = cost;
-            aggregVol[dsiOff] = cost;
-        }
-    }
-
-    for (int x=1; x < static_cast<int>(scanDim.width()); x++)
-    {
-        float lastIntensity = 0.0;
-        for (int y=0; y < static_cast<int>(scanDim.height()); y++)
-        {
-            int tX, tY;
-            pointMulMtx(tmatrix, x, y, &tX, &tY);
-
-            assert(tX < scanDim.width());
-            assert(tY < scanDim.height());
-
-            float minDisp = std::numeric_limits<float>::infinity();
-            for (size_t i=0; i<dsiDim.depth(); i++)
-            {
-                minDisp = std::min(lastCost[costStep*y + i], minDisp);
-            }
-            //minDisp = lastCost[costStep*y + random()%dsiDim.depth()];
             
-            const float P2Adjust = P2/
-                std::abs(img1[tY*dsiDim.width() + tX] - lastIntensity); 
+            const float cost = dsi[dsiOff];
+
+            const int dz = z + 1;
             
-            for (int d=0; d<static_cast<int>(dsiDim.depth()); d++)
-            {
-                const size_t dsiOff = dsiOffset(dsiDim, tX, tY, d);
-                assert(dsiOff < dsiDim.size());
-
-                const float cost = noinf(dsi[dsiOff]);
-
-                const float lcDm1 = d > 0 
-                    ? lastCost[costStep*y + d - 1] 
-                    : std::numeric_limits<float>::infinity();
-                
-                const float lcDp1 = d < static_cast<int>((dsiDim.depth() - 1)) 
-                    ? lastCost[costStep*y + d + 1] 
-                    : std::numeric_limits<float>::infinity();
-                
-                const float Lr = cost
-                    + min4(lastCost[costStep*y + d],
-                           lcDm1 + P1,
-                           lcDp1 + P1,
-                           minDisp + P2Adjust) - minDisp;
-
-                aggregVol[dsiOff] += Lr;
-                newCost[costStep*y + d] = Lr;
-            }
-
-            lastIntensity = img1[tY*dsiDim.width() + tX];
+            const float Lr =
+                cost + min4(lastCost[dz],
+                            lastCost[dz - 1] + P1,
+                            lastCost[dz + 1] + P1,
+                            minCost + P2) - minCost;
+            aggregVol[dsiOff] += Lr;
+            newCost[dz] = Lr;            
         }
 
-        for (int y=0; y < static_cast<int>(scanDim.height()); y++)
-        {
-            int tX, tY;
-            pointMulMtx(tmatrix, x, y, &tX, &tY);
-
-            assert(tX < scanDim.width());
-            assert(tY < scanDim.height());
-            
-            memcpy(lastCost.get(), newCost.get(), 
-                   sizeof(float)*scanDim.height()*costStep);
-        }
+        std::swap(newCost, lastCost);
     }
 }
 
-static void wta(const Dim &dsiDim,
-                const float *dsi,
-                float *dispImg)
+struct PathCostParallel
 {
-    for (size_t y=0; y<dsiDim.height(); y++)
+public:
+    PathCostParallel(const Dim &d, const float * const ds,
+             const float * const i, const SGPath * const p,
+             float * const a)
+        : dim(d), dsi(ds), img(i), paths(p),
+          aggregVol(a)
+    { }
+
+    void operator()(const tbb::blocked_range<size_t> &br) const
     {
-        for (size_t x=0; x<dsiDim.width(); x++)
+        const size_t depth = dim.depth();
+        
+        boost::scoped_array<float> lastCost(new float[depth + 2]);
+        boost::scoped_array<float> newCost(new float[depth + 2]);
+        
+        lastCost[0] = std::numeric_limits<float>::infinity();
+        newCost[0] = std::numeric_limits<float>::infinity();        
+        lastCost[depth + 1] = std::numeric_limits<float>::infinity();
+        newCost[depth + 1] = std::numeric_limits<float>::infinity();
+
+        for (size_t p=br.begin(); p != br.end(); p++)
         {
-            float minAggreg = std::numeric_limits<float>::infinity();
-            int minDisp = 0;
+            const SGPath &ph = paths[p];
+            costPath(dim, dsi, img, ph.start, 
+                     ph.dir, ph.size, aggregVol, lastCost.get(),
+                     newCost.get());
 
-            for (size_t d=0; d<dsiDim.depth(); d++)
-            {
-                const size_t dsiOff = dsiOffset(dsiDim, x, y, d);
-                const float value = dsi[dsiOff];
-
-                if ( value < minAggreg )
-                {
-                    minAggreg = value;
-                    minDisp = d;
-                }
-            }
-
-            dispImg[dsiDim.width()*y + x] = 
-                float(minDisp)/float(dsiDim.depth());
+            sSGPoint invDir = {-ph.dir.x, -ph.dir.y};
+            
+            costPath(dim, dsi, img, ph.end, invDir, ph.size,
+                     aggregVol, lastCost.get(),
+                     newCost.get());
         }
     }
-}
+
+private:
+    const Dim &dim;
+    const float * const dsi;
+    const float * const img;
+    const SGPath * const paths;
+    float * const aggregVol;
+};
 
 void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
 {
-#if 0
-    CUerrExp cuerr;
     const Dim &dim = mem.dim();
-    boost::scoped_array<float> dsi(new float[dim.size()]);
-    
-    cuerr << cudaMemcpy(dsi.get(), mem.mem(), sizeof(float)*dim.size(),
-                        cudaMemcpyDeviceToHost);
+    const Dim &imgDim = img.dim();
 
+    boost::scoped_array<float> dsi((float*) mem.toCpuMem());
     boost::scoped_array<float> aggreg(new float[dim.size()]);
 
-    const int fowardM[3][3] = {
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    };
+    size_t pathCount;
+    boost::scoped_array<SGPath> paths(
+        SGPaths::getDescCPU(imgDim, &pathCount));
 
-    const int backwardM[3][3] = {
-        {-1, 0, dim.width() - 1},
-        {0, 1, 0},
-        {0, 0, 1}
-    };
-
-    const int topBottomM[3][3] = {
-        {0, 1, 0},
-        {1, 0, 0},
-        {0, 0, 1}
-    };
-
-    const int bottomTopM[3][3] = {
-        {0, -1, dim.height() - 1},
-        {1, 0, 0},
-        {0, 0, 1}
-    };
-
-    FloatImage left(cvLoadImage("../../res/tsukuba512_L.png")), 
-    //FloatImage left(cvLoadImage("rt.png")), 
-    //FloatImage left(cvLoadImage("q_left.png")), 
-        right(cvLoadImage("../../res/tsukuba512_R.png"));
     zeroVolume(dim, aggreg.get());
+    tbb::task_scheduler_init init;
 
-    costVolume(dim, tdv::Dim(dim.width(), dim.height()),
-               fowardM, dsi.get(), aggreg.get(), 
-               left.cpuMem()->data.fl,
-               right.cpuMem()->data.fl);
-#if 1
-    costVolume(dim, tdv::Dim(dim.width(), dim.height()),
-               backwardM, dsi.get(), aggreg.get(),
-               left.cpuMem()->data.fl,
-               right.cpuMem()->data.fl);
+    CudaBenchmarker bMarker;       
+    bMarker.begin();
 
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, pathCount),
+                      PathCostParallel(dim, dsi.get(), img.cpuMem()->data.fl,
+                                       paths.get(), aggreg.get()),
+                      tbb::auto_partitioner());
 
-    costVolume(dim, tdv::Dim(dim.height(), dim.width()),
-               topBottomM, dsi.get(), aggreg.get(),
-               left.cpuMem()->data.fl,
-               right.cpuMem()->data.fl);
-
-    costVolume(dim, tdv::Dim(dim.height(), dim.width()),
-               bottomTopM, dsi.get(), aggreg.get(),
-               left.cpuMem()->data.fl,
-               right.cpuMem()->data.fl);
-#endif
-
-    wta(dim, aggreg.get(), img.cpuMem()->data.fl);
-#endif
+    WTACPU::wta(dim, aggreg.get(), img.cpuMem()->data.fl);
+    
+    bMarker.end();
+    Benchmark bmark = bMarker.elapsedTime();
+    std::cout << bmark.secs() << std::endl;    
 }
 
 TDV_NAMESPACE_END

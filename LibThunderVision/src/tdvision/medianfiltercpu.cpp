@@ -12,7 +12,7 @@ FloatImage MedianFilterCPU::updateImpl(FloatImage input)
     FloatImage output = FloatImage::CreateCPU(dim);
     CvMat *img_output = output.cpuMem();
         
-    cvSmooth(image, img_output, CV_MEDIAN);
+    cvSmooth(image, img_output, CV_GAUSSIAN, 5);
         
     return output;
 }

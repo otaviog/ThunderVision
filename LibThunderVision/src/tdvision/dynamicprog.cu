@@ -14,15 +14,13 @@ __global__ void dynamicprog(const dim3 dsiDim, cudaPitchedPtr costDSI,
   const ushort dz = z + 1;
   
   __shared__ float sharedCost[MAX_DISP + 2];
-  __shared__ float *costDsiRow, *pathDsiRow;
+  __shared__ float *costDsiRow;
+  __shared__ char *pathDsiRow;
       
-  sharedCost[z] = dsiGetRow(costDSI, dsiDim.x, 0, y)[z];
-  dsiGetRow(pathDSI, dsiDim.x, 0, y)[z] = 0;
+  sharedCost[z] = (DSI_GET_ROWF(costDSI, dsiDim, 0, y))[z];
+  DSI_GET_ROWB(pathDSI, dsiDim, 0, y)[z] = 0;
 
-  if ( z == 0 ) {
-    costDsiRow = dsiGetRow(costDSI, dsiDim.x, y, z);
-    pathDsiRow = dsiGetRow(pathDSI, dsiDim.x, y, z);
-    
+  if ( z == 0 ) {    
     sharedCost[0] = CUDART_INF_F;
     sharedCost[dsiDim.z + 1] = CUDART_INF_F;
   }
@@ -30,14 +28,23 @@ __global__ void dynamicprog(const dim3 dsiDim, cudaPitchedPtr costDSI,
   __syncthreads();  
   
   for (ushort x=1; x<dsiDim.x; x++) {                
-    const float c0 = costDsiRow[z];
+
+    if ( z == 0 ) {
+      costDsiRow = DSI_GET_ROWF(costDSI, dsiDim, x, y);
+      pathDsiRow = DSI_GET_ROWB(pathDSI, dsiDim, x, y);
+    }
     
-    const float c2 = sharedCost[dz];            
+    __syncthreads();
+    
+    const float c0 = costDsiRow[z];
+        
     const float c1 = sharedCost[dz - 1];    
+    const float c2 = sharedCost[dz];
     const float c3 = sharedCost[dz + 1];
       
     float m;      
     char p;  
+    
     if ( c1 < c2 && c1 < c3 ) {
       m = c1;
       p = -1;
@@ -82,7 +89,7 @@ __global__ void reduceImage(const dim3 dsiDim,
   imgRow[dsiDim.x - 1] = float(lastMinZ)/float(dsiDim.z);  
   
   for (int x = dsiDim.x - 1; x >= 0; x--) {            
-    const char p = dsiGetValueB(pathDSI, dsiDim.x, x, y, lastMinZ);        
+    const char p = dsiGetValueB(pathDSI, dsiDim.y, x, y, lastMinZ);        
     const int nz = lastMinZ + p;
     
     if ( nz >= 0 && nz < dsiDim.z ) {

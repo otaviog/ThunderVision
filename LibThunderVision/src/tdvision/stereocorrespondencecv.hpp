@@ -17,6 +17,7 @@ public:
     enum MatchingMode
     {
         LocalMatching,
+        SemiGlobalMatching,
         GlobalMatching
     };
     

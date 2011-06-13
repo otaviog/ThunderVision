@@ -1,5 +1,6 @@
 #include <tdvbasic/log.hpp>
 #include <highgui.h>
+#include "tmpbufferimage.hpp"
 #include "misc.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -47,25 +48,30 @@ namespace misc
         return dst;
     }
     
-    void convert8UC3To32FC1Gray(const CvArr *src, CvArr *dst, CvArr *tmpGray)
+    void convert8UC3To32FC1Gray(const CvArr *src, CvArr *dst, CvArr *tmpRGBF)
     {
-        bool inTmpGrayNull = tmpGray == NULL;
-        if ( inTmpGrayNull )
+        bool inTmpRGBF = tmpRGBF == NULL;
+        if ( inTmpRGBF )
         {
-            tmpGray = misc::create8UGray(src);
-        }
-        else
-        {
-            cvCvtColor(src, tmpGray, CV_RGB2GRAY);
-        }
+            CvSize sz(cvGetSize(src));
+            tmpRGBF = cvCreateMat(sz.height, sz.width, CV_32FC3);
+        }        
         
-        cvConvertScale(tmpGray, dst, 1.0/255.0);
+        cvConvertScale(src, tmpRGBF, 1.0/255.0);        
+        cvCvtColor(tmpRGBF, dst, CV_RGB2GRAY);
         
-        if ( inTmpGrayNull )
-            cvReleaseMat((CvMat**) &tmpGray);
-    }    
+        if ( inTmpRGBF )
+            cvRelease(&tmpRGBF);
+    }
 
-
+    void convert8UC3To32FC1GrayHSV(const CvArr *src, CvArr *dst, CvArr *hsvTmp,
+                                   CvArr *u8Tmp)
+    {        
+        cvCvtColor(src, hsvTmp, CV_RGB2HSV);
+        cvSplit(hsvTmp, NULL, NULL, u8Tmp, NULL);        
+                
+        cvConvertScale(u8Tmp, dst, 1.0/255.0);            
+    }
 }
 
 #if 0

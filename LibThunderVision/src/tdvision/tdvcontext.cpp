@@ -85,13 +85,13 @@ Reconstruction* TDVContext::runReconstruction(const std::string &profileName,
     if ( profileName == "Device" )
     {
         matcherFactory.computeDev(CommonStereoMatcherFactory::Device);
-        matcherFactory.maxDisparity(256);
+        matcherFactory.maxDisparity(128);
 
         matcherFactory.matchingCost(
             CommonStereoMatcherFactory::BirchfieldTomasi);
         //matcherFactory.matchingCost(
         //CommonStereoMatcherFactory::CrossCorrelationNorm);
-        matcherFactory.matchingCost(CommonStereoMatcherFactory::SSD);
+        //matcherFactory.matchingCost(CommonStereoMatcherFactory::SSD);
 
         //matcherFactory.optimization(CommonStereoMatcherFactory::WTA);
         //matcherFactory.optimization(CommonStereoMatcherFactory::DynamicProg);
@@ -223,7 +223,7 @@ void TDVContext::switchCameras()
 
 void TDVContext::reconstructionDone(float framesSec)
 {
-    m_inputSrc->framesPerSec(framesSec);
+    
 }
 
 TDV_NAMESPACE_END

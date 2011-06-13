@@ -167,7 +167,7 @@ public:
     {
         boost::mutex::scoped_lock lock(m_queueMutex);
         m_end = true;
-        m_queueCond.notify_one();
+        m_notEmptyCond.notify_one();
     }
     
     size_t isFull() const
@@ -195,7 +195,7 @@ public:
 private:
     std::queue<ReadType> m_queue;
     boost::mutex m_queueMutex;
-    boost::condition_variable m_queueCond, m_enqueueCond;
+    boost::condition_variable m_notEmptyCond, m_notFullCond;
     bool m_end;
     size_t m_maxSize;
 };
@@ -209,17 +209,17 @@ void ReadWritePipe<ReadType, WriteType, Adapter>::write(WriteType value)
     
     while (m_queue.size() >= m_maxSize && !m_end )
     {
-        m_enqueueCond.wait(lock);
+        m_notFullCond.wait(lock);
     }
     
     if ( !m_end )
     {
         m_queue.push(Adapter::adapt(value));
-        m_queueCond.notify_one();    
+        m_notEmptyCond.notify_one();    
     }    
 #else
     m_queue.push(Adapter::adapt(value));
-    m_queueCond.notify_one();    
+    m_notEmptyCond.notify_one();    
 #endif
 }
 
@@ -229,7 +229,7 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
     boost::mutex::scoped_lock lock(m_queueMutex);
     while ( m_queue.empty() && !m_end )
     {
-        m_queueCond.wait(lock);
+        m_notEmptyCond.wait(lock);
     }
 
     bool hasEmpty = m_queue.empty();
@@ -239,7 +239,7 @@ bool ReadWritePipe<ReadType, WriteType, Adapter>::read(ReadType *outread)
         m_queue.pop();
     }
     
-    m_enqueueCond.notify_one();        
+    m_notFullCond.notify_one();        
     
     return !hasEmpty;
 }

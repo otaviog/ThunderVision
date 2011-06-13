@@ -14,7 +14,6 @@
 #include <tdvision/processrunner.hpp>
 #include <tdvision/exceptionreport.hpp>
 #include <tdvision/workunitprocess.hpp>
-#include "meanqmetric.hpp"
 
 class ErrorHandler: public tdv::ExceptionReport
 {
@@ -41,15 +40,17 @@ static bool commandLine(
     po::options_description desc("Options");
     desc.add_options()
         ("help", "Display help message.")
-        ("gpu,g", "Use GPU device computation.")
-        ("cpu,c", "Use CPU device computation.")
-        ("ssd,s", "Use SSD as metric.")
-        ("local,l", "Use local method.")
-        ("global,b", "Use global method (Graph Cuts by OpenCV).")
-        ("wta,w", "Use Winner Take All as optimization.")
-        ("dyp,y", "Use Dynamic Programming as optimization.")
-        ("semiglobal,m", "Use Semiglobal")
-        ("disparity,d", po::value<int>(), "Maximum disparity.")
+        ("gpu", "Use GPU device computation.")
+        ("cpu", "Use CPU device computation.")
+        ("ssd", "Use SSD as metric.")
+        ("bt", "Use Birchfield Tomasi as metric")
+        ("xcorr", "Use Cross Correlation as metric")
+        ("local", "Use local method.")
+        ("semiglobal", "Use Semiglobal")
+        ("global", "Use global method (Graph Cuts by OpenCV).")
+        ("wta", "Use Winner Take All as optimization.")
+        ("dyp", "Use Dynamic Programming as optimization.")
+        ("disparity", po::value<int>(), "Maximum disparity.")
         ("inputl", po::value<std::string>(), "Left input image.")
         ("inputr", po::value<std::string>(), "Right input image.")
         ("output", po::value<std::string>(), "Output disparity image.");
@@ -84,15 +85,27 @@ static bool commandLine(
         {
             factory.matchingCost(tdv::CommonStereoMatcherFactory::SSD);
         }
+        else if ( vm.count("bt") )
+        {
+            factory.matchingCost(tdv::CommonStereoMatcherFactory::BirchfieldTomasi);
+        }
+        else if ( vm.count("xcorr") )
+        {
+            factory.matchingCost(tdv::CommonStereoMatcherFactory::CrossCorrelationNorm);
+        }
         
-        if ( vm.count("wta") )
+        if ( vm.count("wta") || vm.count("local") )
         {
             factory.optimization(tdv::CommonStereoMatcherFactory::WTA);
         }
         else if ( vm.count("dyp") )
         {
             factory.optimization(tdv::CommonStereoMatcherFactory::DynamicProg);
-        }        
+        }      
+        else if ( vm.count("semiglobal") )
+        {
+            factory.optimization(tdv::CommonStereoMatcherFactory::SemiGlobal);
+        }
     }
     else if ( vm.count("cpu") )
     {
@@ -123,9 +136,7 @@ int main(int argc, char *argv[])
     
     tdv::StereoMatcher *matcher;    
     if ( !commandLine(argc, argv, &matcher, linput, rinput, output) )
-        return 1;        
-    
-    tdv::QualityMetric *metric = new tdv::MeanQMetric;    
+        return 1;            
     
     tdv::ImageReader readerL(linput);
     tdv::ImageReader readerR(rinput);    
@@ -177,7 +188,11 @@ int main(int argc, char *argv[])
     {
         std::cout << ex.what() << std::endl;
     }
-    
+
+    std::cout<<
+        matcher->matchcostBenchmark().millisecs()
+        + matcher->optimizationBenchmark().millisecs()
+             <<std::endl;
     delete matcher;
     
     return 0;

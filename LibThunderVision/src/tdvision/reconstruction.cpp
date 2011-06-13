@@ -19,44 +19,45 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
 
     m_rectify.leftImgInput(m_ctrlProc.leftImgOutput());
     m_rectify.rightImgInput(m_ctrlProc.rightImgOutput());
-
-    m_rectTee[0].input(m_rectify.leftImgOutput());
-    m_rectTee[1].input(m_rectify.rightImgOutput());
-
-    m_rectTee[0].enable(RECT_MATCHER_ID);
-    m_rectTee[1].enable(RECT_MATCHER_ID);
-
+    
+    m_rectify.enableColorRemap();
+    
+    m_rectTee[0].input(m_rectify.colorLeftImgOutput());
+    m_rectTee[1].input(m_rectify.colorRightImgOutput());
+    
 #ifdef TDV_RESIZE_STEREO
     m_resize[0].input(m_rectTee[0].output(RECT_MATCHER_ID));
     m_resize[1].input(m_rectTee[1].output(RECT_MATCHER_ID));
     
     m_matcher->inputs(m_resize[0].output(), m_resize[1].output());
 #else
-    m_matcher->inputs(m_rectTee[0].output(RECT_MATCHER_ID), m_rectTee[1].output(RECT_MATCHER_ID));
+    m_matcher->inputs(m_rectify.leftImgOutput(), m_rectify.rightImgOutput());    
 #endif
     
     m_dispTee.input(m_matcher->output());
     m_dispTee.enable(DISP_REP_ID);
 
+    m_rectTee[0].enable(RECT_REPROJ_L_ID);
     m_reprojectProc.input(m_dispTee.output(DISP_REP_ID),
-                          m_rectify.colorImgOutput());
+                          m_rectTee[0].output(RECT_REPROJ_L_ID));
 
     if ( reprojection != NULL )
     {
         m_reprojectProc.setReprojection(reprojection);
         m_reprojectProc.setReprojector(&m_rectify);
         //m_reprojectProc.setReprojector(&m_altReproj);
-        m_rectify.enableColorRemap();
     }
 
     m_procs.addProcess(&m_ctrlProc);
     m_procs.addProcess(&m_rectify);
     m_procs.addProcess(&m_rectTee[0]);
     m_procs.addProcess(&m_rectTee[1]);
+
 #ifdef TDV_RESIZE_STEREO
     m_procs.addProcess(&m_resize[0]);
     m_procs.addProcess(&m_resize[1]);
 #endif
+
     m_procs.addProcess(*m_matcher);
     m_procs.addProcess(&m_dispTee);
     m_procs.addProcess(&m_reprojectProc);
@@ -69,8 +70,8 @@ Reconstruction::Reconstruction(StereoMatcher *matcher,
 }
 
 void Reconstruction::dupRectification(
-    ReadPipe<FloatImage> **leftRectOut,
-    ReadPipe<FloatImage> **rightRectOut)
+    ReadPipe<CvMat*> **leftRectOut,
+    ReadPipe<CvMat*> **rightRectOut)
 {
     m_rectTee[0].enable(RECT_VIEW_ID);
     m_rectTee[1].enable(RECT_VIEW_ID);

@@ -11,7 +11,7 @@ void SemiGlobalDev::updateImpl(DSIMem dsi, FloatImage outimg)
 {
     float *outimg_d = outimg.devMem();
     cudaPitchedPtr aggregDSI = m_aggregDSI.mem(dsi.dim());
-    SGPath *paths = m_sgPaths.getDesc(outimg.dim());
+    SGPath *paths = m_sgPaths.getDescDev(outimg.dim());
 
     SemiGlobalDevRun(dsi.dim(), dsi.mem(),
                      paths, m_sgPaths.pathCount(),

@@ -28,8 +28,10 @@ class SGPaths
 public:
     SGPaths();
   
-    SGPath* getDesc(const Dim &imgDim);
-  
+    SGPath* getDescDev(const Dim &imgDim);
+    
+    static SGPath* getDescCPU(const Dim &imgDim, size_t *pathCount);
+    
     size_t pathCount() const
     {
         return m_pathCount;
@@ -38,13 +40,13 @@ public:
     void unalloc();
   
 private: 
-    void horizontalPathsDesc(SGPath *paths);
+    static void horizontalPathsDesc(const Dim &imgDim, SGPath *paths);
 
-    void verticalPathsDesc(SGPath *paths);
+    static void verticalPathsDesc(const Dim &imgDim, SGPath *paths);
 
-    void topBottomDiagonaDesc(SGPath *paths);
-  
-    void bottomTopDiagonalDesc(SGPath *paths);
+    static void topBottomDiagonaDesc(const Dim &imgDim, SGPath *paths);
+    
+    static void bottomTopDiagonalDesc(const Dim &imgDim, SGPath *paths);
 
     SGPath *m_paths_d;
     tdv::Dim m_imgDim;

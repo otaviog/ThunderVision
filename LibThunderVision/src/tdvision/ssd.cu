@@ -28,14 +28,14 @@ __device__ float ssdAtDisp(int x, int y, int disp)
   return sum;
 }
 
+
 __global__ void ssdKern(const dim3 dsiDim, cudaPitchedPtr dsiMem)
 {
   int x = blockIdx.x*blockDim.x + threadIdx.x;
-  int y = blockIdx.y*blockDim.y + threadIdx.y;
-
+  int y = blockIdx.y*blockDim.y + threadIdx.y; 
+  
   if ( x < dsiDim.x && y < dsiDim.y ) {
-    float *dsiRow = (float*) (((char *) dsiMem.ptr) + dsiMem.pitch*dsiDim.x*y
-                              + dsiMem.pitch*x);
+    float *dsiRow = dsiGetRow(dsiMem, dsiDim.y, x, y);
 
     for (int disp=0; disp < dsiDim.z; disp++) {
       float ssdValue = CUDART_INF_F;
@@ -43,7 +43,7 @@ __global__ void ssdKern(const dim3 dsiDim, cudaPitchedPtr dsiMem)
       if ( x - disp >= 0 ) {
         ssdValue = ssdAtDisp(x, y, disp);
       }
-
+      
       dsiRow[disp] = ssdValue;
     }
   }
@@ -73,8 +73,9 @@ void SSDDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
 
   CudaConstraits constraits;
   WorkSize ws = constraits.imageWorkSize(dsiDim);
+  
   ssdKern<<<ws.blocks, ws.threads>>>(tdvDimTo(dsiDim), dsiMem);
-
+  
   err << cudaThreadSynchronize();
 }
 

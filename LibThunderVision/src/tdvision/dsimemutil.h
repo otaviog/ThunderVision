@@ -3,40 +3,53 @@
 
 #include "cudamisc.hpp"
 
-#define DSI_GET_ROW_INCR(pptr, dsiDim, px, py) pptr.pitch*dsiDim.y*px + pptr.pitch*py
-#define DSI_GET_ROWF(pptr, dsiDim, px, py) (float*) (((char*) pptr.ptr) + DSI_GET_ROW_INCR(pptr, dsiDim, px, py))
-inline __device__ float* dsiGetRow(cudaPitchedPtr &pptr, ushort height, 
+#define DSI_GET_ROW_INCR_H(pptr, height, px, py) pptr.pitch*height*px + pptr.pitch*py
+
+#define DSI_GET_ROW_INCR(pptr, dsiDim, px, py) DSI_GET_ROW_INCR_H(pptr, dsiDim.y, px, py)
+
+#define DSI_GET_ROWB(pptr, dsiDim, px, py) ((((char*) pptr.ptr) + DSI_GET_ROW_INCR(pptr, dsiDim, px, py)))
+
+#define DSI_GET_ROWF(pptr, dsiDim, px, py) ((float*) DSI_GET_ROWB(pptr, dsiDim, px, py))
+
+
+inline __device__ char* dsiGetRowB(cudaPitchedPtr pptr, ushort height, 
                                    ushort x, ushort y)
 {
-  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*height*x
-                    + pptr.pitch*y);
+    return ( ((char*) pptr.ptr) + DSI_GET_ROW_INCR_H(pptr, height, x, y));
+
 }
 
-inline __device__ const float* dsiGetRow(const cudaPitchedPtr &pptr, 
+inline __device__ float* dsiGetRow(cudaPitchedPtr pptr, ushort height, 
+                                   ushort x, ushort y)
+{
+    return (float*) dsiGetRowB(pptr, height, x, y);
+}
+
+#if 0
+inline __device__ const char* dsiGetRowB(const cudaPitchedPtr pptr, 
                                          ushort height, 
                                          ushort x, ushort y)
 {
-  return (float*) ( ((char*) pptr.ptr) + pptr.pitch*height*x
-                    + pptr.pitch*y);
+    return ( ((const char*) pptr.ptr) + DSI_GET_ROW_INCR_H(pptr, height, x, y));
 }
 
-inline __device__ char* dsiGetRowB(cudaPitchedPtr pptr, ushort width, 
-                                   ushort x, ushort y)
+inline __device__ const float* dsiGetRow(const cudaPitchedPtr pptr, 
+                                         ushort height, 
+                                         ushort x, ushort y)
 {
-  return ( ((char*) pptr.ptr) + pptr.pitch*width*y
-           + pptr.pitch*x);
+    return (const float*) dsiGetRowB(pptr, height, x, y);
 }
-
+#endif
 inline __device__ float dsiGetValue(
-    cudaPitchedPtr pptr, ushort w, ushort x, ushort y, ushort z)
+    cudaPitchedPtr pptr, ushort h, ushort x, ushort y, ushort z)
 {
-    return dsiGetRow(pptr, w, x, y)[z];
+    return dsiGetRow(pptr, h, x, y)[z];
 }
 
 inline __device__ char dsiGetValueB(
-    cudaPitchedPtr pptr, ushort w, ushort x, ushort y, ushort z)
+    const cudaPitchedPtr pptr, ushort h, ushort x, ushort y, ushort z)
 {
-    return dsiGetRowB(pptr, w, x, y)[z];
+    return dsiGetRowB(pptr, h, x, y)[z];
 }
 
 

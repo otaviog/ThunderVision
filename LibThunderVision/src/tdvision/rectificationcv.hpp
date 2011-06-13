@@ -8,6 +8,7 @@
 #include "floatimage.hpp"
 #include "tmpbufferimage.hpp"
 #include "camerasdesc.hpp"
+#include "misc.hpp"
 #include "cvreprojector.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -78,11 +79,16 @@ public:
         return &m_wrpipe;
     }
     
-    ReadPipe<CvMat*>* colorImgOutput()
+    ReadPipe<CvMat*>* colorLeftImgOutput()
     {
-        return &m_wcpipe;
+        return &m_wclpipe;
     }
     
+    ReadPipe<CvMat*>* colorRightImgOutput()
+    {
+        return &m_wcrpipe;
+    }
+
     const CamerasDesc& camerasDesc() const
     {
         return m_camsDesc;
@@ -115,8 +121,8 @@ public:
 private:
     void updateRectification(CvMat *limg8u, CvMat *rimg8u);
 
-    void findCorners(const CvMat *img, CvPoint2D32f *leftCorners, int *cornerCount,
-                     CvMat *eigImage, CvMat *tmpImage);
+    void findCorners(const CvMat *img, CvPoint2D32f *leftCorners, 
+                     int *cornerCount, CvMat *eigImage, CvMat *tmpImage);
 
     size_t findCornersPoints(const CvMat *limg_c, const CvMat *rimg_c,
                              const CvSize &imgSize,
@@ -139,14 +145,18 @@ private:
 
     ReadPipe<CvMat*> *m_rlpipe, *m_rrpipe;
     ReadWritePipe<FloatImage> m_wlpipe, m_wrpipe;
-    ReadWritePipe<CvMat*> m_wcpipe;
+    ReadWritePipe<CvMat*> m_wclpipe, m_wcrpipe;
     CamerasDesc m_camsDesc;
     bool m_camsDescChanged, m_enableColorRemap;
 
     ConjugateCorners m_conjCorners;
-
-    TmpBufferImage m_limg32f, m_rimg32f, m_limg8u, m_rimg8u,
+    
+    TmpBufferImage m_limg32f, m_rimg32f,
+        m_limg8u, m_rimg8u,
         m_mxLeft, m_myLeft, m_mxRight, m_myRight;
+    
+    misc::Conv8UC3To32FC1 m_convTo32f;
+    misc::Conv8UC3To32FC1Hsv m_convTo32fHsv;
     
     CVReprojector m_repr;
 };

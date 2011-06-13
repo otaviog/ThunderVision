@@ -13,9 +13,7 @@ class StereoInputSource: public ProcessGroup
 public:
     virtual ReadPipe<CvMat*> *leftImgOutput() = 0;
     
-    virtual ReadPipe<CvMat*> *rightImgOutput() = 0;
-    
-    virtual void framesPerSec(float fps) = 0;
+    virtual ReadPipe<CvMat*> *rightImgOutput() = 0;    
     
 private:
 };
