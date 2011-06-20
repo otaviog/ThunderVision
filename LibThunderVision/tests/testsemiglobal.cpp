@@ -13,7 +13,7 @@ TEST(TestSemiGlobalDev, WithBT)
        "../../res/tsukuba512_L.png",
        "../../res/tsukuba512_R.png",
        "tsukuba_btsgdev.png",
-       &cost, &sg, true, false);
+       &cost, &sg, false, false);
 }
 
 TEST(TestSemiGlobalDev, WithSSD)

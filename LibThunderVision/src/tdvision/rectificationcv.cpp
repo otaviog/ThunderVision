@@ -294,7 +294,7 @@ bool RectificationCV::update()
 
     CvMat *limout_c = limout.cpuMem();
     CvMat *rimout_c = rimout.cpuMem();
-    
+#if 1
     cvRemap(limg32f, limout_c, m_mxLeft.get(), m_myLeft.get());
     cvRemap(rimg32f, rimout_c, m_mxRight.get(), m_myRight.get());
     
@@ -312,7 +312,17 @@ bool RectificationCV::update()
         
         CvMatSinkPol::sink(rimg_c);
     }
+#else
+    cvCopy(limg32f, limout_c);
+    cvCopy(rimg32f, rimout_c);
     
+    if ( m_enableColorRemap )
+    {
+        m_wclpipe.write(limg_c);        
+        m_wcrpipe.write(rimg_c);       
+    }
+#endif
+
     showImage("L", limout_c);
     showImage("R", rimout_c);
     waitKey(0);

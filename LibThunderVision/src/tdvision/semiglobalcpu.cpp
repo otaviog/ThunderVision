@@ -67,7 +67,7 @@ static void costPath(const Dim &dsiDim,
     SGPoint pt = start;
     
 #if 1
-    for (int z=0; z<dsiDim.depth(); z++)
+    for (size_t z=0; z<dsiDim.depth(); z++)
     {
         const int X = pt.x;
         const int Y = pt.y;
@@ -83,7 +83,7 @@ static void costPath(const Dim &dsiDim,
     }
 #endif
 
-    for (int x=1; x<pathLength; x++)
+    for (size_t x=1; x<pathLength; x++)
     {        
         pt.x += dir.x;
         pt.y += dir.y;
@@ -92,7 +92,7 @@ static void costPath(const Dim &dsiDim,
         const int Y = pt.y;
 
         float minCost = lastCost[0];
-        for (int z=1; z<dsiDim.depth(); z++)
+        for (size_t z=1; z<dsiDim.depth(); z++)
             minCost = min(lastCost[z], minCost);
 
         const float intensity = img[Y*dsiDim.width() + X];
@@ -100,7 +100,7 @@ static void costPath(const Dim &dsiDim,
 
         lastIntensity = intensity;
 
-        for (int z=0; z<dsiDim.depth(); z++)
+        for (size_t z=0; z<dsiDim.depth(); z++)
         {
             const size_t dsiOff =
                 dsiOffset(dsiDim, X, Y, z);
@@ -115,7 +115,7 @@ static void costPath(const Dim &dsiDim,
                 cost + min4(lastCost[dz],
                             lastCost[dz - 1] + P1,
                             lastCost[dz + 1] + P1,
-                            minCost + P2) - minCost;
+                            minCost + P2Adjust) - minCost;
             aggregVol[dsiOff] += Lr;
             newCost[dz] = Lr;            
         }

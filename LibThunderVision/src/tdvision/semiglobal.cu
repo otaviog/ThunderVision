@@ -5,7 +5,7 @@
 #include "cudaconstraits.hpp"
 #include "semiglobal.h"
 
-#define SG_USE_ATOMIC
+//#define SG_USE_ATOMIC
 #define SG_USE_P2ADJUST
 
 __global__ void wtaKernel(const dim3 dim,
