@@ -6,12 +6,12 @@
 
 TDV_NAMESPACE_BEGIN
 
-struct SGPoint
+struct __align__(8) SGPoint
 {
     unsigned short x, y;
 };
 
-struct sSGPoint
+struct __align__(8) sSGPoint
 {
     short x, y;
 };

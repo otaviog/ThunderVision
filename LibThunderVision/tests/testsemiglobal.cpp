@@ -6,7 +6,7 @@
 
 TEST(TestSemiGlobalDev, WithBT)
 {    
-    tdv::BirchfieldCostDev cost(64);
+    tdv::BirchfieldCostDev cost(32);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
@@ -15,14 +15,14 @@ TEST(TestSemiGlobalDev, WithBT)
        "tsukuba_btsgdev.png",
        &cost, &sg, true, false);
 }
-
+#if 0
 TEST(TestSemiGlobalDev, WithSSD)
 {        
     tdv::SSDDev cost(64);
     tdv::SemiGlobalDev sg;
 
     runStereoTest(
-        #if 0
+#if 0
        "../../res/tsukuba512_L.png",
        "../../res/tsukuba512_R.png",
 #else
@@ -33,5 +33,4 @@ TEST(TestSemiGlobalDev, WithSSD)
         "tsukuba_ssdsgdev.png",
         &cost, &sg, true, false);
 }
-
-
+#endif

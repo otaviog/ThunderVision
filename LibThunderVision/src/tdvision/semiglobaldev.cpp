@@ -7,6 +7,12 @@ void SemiGlobalDevRun(const tdv::Dim &dsiDim, cudaPitchedPtr dsi,
                       const float *lorigin, cudaPitchedPtr aggregDSI, 
                       float *dispImg, bool zeroAggregDSI);
 
+SemiGlobalDev::SemiGlobalDev()
+{
+    workName("Semi-global device");
+    m_zeroAggregDSI = true;
+}
+
 void SemiGlobalDev::updateImpl(DSIMem dsi, FloatImage outimg)
 {
     float *outimg_d = outimg.devMem();

@@ -27,8 +27,7 @@ __global__ void zeroDSIVolume(const dim3 dsiDim,
   }
 }
 
-#define SG_MAX_DISP 512
-#define SG_WARP_SIZE 32
+#define SG_MAX_DISP 256
 
 TDV_NAMESPACE_BEGIN
 
@@ -218,22 +217,22 @@ void SGPaths::topBottomDiagonaDesc(const Dim &imgDim, SGPath *paths)
 
 TDV_NAMESPACE_END
 
-struct fPTuple
+struct __align__(8) fPTuple
 {
   float forward, backward;
 };
 
-struct fptrPTuple
+struct __align__(8) fptrPTuple
 {
   float *forward, *backward;
 };
 
-struct fcptrPTuple
+struct __align__(8) fcptrPTuple
 {
   const float *forward, *backward;
 };
 
-struct uPTuple
+struct __align__(8) uPTuple
 {
   uint forward, backward;
 };
@@ -241,7 +240,7 @@ struct uPTuple
 const float P1 = 30.0f/255.0f;
 const float P2 = 150.0f/255.0f;
 
-#define min4(a, b, c, d) min(a, min(b, min(c, d)))
+#define fmin4f(a, b, c, d) fminf(a, fminf(b, fminf(c, d)))
 
 using tdv::SGPoint;
 using tdv::SGPath;
@@ -251,101 +250,124 @@ inline __device__ float pathCost(float cost,
                                  float lcD, float lcDm1, float lcDp1,
                                  float minDisp, float P2Adjust)
 {
-  const float Lr = cost
-    + min4(lcD,
-           lcDm1 + P1,
-           lcDp1 + P1,
-           minDisp + P2Adjust) - minDisp;
-
-  return Lr;
+#if 1
+  return cost + fmin4f(lcD,
+                       lcDm1 + P1,
+                       lcDp1 + P1,
+                       minDisp + P2Adjust) - minDisp;
+#else
+  return __fadd_rn(__fadd_rn(cost, fmin4f(lcD,
+                                          lcDm1,
+                                          lcDp1,
+                                          minDisp)),
+                   -minDisp);
+#endif
 }
 
+texture<float, 3> texCost;
+
+template<int WarpThread>
 __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
                                           const SGPath *pathsArray,
                                           const cudaPitchedPtr costDSI,
                                           const float *iImage,
                                           cudaPitchedPtr aggregDSI)
 {
-  const ushort z = threadIdx.x;
-  const ushort y = blockIdx.x;
-  const ushort dz = z + 1;
+  const int z = threadIdx.x;
+  const int y = blockIdx.x;
+  const int dz = z + 1;
 
-  __shared__ fPTuple sPrevCost[SG_MAX_DISP + 2];
-  __shared__ fPTuple sPrevMinCost[SG_MAX_DISP];
-  __shared__ fPTuple sMinCost;
+  __shared__ float sPrevCostF[SG_MAX_DISP + 2];
+  __shared__ float sPrevMinCostF[SG_MAX_DISP];  
+  __shared__ float sMinCostF;
+  __shared__ int2 forwardCPt;
+  __shared__ float* sCostDSIRowsPtrF;
+  __shared__ float* sAggregDSIRowsPtrF;
+  
+  __shared__ float sPrevCostB[SG_MAX_DISP + 2];    
+  __shared__ float sPrevMinCostB[SG_MAX_DISP];
+  __shared__ float sMinCostB;  
+  __shared__ int2 backwardCPt;
+  __shared__ float* sCostDSIRowsPtrB;
+  __shared__ float* sAggregDSIRowsPtrB;
+  
 #ifdef SG_USE_P2ADJUST
   __shared__ fPTuple sP2Adjust;
   __shared__ fPTuple sLastIntensity;
-#endif
-  __shared__ SGPoint forwardCPt, backwardCPt;
-  __shared__ fcptrPTuple sCostDSIRowsPtr;
-  __shared__ fptrPTuple  sAggregDSIRowsPtr;
-
+#endif        
+    
   const SGPath *path = &pathsArray[y];
-  const ushort pathSize = path->size;
-  const sSGPoint dir = path->dir;
+  const int pathSize = path->size;
+  const int2 dir = { path->dir.x, path->dir.y };
 
   if ( z == 0 ) {
-    forwardCPt = path->start;
-    backwardCPt = path->end;
-
-    sPrevCost[0].forward = sPrevCost[0].backward = CUDART_INF_F;
-    sPrevCost[dsiDim.z + 1].forward = sPrevCost[dsiDim.z + 1].backward =
-      CUDART_INF_F;
+    forwardCPt.x = path->start.x;
+    forwardCPt.y = path->start.y;
+    
+    sPrevCostF[0] = sPrevCostB[0] = CUDART_INF_F;
+    
 #ifdef SG_USE_P2ADJUST
     sLastIntensity.forward =
       iImage[forwardCPt.y*dsiDim.x + forwardCPt.x];
-
+#endif
+    
+    sCostDSIRowsPtrF = dsiGetRow(costDSI, dsiDim.y,
+                                 forwardCPt.x, forwardCPt.y);
+    sAggregDSIRowsPtrF = dsiGetRow(aggregDSI, dsiDim.y, forwardCPt.x,
+                                   forwardCPt.y);
+  } else if ( z == WarpThread ) {
+    backwardCPt.x = path->end.x;
+    backwardCPt.y = path->end.y;
+    
+    sPrevCostF[dsiDim.z + 1] = sPrevCostB[dsiDim.z + 1] =
+      CUDART_INF_F;
+    
+#ifdef SG_USE_P2ADJUST
     sLastIntensity.backward =
       iImage[backwardCPt.y*dsiDim.x + backwardCPt.x];
 #endif
-  }
 
+    sCostDSIRowsPtrB = dsiGetRow(costDSI, dsiDim.y, backwardCPt.x,
+                                 backwardCPt.y);
+    sAggregDSIRowsPtrB = dsiGetRow(aggregDSI, dsiDim.y, backwardCPt.x,
+                                   backwardCPt.y);
+  }    
   __syncthreads();
 
-  const float *dsiRow = dsiGetRow(costDSI, dsiDim.y,
-                                  forwardCPt.x, forwardCPt.y);
-  float initialCost = dsiRow[z];
+  float initialCost = sCostDSIRowsPtrF[z];
 
-  sPrevCost[dz].forward = initialCost;
-  sPrevMinCost[z].forward = initialCost;
+  sPrevCostF[dz] = initialCost + P1;
+  sPrevMinCostF[z] = initialCost;
+  sAggregDSIRowsPtrF[z] += initialCost;
 
-  float *dsiAgrregRow = dsiGetRow(aggregDSI, dsiDim.y, forwardCPt.x,
-                     forwardCPt.y);
-  dsiAgrregRow[z] += initialCost;
-
-  dsiRow = dsiGetRow(costDSI, dsiDim.y, backwardCPt.x,
-                     backwardCPt.y);
-  initialCost = dsiRow[z];
-
-  sPrevCost[dz].backward = initialCost;
-  sPrevMinCost[z].backward = initialCost;
-
-  dsiAgrregRow = dsiGetRow(aggregDSI, dsiDim.y, backwardCPt.x,
-                     backwardCPt.y);
-  dsiAgrregRow[z] += initialCost;
+  initialCost = sCostDSIRowsPtrB[z];
+  sPrevCostB[dz] = initialCost + P1;
+  sPrevMinCostB[z] = initialCost;
+  
+  sAggregDSIRowsPtrB[z] += initialCost;
 
   __syncthreads();
 
   float fLr, bLr;
   ushort dimz = dsiDim.z;
 
-  for (ushort x=1; x<pathSize; x++) {
-    ushort i = dimz >> 1;
+#pragma unroll 4
+  for (int x=1; x<pathSize; x++) {
+    int i = dimz >> 1;
     while ( i != 0 ) {
       if ( z < i ) {
-        sPrevMinCost[z].forward = min(sPrevMinCost[z].forward,
-                                      sPrevMinCost[z + i].forward);
+        sPrevMinCostF[z] = fminf(sPrevMinCostF[z],
+                                 sPrevMinCostF[z + i]);
       } else if ( dimz - z <= i ) {
-        sPrevMinCost[z].backward = min(sPrevMinCost[z].backward,
-                                       sPrevMinCost[z - i].backward);
+        sPrevMinCostB[z] = fminf(sPrevMinCostB[z],
+                                 sPrevMinCostB[z - i]);
       }
       __syncthreads();
       i = i >> 1;
     }
-
+        
     if ( z == 0 ) {
-      sMinCost.forward = sPrevMinCost[0].forward;
+      sMinCostF = sPrevMinCostF[0];
       forwardCPt.x += dir.x;
       forwardCPt.y += dir.y;
 
@@ -356,36 +378,39 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
       sLastIntensity.forward = fI;
 #endif
 
-      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, forwardCPt.x, forwardCPt.y);
+      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, 
+                                           forwardCPt.x, forwardCPt.y);
 
-      sCostDSIRowsPtr.forward = (float*) (((char*) costDSI.ptr) + incr);
-      sAggregDSIRowsPtr.forward = (float*) (((char*) aggregDSI.ptr) + incr);
+      sCostDSIRowsPtrF = (float*) (((char*) costDSI.ptr) + incr);
+      sAggregDSIRowsPtrF = (float*) (((char*) aggregDSI.ptr) + incr);
 
-    } else if ( z == SG_WARP_SIZE ) {
-      sMinCost.backward = sPrevMinCost[dimz - 1].backward;
-
+    } else if ( z == WarpThread ) {
+      sMinCostB = sPrevMinCostB[dimz - 1];
+      
       backwardCPt.x -= dir.x;
-      backwardCPt.y -= dir.y;
-
+      backwardCPt.y -= dir.y;     
+      
 #ifdef SG_USE_P2ADJUST
       const float iI = iImage[backwardCPt.y*dsiDim.x + backwardCPt.x];
 
       sP2Adjust.backward = P2/abs(iI - sLastIntensity.backward);
       sLastIntensity.backward = iI;
 #endif
-      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, backwardCPt.x, backwardCPt.y);
+      const size_t incr = DSI_GET_ROW_INCR(costDSI, dsiDim, 
+                                           backwardCPt.x, backwardCPt.y);
 
-      sCostDSIRowsPtr.backward = (float*) (((char*) costDSI.ptr) + incr);
-      sAggregDSIRowsPtr.backward = (float*) (((char*) aggregDSI.ptr) + incr);
+      sCostDSIRowsPtrB = (float*) (((char*) costDSI.ptr) + incr);
+      sAggregDSIRowsPtrB = (float*) (((char*) aggregDSI.ptr) + incr);
     }
     
     __syncthreads();
 
-    fLr = pathCost(sCostDSIRowsPtr.forward[z],
-                   sPrevCost[dz].forward,
-                   sPrevCost[dz - 1].forward,
-                   sPrevCost[dz + 1].forward,
-                   sMinCost.forward,
+    fLr = pathCost(sCostDSIRowsPtrF[z],
+                   //tex3D(texCost, forwardCPt.x, forwardCPt.y, z),
+                   sPrevCostF[dz],
+                   sPrevCostF[dz - 1],
+                   sPrevCostF[dz + 1],
+                   sMinCostF,
 #ifdef SG_USE_P2ADJUST
                    sP2Adjust.forward
 #else
@@ -393,17 +418,12 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 #endif
                    );
 
-#ifdef SG_USE_ATOMIC
-    atomicAdd(&sAggregDSIRowsPtr.forward[z], fLr);
-#else
-    sAggregDSIRowsPtr.forward[z] += fLr;
-#endif
-
-    bLr = pathCost(sCostDSIRowsPtr.backward[z],
-                   sPrevCost[dz].backward,
-                   sPrevCost[dz - 1].backward,
-                   sPrevCost[dz + 1].backward,
-                   sMinCost.backward,
+    bLr = pathCost(sCostDSIRowsPtrB[z],
+                   //tex3D(texCost, backwardCPt.x, backwardCPt.y, z),
+                   sPrevCostB[dz],
+                   sPrevCostB[dz - 1],
+                   sPrevCostB[dz + 1],
+                   sMinCostB,
 #ifdef SG_USE_P2ADJUST
                    sP2Adjust.backward
 #else
@@ -411,17 +431,23 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 #endif
                    );
 
-#ifdef SG_USE_ATOMIC
-    atomicAdd(&sAggregDSIRowsPtr.backward[z], bLr);
-#else
-    sAggregDSIRowsPtr.backward[z] += bLr;
-#endif
-
     __syncthreads();
 
-    sPrevCost[dz].forward = sPrevMinCost[z].forward = fLr;
-    sPrevCost[dz].backward = sPrevMinCost[z].backward = bLr;
+    sPrevCostF[dz] = fLr;
+    sPrevMinCostF[z] = fLr;
+    sPrevCostB[dz] = bLr;
+    sPrevMinCostB[z] = bLr;
 
+#if 1
+#ifdef SG_USE_ATOMIC
+    atomicAdd(&sAggregDSIRowsPtrF[z], fLr);
+    atomicAdd(&sAggregDSIRowsPtrB[z], bLr);
+#else
+    sAggregDSIRowsPtrF[z] += fLr;
+    sAggregDSIRowsPtrB[z] += bLr;
+#endif
+#endif
+    
     __syncthreads();
   }
 }
@@ -430,6 +456,7 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
 TDV_NAMESPACE_BEGIN
 
 void WTARunDev(const tdv::Dim &dsiDim, cudaPitchedPtr dsiMem, float *outimg);
+
 
 void SemiGlobalDevRun(const Dim &dsiDim, cudaPitchedPtr dsi,
                       const SGPath *pathsArray, size_t pathCount,
@@ -441,13 +468,32 @@ void SemiGlobalDevRun(const Dim &dsiDim, cudaPitchedPtr dsi,
 
   WorkSize wsz = constraits.imageWorkSize(dsiDim);
 
+  zeroAggregDSI = false;
   if ( zeroAggregDSI )
     zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(tdvDimTo(dsiDim), aggregDSI);
-
-  semiglobalAggregVolKernel
-    <<<pathCount, dsiDim.depth()>>>(tdvDimTo(dsiDim), pathsArray,
-                                    dsi, lorigin,
-                                    aggregDSI);
+  
+  texCost.addressMode[0] = cudaAddressModeWrap;
+  texCost.addressMode[1] = cudaAddressModeWrap;
+  texCost.addressMode[2] = cudaAddressModeWrap;
+  texCost.normalized = false;
+  texCost.filterMode = cudaFilterModePoint;
+  
+  cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
+  
+  cuerr << cudaBindTexture(NULL, texCost, dsi.ptr, 
+                           desc,
+                           dsi.pitch*dsiDim.width()*dsiDim.height());    
+  
+  if ( dsiDim.depth() > 32 )
+    semiglobalAggregVolKernel<32>
+      <<<pathCount, dsiDim.depth()>>>(tdvDimTo(dsiDim), pathsArray,
+                                      dsi, lorigin,
+                                      aggregDSI);
+  else
+    semiglobalAggregVolKernel<1>
+      <<<pathCount, dsiDim.depth()>>>(tdvDimTo(dsiDim), pathsArray,
+                                      dsi, lorigin,
+                                      aggregDSI);
 
   WTARunDev(dsiDim, aggregDSI, dispImg);
 

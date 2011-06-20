@@ -36,6 +36,7 @@ CUDA_ADD_LIBRARY(tdvision
   optimizer.hpp optimizer.cpp
   wtadev.hpp wtadev.cpp wta.cu
   wtacpu.hpp wtacpu.cpp
+  fastwtamatcher.hpp fastwtamatcher.cpp fastwta.cu
   dynamicprogdev.hpp dynamicprogdev.cpp dynamicprog.cu
   dynamicprogcpu.hpp dynamicprogcpu.cpp
   semiglobalcpu.hpp semiglobalcpu.cpp
