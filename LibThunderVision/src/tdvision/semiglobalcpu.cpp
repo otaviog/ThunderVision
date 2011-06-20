@@ -11,6 +11,7 @@
 
 #include "benchmark.hpp"
 #include <iostream>
+#include <cstdio>
 
 TDV_NAMESPACE_BEGIN
 
@@ -52,20 +53,21 @@ static void zeroVolume(const Dim &dim,
     }
 }
 
-static void costPath(const Dim &dsiDim,
-                     const float *dsi,
-                     const float *img,
-                     const SGPoint &start,
-                     const sSGPoint &dir,
-                     size_t pathLength,
-                     float *aggregVol,
-                     float *lastCost,
-                     float *newCost)
+void costPath(const Dim &dsiDim,
+              const float *dsi,
+              const float *img,
+              const SGPoint &start,
+              const sSGPoint &dir,
+              size_t pathLength,
+              float *aggregVol,
+              float *lastCost,
+              float *newCost)
 {
     
     float lastIntensity;
     SGPoint pt = start;
     
+    //printf("%d\n", dsi);
 #if 1
     for (size_t z=0; z<dsiDim.depth(); z++)
     {
@@ -174,24 +176,55 @@ void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
     const Dim &dim = mem.dim();
     const Dim &imgDim = img.dim();
 
-    boost::scoped_array<float> dsi((float*) mem.toCpuMem());
+    float *dsi = (float*) mem.toCpuMem();
+    printf("Z %d\n", dsi);
     boost::scoped_array<float> aggreg(new float[dim.size()]);
-
+    printf("A %d\n", dsi);
+    
     size_t pathCount;
     boost::scoped_array<SGPath> paths(
         SGPaths::getDescCPU(imgDim, &pathCount));
-
-    zeroVolume(dim, aggreg.get());
-    tbb::task_scheduler_init init;
+    
+    printf("B %d\n", dsi);
+    //zeroVolume(dim, aggreg.get());
+    //tbb::task_scheduler_init init;
 
     CudaBenchmarker bMarker;       
     bMarker.begin();
-
+#if 0
     tbb::parallel_for(tbb::blocked_range<size_t>(0, pathCount),
-                      PathCostParallel(dim, dsi.get(), img.cpuMem()->data.fl,
+                      PathCostParallel(dim, dsi, img.cpuMem()->data.fl,
                                        paths.get(), aggreg.get()),
                       tbb::auto_partitioner());
+#elif 1
 
+    const size_t depth = dim.depth();
+    
+    const float *imgMem = img.cpuMem()->data.fl;
+    
+    boost::scoped_array<float> lastCost(new float[depth + 2]);
+    boost::scoped_array<float> newCost(new float[depth + 2]);
+        
+    lastCost[0] = std::numeric_limits<float>::infinity();
+    newCost[0] = std::numeric_limits<float>::infinity();        
+    lastCost[depth + 1] = std::numeric_limits<float>::infinity();
+    newCost[depth + 1] = std::numeric_limits<float>::infinity();
+
+    for (size_t p=0; p < pathCount; p++)
+    {
+        const SGPath &ph = paths[p];
+        costPath(dim, dsi, imgMem, ph.start, 
+                 ph.dir, ph.size, aggreg.get(), lastCost.get(),
+                 newCost.get());
+
+        sSGPoint invDir = {-ph.dir.x, -ph.dir.y};
+            
+        costPath(dim, dsi, imgMem, ph.end, 
+                 invDir, ph.size, aggreg.get(), lastCost.get(),
+                 newCost.get());
+    }
+#endif
+        
     WTACPU::wta(dim, aggreg.get(), img.cpuMem()->data.fl);
     
     bMarker.end();

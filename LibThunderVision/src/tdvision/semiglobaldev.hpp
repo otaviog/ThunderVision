@@ -10,11 +10,7 @@ TDV_NAMESPACE_BEGIN
 class SemiGlobalDev: public AbstractOptimizer
 {
 public:
-    SemiGlobalDev()
-    {
-        workName("Semi-global device");
-        m_zeroAggregDSI = true;
-    }
+    SemiGlobalDev();
     
 protected:
     void updateImpl(DSIMem dsi, FloatImage outimg);

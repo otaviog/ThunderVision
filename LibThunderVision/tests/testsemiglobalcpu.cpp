@@ -7,7 +7,7 @@
 
 TEST(TestSemiGlobalCPU, WithSSD)
 {
-    tdv::SSDDev cost(64);
+    tdv::SSDDev cost(256);
     tdv::SemiGlobalCPU sg;
     
    runStereoTest(
