@@ -40,7 +40,7 @@ TEST(TestSSD, Dev)
 
 TEST(TestSSD, WithWTA)
 {
-   tdv::SSDDev ssd(64);
+   tdv::SSDDev ssd(128);
    tdv::WTADev wta;
     
    runStereoTest(

@@ -4,9 +4,10 @@
 #include <tdvision/birchfieldcostdev.hpp>
 #include "stereotest.hpp"
 
+#if 0
 TEST(TestSemiGlobalDev, WithBT)
 {    
-    tdv::BirchfieldCostDev cost(32);
+    tdv::BirchfieldCostDev cost(64);
     tdv::SemiGlobalDev sg;
 
    runStereoTest(
@@ -15,10 +16,12 @@ TEST(TestSemiGlobalDev, WithBT)
        "tsukuba_btsgdev.png",
        &cost, &sg, false, false);
 }
+#endif
+
 
 TEST(TestSemiGlobalDev, WithSSD)
 {        
-    tdv::SSDDev cost(64);
+    tdv::SSDDev cost(128);
     tdv::SemiGlobalDev sg;
 
     runStereoTest(

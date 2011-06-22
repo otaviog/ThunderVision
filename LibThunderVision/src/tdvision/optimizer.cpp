@@ -24,8 +24,9 @@ bool AbstractOptimizer::update()
         updateImpl(dsi, outimg);
         
         bMarker.end();        
-
-        m_mark.addProbe(bMarker.elapsedTime());        
+        
+        m_mark.addProbe(bMarker.elapsedTime());
+        
         
         guard.write(outimg);
     }

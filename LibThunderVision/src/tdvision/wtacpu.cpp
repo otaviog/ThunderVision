@@ -1,6 +1,7 @@
 #include <climits>
 #include "cuerr.hpp"
 #include "wtacpu.hpp"
+#include <iostream>
 
 TDV_NAMESPACE_BEGIN
 
@@ -44,7 +45,13 @@ void WTACPU::updateImpl(DSIMem mem, FloatImage outimg)
     boost::scoped_array<float> dsi((float*) mem.toCpuMem());    
     float *imgData_h = outimg.cpuMem()->data.fl;
     
+    CudaBenchmarker bMarker;
+    bMarker.begin();
+    
     wta(dim, dsi.get(), imgData_h);    
+    
+    bMarker.end();                
+    std::cout << bMarker.elapsedTime().millisecs() << std::endl;
 }
 
 

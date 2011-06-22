@@ -49,6 +49,31 @@ __global__ void ssdKern(const dim3 dsiDim, cudaPitchedPtr dsiMem)
   }
 }
 
+__global__ void ssdKern2(const dim3 dsiDim, cudaPitchedPtr dsiMem)
+{    
+  const int y = blockIdx.x*blockDim.x + threadIdx.x;
+  const int disp = blockIdx.y*blockDim.y + threadIdx.y;
+    
+  //const int y = blockIdx.x;
+  //const int disp = threadIdx.x;
+  
+  //if ( y >= dsiDim.y || disp >= dsiDim.z)
+  //return ;
+  
+  //__shared__ float *dsiRow;
+
+  for ( int x = 0; x < dsiDim.x; x++) {        
+    float *dsiRow = dsiGetRow(dsiMem, dsiDim.y, x, y);
+    float ssdValue = CUDART_INF_F;
+    
+    if ( x - disp >= 0 )
+      ssdValue = ssdAtDisp(x, y, disp);
+    
+    dsiRow[disp] = ssdValue;
+  }
+      
+}
+
 TDV_NAMESPACE_BEGIN
 
 void SSDDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
@@ -73,9 +98,18 @@ void SSDDevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d,
 
   CudaConstraits constraits;
   WorkSize ws = constraits.imageWorkSize(dsiDim);
-  
+#if 1
   ssdKern<<<ws.blocks, ws.threads>>>(tdvDimTo(dsiDim), dsiMem);
+
+#else
+  dim3 blocks((dsiDim.height() + 15)/16, (dsiDim.depth() + 15)/16);
+  dim3 threads(16, 16);
+    
+  ssdKern2<<<blocks, threads>>>(tdvDimTo(dsiDim), dsiMem);
   
+  //ssdKern2<<<dsiDim.height(), dsiDim.depth()>>>(tdvDimTo(dsiDim), dsiMem);
+#endif
+
   err << cudaThreadSynchronize();
 }
 

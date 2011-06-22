@@ -8,7 +8,7 @@
 
 TEST(TestBirchfieldCost, WithWTA)
 {
-    tdv::BirchfieldCostDev bf(128);
+    tdv::BirchfieldCostDev bf(256);
     tdv::WTACPU wta;
     runStereoTest(        
         "../../res/tsukuba512_L.png",

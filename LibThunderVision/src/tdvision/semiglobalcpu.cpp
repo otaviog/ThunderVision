@@ -67,7 +67,6 @@ void costPath(const Dim &dsiDim,
     float lastIntensity;
     SGPoint pt = start;
     
-    //printf("%d\n", dsi);
 #if 1
     for (size_t z=0; z<dsiDim.depth(); z++)
     {
@@ -177,16 +176,14 @@ void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
     const Dim &imgDim = img.dim();
 
     float *dsi = (float*) mem.toCpuMem();
-    printf("Z %d\n", dsi);
+
     boost::scoped_array<float> aggreg(new float[dim.size()]);
-    printf("A %d\n", dsi);
     
     size_t pathCount;
     boost::scoped_array<SGPath> paths(
         SGPaths::getDescCPU(imgDim, &pathCount));
     
-    printf("B %d\n", dsi);
-    //zeroVolume(dim, aggreg.get());
+    zeroVolume(dim, aggreg.get());
     //tbb::task_scheduler_init init;
 
     CudaBenchmarker bMarker;       
@@ -229,7 +226,7 @@ void SemiGlobalCPU::updateImpl(DSIMem mem, FloatImage img)
     
     bMarker.end();
     Benchmark bmark = bMarker.elapsedTime();
-    std::cout << bmark.secs() << std::endl;    
+    std::cout << bmark.millisecs() << std::endl;    
 }
 
 TDV_NAMESPACE_END
