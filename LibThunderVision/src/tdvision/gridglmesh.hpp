@@ -54,6 +54,24 @@ private:
     ud::Vec3f *m_vertBuff, *m_colBuff;    
 };
 
+class ScopedMeshLock
+{
+public:
+    ScopedMeshLock(GridGLMesh &mesh)
+        : m_mesh(mesh)
+    {
+        m_mesh.lock();
+    }
+    
+    ~ScopedMeshLock()
+    {
+        m_mesh.unlock();
+    }
+
+private:
+    GridGLMesh &m_mesh;    
+};
+
 TDV_NAMESPACE_END
 
 #endif /* TDV_GRIDGLMESH_HPP */

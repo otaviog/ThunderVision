@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
         }
     }
     
-    tdv::PLYMeshExporter exporter;
+    tdv::PLYMeshExporter exporter("testgrid.ply");
     
-    exporter.exportMesh("testgrid.ply", *mesh);
+    exporter.exportMesh(*mesh);
     
     mesh->unlock();
     

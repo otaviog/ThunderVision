@@ -5,6 +5,7 @@
 #include <tdvision/tdvcontext.hpp>
 #include <tdvision/reconstruction.hpp>
 #include <tdvision/stereoinputsource.hpp>
+#include <tdvision/dilate.hpp>
 #include "ui_mainwindow.h"
 #include "videowidget.hpp"
 #include "reprojectionview.hpp"

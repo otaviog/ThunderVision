@@ -9,6 +9,7 @@
 #include "teeworkunit.hpp"
 #include "workunitprocess.hpp"
 #include "reprojectprocess.hpp"
+#include "dilate.hpp"
 #include "directreprojector.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -109,6 +110,7 @@ private:
     TWorkUnitProcess<TeeWorkUnit<CvMat*> > m_rectTee[2];
     TWorkUnitProcess<ImageResize> m_resize[2];
     StereoMatcher *m_matcher;
+    TWorkUnitProcess<Dilate> m_dilate;
     DispTeeProcess m_dispTee;
     ReprojectProcess m_reprojectProc;
 

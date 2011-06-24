@@ -29,6 +29,7 @@ CUDA_ADD_LIBRARY(tdvision
   teeworkunit.hpp 
   medianfiltercpu.hpp medianfiltercpu.cpp
   medianfilterdev.hpp medianfilterdev.cpp medianfilter.cu
+  dilate.hpp dilate.cpp
   matchingcost.hpp matchingcost.cpp
   ssddev.hpp ssddev.cpp ssd.cu  
   crosscorrelationdev.hpp crosscorrelationdev.cpp crosscorrelation.cu

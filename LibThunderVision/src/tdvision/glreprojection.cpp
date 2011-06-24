@@ -94,8 +94,11 @@ void GLReprojection::draw()
 }
 
 void GLReprojection::exportMesh(MeshExporter *exporter)
-{
-    exporter->exportMesh(m_mesh);
+{    
+    boost::mutex::scoped_lock lock(m_meshMutex);    
+    ScopedMeshLock meshLock(m_mesh);
+
+    exporter->exportMesh(m_mesh);    
 }
 
 TDV_NAMESPACE_END
