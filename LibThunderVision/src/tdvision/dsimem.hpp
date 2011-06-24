@@ -56,7 +56,7 @@ public:
     
     void* toCpuMem()
     {
-        m_dsiMem.toCpuMem();
+        return m_dsiMem.toCpuMem();
     }
     
     const Dim& dim() const
