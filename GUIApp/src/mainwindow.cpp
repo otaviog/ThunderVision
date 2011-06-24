@@ -27,14 +27,18 @@ MainWindow::MainWindow(tdv::TDVContext *ctx)
     connect(pbDisparityMap, SIGNAL(clicked()),
             this, SLOT(showDisparity()));
     connect(pbRectification, SIGNAL(clicked()),
-            this, SLOT(showRectification()));    
+            this, SLOT(showRectification()));        
     
-    pbExport->setEnabled(false);
+    pbExport->setEnabled(true);
     pbRectification->setEnabled(false);
     pbDisparityMap->setEnabled(false);
     
     m_reprView = new ReprojectionView(this);
     layReproj->addWidget(m_reprView, 0, 0);
+
+    connect(pbExport, SIGNAL(clicked()),
+            m_reprView, SLOT(exportMesh()));
+
 }
 
 MainWindow::~MainWindow()

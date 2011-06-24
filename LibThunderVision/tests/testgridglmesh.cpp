@@ -1,4 +1,5 @@
 #include <tdvision/gridglmesh.hpp>
+#include <tdvision/plymeshexporter.hpp>
 #include <cstdlib>
 #include <GL/glut.h>
 
@@ -65,6 +66,10 @@ int main(int argc, char *argv[])
                 ud::Vec3f(st, 0.0f, 1.0f-st));
         }
     }
+    
+    tdv::PLYMeshExporter exporter;
+    
+    exporter.exportMesh("testgrid.ply", *mesh);
     
     mesh->unlock();
     

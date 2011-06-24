@@ -29,6 +29,9 @@ public:
         return m_reproj;        
     }
     
+public slots:
+    void exportMesh();
+        
 protected:
     virtual void paintGL();
     

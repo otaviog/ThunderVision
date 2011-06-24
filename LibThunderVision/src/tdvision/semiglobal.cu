@@ -8,10 +8,6 @@
 #define SG_USE_ATOMIC
 #define SG_USE_P2ADJUST
 
-__global__ void wtaKernel(const dim3 dim,
-                          cudaPitchedPtr dsiMem,
-                          float *outimg);
-
 __global__ void zeroDSIVolume(const dim3 dsiDim,
                               cudaPitchedPtr dsiVol)
 {
@@ -20,11 +16,29 @@ __global__ void zeroDSIVolume(const dim3 dsiDim,
 
   if ( x < dsiDim.x && y < dsiDim.y ) {
     float *dsiRow = dsiGetRow(dsiVol, dsiDim.y, x, y);
-
+    //#pragma unroll 32
     for (uint z=0; z<dsiDim.z; z++) {
       dsiRow[z] = 0.0f;
     }
   }
+}
+
+__global__ void zeroDSIVolume2(const dim3 dsiDim,
+                              cudaPitchedPtr dsiVol)
+{
+  const uint z = threadIdx.x;
+  const uint y = blockIdx.x;
+  __shared__ float *dsiRow;
+  #pragma unroll 32
+  for (uint x=0; x<dsiDim.x; x++) {
+    if ( z == 0 ) {
+      dsiRow = (float*) (((char*) dsiVol.ptr) + 
+                         DSI_GET_ROW_INCR(dsiVol, dsiDim, x, y));
+    }
+    
+    __syncthreads();    
+    dsiRow[z] = 0.0f;
+  }      
 }
 
 #define SG_MAX_DISP 256
@@ -467,10 +481,17 @@ void SemiGlobalDevRun(const Dim &dsiDim, cudaPitchedPtr dsi,
   CudaConstraits constraits;
 
   WorkSize wsz = constraits.imageWorkSize(dsiDim);
-
-  zeroAggregDSI = false;
-  if ( zeroAggregDSI )
+  
+  //zeroAggregDSI = false;
+  if ( zeroAggregDSI ) {
+#if 0
     zeroDSIVolume<<<wsz.blocks, wsz.threads>>>(tdvDimTo(dsiDim), aggregDSI);
+#else
+    
+    zeroDSIVolume2<<<dsiDim.height(), 
+      dsiDim.depth()>>>(tdvDimTo(dsiDim), aggregDSI);
+#endif
+  }
   
   texCost.addressMode[0] = cudaAddressModeWrap;
   texCost.addressMode[1] = cudaAddressModeWrap;

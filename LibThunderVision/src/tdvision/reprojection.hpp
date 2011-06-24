@@ -10,7 +10,8 @@ TDV_NAMESPACE_BEGIN
 class Reprojection
 {
 public:
-    virtual void reproject(FloatImage image, CvMat *origin, Reprojector *repr) = 0;
+    virtual void reproject(FloatImage image, CvMat *origin, 
+                           Reprojector *repr) = 0;
     
 private:
 };

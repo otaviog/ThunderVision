@@ -1,4 +1,5 @@
 #include "sink.hpp"
+#include "meshexporter.hpp"
 #include "glreprojection.hpp"
 
 TDV_NAMESPACE_BEGIN
@@ -90,6 +91,11 @@ void GLReprojection::draw()
     CvMatSinkPol::sink(m_lorigin);
     
     m_mesh.draw();        
+}
+
+void GLReprojection::exportMesh(MeshExporter *exporter)
+{
+    exporter->exportMesh(m_mesh);
 }
 
 TDV_NAMESPACE_END

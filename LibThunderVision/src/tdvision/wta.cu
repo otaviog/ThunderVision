@@ -13,7 +13,8 @@ __global__ void wtaKernel(const dim3 dsiDim,
   const uint y = blockDim.y*blockIdx.y + threadIdx.y;
   
   if ( x < dsiDim.x && y < dsiDim.y ) {
-    float *dsiRow = (float*) (((char*) dsiMem.ptr) + DSI_GET_ROW_INCR(dsiMem, dsiDim, x, y));
+    float *dsiRow = (float*) (((char*) dsiMem.ptr) + 
+                              DSI_GET_ROW_INCR(dsiMem, dsiDim, x, y));
     
     float leastDiff = CUDART_INF_F;
     uint wonDisparity = 0;            

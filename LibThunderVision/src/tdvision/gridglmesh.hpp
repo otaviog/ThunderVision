@@ -23,13 +23,28 @@ public:
         m_vertBuff[idx] = vert;
         m_colBuff[idx] = color;
     }
+
+    void point(int x, int y, ud::Vec3f &vert, ud::Vec3f &color) const
+    {
+        assert(m_vertBuff != NULL);
+        
+        const size_t idx = y*m_dim.width() + x;
+        vert = m_vertBuff[idx];
+        color = m_colBuff[idx];
+    }
   
     void lock();
     
     void unlock();
     
     void draw();
+
     
+    const Dim& dim() const
+    {
+        return m_dim;
+    }
+
 private:
     VertexBuffer m_vertices,    
         m_colors,

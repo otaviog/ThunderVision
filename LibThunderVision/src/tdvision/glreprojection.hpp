@@ -10,6 +10,8 @@
 
 TDV_NAMESPACE_BEGIN
 
+class MeshExporter;
+
 class GLReprojectionObserver
 {
 public:
@@ -27,6 +29,8 @@ public:
     
     void draw();    
     
+    void exportMesh(MeshExporter *exporter);        
+                
     void observer(GLReprojectionObserver *observer)
     {
         m_observer = observer;

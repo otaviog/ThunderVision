@@ -1,8 +1,13 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QProgressDialog>
 #include <iostream>
 #include <cmath>
 #include <ud/math/math.hpp>
+#include <tdvbasic/exception.hpp>
+#include <tdvision/plymeshexporter.hpp>
 #include "reprojectionview.hpp"
 
 ReprojectionView::ReprojectionView(QWidget *parent)
@@ -127,4 +132,43 @@ void ReprojectionView::initializeGL()
 {
     glewInit();
     glEnable(GL_DEPTH_TEST);
+}
+
+void ReprojectionView::exportMesh()
+{
+    if ( m_reproj == NULL )
+    {
+        QMessageBox::warning(this,
+                             tr("Export"),
+                             tr("No reprojection to export"));
+        return ;
+    }
+    
+    QString filename = QFileDialog::getSaveFileName(
+        this, tr("Export"), QString(),
+        tr("PLY (*.ply)"));
+
+    if ( !filename.isEmpty() )
+    {        
+        QProgressDialog prgDlg("Exporting", "", 0, 0,
+                               NULL, Qt::FramelessWindowHint);
+        prgDlg.show();
+        try
+        {
+            tdv::PLYMeshExporter exporter(filename.toStdString());
+            
+            m_reproj->exportMesh(&exporter);
+            prgDlg.close();
+        }
+        catch (const tdv::Exception &ex)
+        {
+            prgDlg.close();
+            QMessageBox::critical(this,
+                                 tr("Can't Export"),
+                                  tr(ex.what()));
+        }
+
+
+    }
+    
 }

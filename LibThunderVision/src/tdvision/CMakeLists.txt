@@ -71,5 +71,7 @@ CUDA_ADD_LIBRARY(tdvision
   cvreprojector.hpp cvreprojector.cpp
   directreprojector.hpp
   gridglmesh.hpp gridglmesh.cpp
+  meshexporter.hpp
+  plymeshexporter.hpp plymeshexporter.cpp
   glreprojection.hpp glreprojection.cpp
   reprojectprocess.hpp reprojectprocess.cpp)

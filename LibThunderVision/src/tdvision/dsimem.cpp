@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#define DSIMEM_USE_ALIGNED 
+//#define DSIMEM_USE_ALIGNED 
 
 TDV_NAMESPACE_BEGIN
 
