@@ -7,7 +7,7 @@ Although it's main objective was to be fast, OpenCV CPU implementation is
 currently faster. But we think that we can outperform OpenCV, allot of
 GPU optimization techniques still were not used in this project.
 
-Depencies:
+Dependencies:
 OpenCV 2.1 or greater
 Qt 4
 CUDA Toolkit 3.0 or greater
@@ -16,7 +16,9 @@ Boost Libraries
 GLEW
 GLUT
 Google Test Framework
+Linux Operating System.
 
 TODO:
 Documentation on source code.
 User documentation.
+Windows and MAC OS X ports. Should not be hard.
