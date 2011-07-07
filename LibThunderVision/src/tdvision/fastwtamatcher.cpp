@@ -17,9 +17,6 @@ void FastWTAMatcher::inputs(ReadPipe<FloatImage> *leftInput,
     m_rrpipe = rightInput;        
 }
 
-void FastWTADevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d, 
-                   float *dispImg);
-
 void FastWTAMatcher::process()
 {
     cudaSetDevice(0);
@@ -28,6 +25,9 @@ void FastWTAMatcher::process()
     {        
     }
 }
+
+void FastWTADevRun(Dim dsiDim, float *leftImg_d, float *rightImg_d, 
+                   float *dispImg);
 
 bool FastWTAMatcher::update()
 {

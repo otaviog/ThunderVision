@@ -25,21 +25,13 @@ inline __device__ float* dsiGetRow(cudaPitchedPtr pptr, ushort height,
     return (float*) dsiGetRowB(pptr, height, x, y);
 }
 
-#if 0
-inline __device__ const char* dsiGetRowB(const cudaPitchedPtr pptr, 
-                                         ushort height, 
-                                         ushort x, ushort y)
+template<typename TypePtr> 
+inline __device__ TypePtr dsiGetRowT(cudaPitchedPtr pptr, dim3 dsiDim, 
+                                   int x, int y)
 {
-    return ( ((const char*) pptr.ptr) + DSI_GET_ROW_INCR_H(pptr, height, x, y));
+    return (TypePtr) dsiGetRowB(pptr, dsiDim.y, x, y);
 }
 
-inline __device__ const float* dsiGetRow(const cudaPitchedPtr pptr, 
-                                         ushort height, 
-                                         ushort x, ushort y)
-{
-    return (const float*) dsiGetRowB(pptr, height, x, y);
-}
-#endif
 inline __device__ float dsiGetValue(
     cudaPitchedPtr pptr, ushort h, ushort x, ushort y, ushort z)
 {

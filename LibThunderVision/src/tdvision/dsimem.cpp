@@ -61,8 +61,7 @@ void* LocalDSIMem::toCpuMem()
     const size_t pitch = m_mem.pitch;
     const size_t width = m_dim.width();    
     const size_t height = m_dim.height();
-    const size_t depth = m_dim.depth();
-    printf("%d\n", cpuMem);
+    const size_t depth = m_dim.depth();    
     
     CUerrExp cuerr;
     try
@@ -88,8 +87,7 @@ void* LocalDSIMem::toCpuMem()
         delete [] cpuMem;
         throw ex;
     }    
-    
-    printf("%d\n", cpuMem);
+        
     return cpuMem;
 }
 

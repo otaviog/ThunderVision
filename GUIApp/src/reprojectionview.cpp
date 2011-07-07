@@ -5,6 +5,7 @@
 #include <QProgressDialog>
 #include <iostream>
 #include <cmath>
+#include <limits>
 #include <ud/math/math.hpp>
 #include <tdvbasic/exception.hpp>
 #include <tdvision/plymeshexporter.hpp>
@@ -17,6 +18,7 @@ ReprojectionView::ReprojectionView(QWidget *parent)
     grabKeyboard();
     m_btPressed = false;
     m_empty = true;
+    m_zcenter = std::numeric_limits<float>::infinity();
 }
 
 void ReprojectionView::paintGL()
@@ -41,8 +43,12 @@ void ReprojectionView::paintGL()
                      (ma[1] - mi[1])*-0.5f,
                      (ma[2] - mi[2])*0.5f);
 #endif
-        const float zcenter = (ma[2] + mi[2])*0.5f;
-        glTranslatef(0.0f, 0.0f, -(zcenter + (ma[2] - zcenter)));
+        float zcenter = (ma[2] + mi[2])*0.5f;
+        zcenter = -(zcenter + (ma[2] - zcenter));
+        if ( !(m_zcenter < std::numeric_limits<float>::infinity()) )
+            m_zcenter = zcenter;
+        
+        glTranslatef(0.0f, 0.0f, m_zcenter);
         m_reproj->draw();
     }
 }

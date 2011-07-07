@@ -365,7 +365,6 @@ __global__ void semiglobalAggregVolKernel(const dim3 dsiDim,
   float fLr, bLr;
   ushort dimz = dsiDim.z;
 
-#pragma unroll 4
   for (int x=1; x<pathSize; x++) {
     int i = dimz >> 1;
     while ( i != 0 ) {

@@ -15,7 +15,7 @@ __device__ float costAtDisp(int x, int y, int disp)
 {
   float sum = 0.0f;
 
-  for (int v=x; v < x + 8; v++) {
+  for (int v=x; v < x + 1; v++) {
     const float lI = tex2D(texLeftImg, v, y);
     const float rI = tex2D(texRightImg, v - disp, y);
 
@@ -198,8 +198,8 @@ void BirchfieldCostRun(Dim dsiDim,
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
 
-    if ( static_cast<int>(dsiDim.width()) <= prop.maxThreadsPerBlock ) {
-      //    if ( false ) {
+    //    if ( static_cast<int>(dsiDim.width()) <= prop.maxThreadsPerBlock ) {
+    if ( false ) {
       SharedMemBirchfieldRun(dsiDim, leftImg_d, rightImg_d,
                              costDSI);
     }

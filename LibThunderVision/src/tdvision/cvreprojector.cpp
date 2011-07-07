@@ -11,7 +11,7 @@ CVReprojector::CVReprojector()
 ud::Vec3f CVReprojector::reproject(int x, int y, float disp, 
                                    const Dim &imgDim) const
 {
-    float xyd[] = { x, imgDim.height() - y, disp*4.0f };
+    float xyd[] = { x, imgDim.height() - y, disp };
     ud::Vec3f dst;
         
     const CvMat srcArr = cvMat(1, 1, CV_32FC3, xyd);
@@ -20,6 +20,8 @@ ud::Vec3f CVReprojector::reproject(int x, int y, float disp,
         
     cvPerspectiveTransform(&srcArr, &dstArr, &Q);
         
+    dst[2] *= 24.0f;
+    
     return dst;
 }
 

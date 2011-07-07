@@ -21,6 +21,7 @@ ADD_TEST(testbirchfieldcost testbirchfieldcost.cpp)
 ADD_TEST(testsemiglobal testsemiglobal.cpp)
 ADD_TEST(testsemiglobalcpu testsemiglobalcpu.cpp)
 ADD_TEST(testfastwta testfastwta.cpp)
+ADD_TEST(testsemigloballab testsemigloballab.cpp)
 
 CUDA_ADD_EXECUTABLE(testgridglmesh testgridglmesh.cpp)
 TARGET_LINK_LIBRARIES(testgridglmesh

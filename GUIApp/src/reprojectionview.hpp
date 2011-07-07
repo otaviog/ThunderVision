@@ -51,6 +51,7 @@ private:
     tdv::GLReprojection *m_reproj;
     ud::Camera m_camera;
     ud::Vec2f m_lastMousePos;    
+    float m_zcenter;
     bool m_btPressed;
     
     bool m_empty;

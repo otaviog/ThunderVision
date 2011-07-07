@@ -6,6 +6,7 @@
 #include "rectificationviewdialog.hpp"
 #include "selectinputdialog.hpp"
 #include "disparitydialog.hpp"
+#include "thanksdialog.hpp"
 #include "mainwindow.hpp"
 
 MainWindow::MainWindow(tdv::TDVContext *ctx)
@@ -215,4 +216,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
     
     dispose();
+#ifdef TDV_THANKS    
+    ThanksDialog thanks(this);    
+    thanks.exec();
+#endif
 }

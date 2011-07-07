@@ -36,3 +36,4 @@ ThunderLangLexer.c
 /BenchmarkApp/src/Teddy_512x512_CPU+OpenCV_BlockMatcher.png
 /BenchmarkApp/src/Teddy_512x512_GPU Matcher.png
 /doc/impl.juth.bak
+*.csv

@@ -15,4 +15,5 @@
     <file>thunder.ico</file>
     <file>thunder.png</file>
   </qresource>
+  <qresource prefix="sounds"/>
 </RCC>

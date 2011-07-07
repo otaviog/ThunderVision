@@ -1,1 +1,8 @@
-ThunderVision Project
+ThunderVision Project is a Final Year Project with the intend to
+estimate depth from stereo pair of cameras, using CUDA to make it faster.
+
+It's implements Semi-global matching with Birchfield & Tomasi cost.
+
+Although it's main objective was to be fast, OpenCV CPU implementation is 
+currently faster. But we think that we can outperform OpenCV, allot of
+GPU optimization techniques still were not used in this project.
