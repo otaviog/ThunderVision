@@ -7,6 +7,8 @@ Although it's main objective was to be fast, OpenCV CPU implementation is
 currently faster. But we think that we can outperform OpenCV, allot of
 GPU optimization techniques still were not used in this project.
 
+Video: http://www.youtube.com/watch?v=EuIyLVVpwGs
+
 Dependencies:
 OpenCV 2.1 or greater
 Qt 4
